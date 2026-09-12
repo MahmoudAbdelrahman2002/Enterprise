@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Success" xml:space="preserve"><value>Operazione completata</value></data>
+  <data name="Created" xml:space="preserve"><value>Creato</value></data>
+  <data name="Error.NotFound" xml:space="preserve"><value>La risorsa richiesta non è stata trovata.</value></data>
+  <data name="Error.Conflict" xml:space="preserve"><value>La richiesta è in conflitto con lo stato attuale.</value></data>
+  <data name="Error.Unauthorized" xml:space="preserve"><value>Autenticazione non riuscita.</value></data>
+  <data name="Error.Forbidden" xml:space="preserve"><value>Non hai i permessi per eseguire questa azione.</value></data>
+  <data name="Error.BusinessRule" xml:space="preserve"><value>È stata violata una regola di business.</value></data>
+  <data name="Error.EmailDelivery" xml:space="preserve"><value>Impossibile inviare l'email. Riprova più tardi.</value></data>
+  <data name="Error.Unexpected" xml:space="preserve"><value>Si è verificato un errore imprevisto. Riprova più tardi.</value></data>
+  <data name="Error.RateLimited" xml:space="preserve"><value>Troppe richieste. Riprova più tardi.</value></data>
+  <data name="Validation.Failed" xml:space="preserve"><value>Si sono verificati uno o più errori di convalida.</value></data>
+  <data name="Validation.CheckRequest" xml:space="preserve"><value>Controlla la richiesta e correggi gli errori di convalida.</value></data>
+  <data name="Validation.Required" xml:space="preserve"><value>Questo campo è obbligatorio.</value></data>
+  <data name="Validation.Email" xml:space="preserve"><value>È richiesto un indirizzo email valido.</value></data>
+  <data name="Validation.MaxLength" xml:space="preserve"><value>Non deve superare {0} caratteri.</value></data>
+  <data name="Validation.MinLength" xml:space="preserve"><value>Deve contenere almeno {0} caratteri.</value></data>
+  <data name="Validation.GreaterThan" xml:space="preserve"><value>Deve essere maggiore di {0}.</value></data>
+  <data name="Validation.GreaterThanOrEqual" xml:space="preserve"><value>Deve essere maggiore o uguale a {0}.</value></data>
+  <data name="Validation.OtpLength" xml:space="preserve"><value>Il codice deve essere compreso tra {0} e {1} caratteri.</value></data>
+  <data name="Validation.SkuFormat" xml:space="preserve"><value>Lo SKU può contenere solo lettere, numeri, trattini e underscore.</value></data>
+  <data name="Validation.DeltaNonZero" xml:space="preserve"><value>Il delta deve essere diverso da zero.</value></data>
+  <data name="Validation.PasswordMinLength" xml:space="preserve"><value>La password deve contenere almeno 8 caratteri.</value></data>
+  <data name="Validation.PasswordUppercase" xml:space="preserve"><value>La password deve contenere almeno una lettera maiuscola.</value></data>
+  <data name="Validation.PasswordLowercase" xml:space="preserve"><value>La password deve contenere almeno una lettera minuscola.</value></data>
+  <data name="Validation.PasswordDigit" xml:space="preserve"><value>La password deve contenere almeno una cifra.</value></data>
+  <data name="Validation.PasswordSpecial" xml:space="preserve"><value>La password deve contenere almeno un carattere speciale.</value></data>
+  <data name="Validation.ProviderUnsupported" xml:space="preserve"><value>Il provider deve essere Google o Facebook.</value></data>
+  <data name="Validation.LocalizedEnRequired" xml:space="preserve"><value>Il testo in inglese è obbligatorio.</value></data>
+  <data name="Product.ListRetrieved" xml:space="preserve"><value>Prodotti recuperati con successo.</value></data>
+  <data name="Product.Retrieved" xml:space="preserve"><value>Prodotto recuperato con successo.</value></data>
+  <data name="Product.Created" xml:space="preserve"><value>Prodotto creato con successo.</value></data>
+  <data name="Product.Updated" xml:space="preserve"><value>Prodotto aggiornato con successo.</value></data>
+  <data name="Product.StockAdjusted" xml:space="preserve"><value>Scorte aggiornate con successo.</value></data>
+  <data name="Product.Deleted" xml:space="preserve"><value>Prodotto eliminato con successo.</value></data>
+  <data name="Product.SkuExists" xml:space="preserve"><value>Esiste già un prodotto con SKU '{0}'.</value></data>
+  <data name="Product.InsufficientStock" xml:space="preserve"><value>Il prodotto '{0}' non ha scorte sufficienti. Richiesto: {1}, disponibile: {2}.</value></data>
+  <data name="Product.QuantityMustBePositive" xml:space="preserve"><value>La quantità deve essere positiva.</value></data>
+  <data name="Auth.LoginSuccess" xml:space="preserve"><value>Accesso effettuato con successo.</value></data>
+  <data name="Auth.RegistrationVerified" xml:space="preserve"><value>Registrazione verificata con successo.</value></data>
+  <data name="Auth.ExternalLoginSuccess" xml:space="preserve"><value>Accesso esterno effettuato con successo.</value></data>
+  <data name="Auth.TokenRefreshed" xml:space="preserve"><value>Token aggiornato con successo.</value></data>
+  <data name="Auth.TokenRevoked" xml:space="preserve"><value>Token revocato con successo.</value></data>
+  <data name="Auth.PasswordResetSuccess" xml:space="preserve"><value>Password reimpostata con successo.</value></data>
+  <data name="Auth.PasswordChanged" xml:space="preserve"><value>Password modificata con successo.</value></data>
+  <data name="Auth.ForgotPasswordSent" xml:space="preserve"><value>Se l'account esiste, è stato inviato un codice di reimpostazione.</value></data>
+  <data name="Auth.InvalidCredentials" xml:space="preserve"><value>Email o password non validi.</value></data>
+  <data name="Auth.AccountLocked" xml:space="preserve"><value>L'account è temporaneamente bloccato a causa di troppi tentativi falliti. Riprova più tardi.</value></data>
+  <data name="Auth.InvalidOrExpiredCode" xml:space="preserve"><value>Codice di verifica non valido o scaduto.</value></data>
+  <data name="Auth.InvalidOrExpiredLoginCode" xml:space="preserve"><value>Codice di accesso non valido o scaduto.</value></data>
+  <data name="Auth.InvalidOrExpiredResetCode" xml:space="preserve"><value>Codice di reimpostazione non valido o scaduto.</value></data>
+  <data name="Auth.InvalidOrExpiredVerificationCode" xml:space="preserve"><value>Codice di verifica non valido o scaduto.</value></data>
+  <data name="Auth.InvalidRefreshToken" xml:space="preserve"><value>Refresh token non valido.</value></data>
+  <data name="Auth.RefreshTokenReused" xml:space="preserve"><value>Il refresh token è già stato usato. Tutte le sessioni sono state revocate per sicurezza.</value></data>
+  <data name="Auth.RefreshTokenExpired" xml:space="preserve"><value>Il refresh token è scaduto.</value></data>
+  <data name="Auth.RefreshTokenNotFound" xml:space="preserve"><value>Refresh token non trovato.</value></data>
+  <data name="Auth.UnableToResetPassword" xml:space="preserve"><value>Impossibile reimpostare la password.</value></data>
+  <data name="Auth.UnableToChangePassword" xml:space="preserve"><value>Impossibile modificare la password.</value></data>
+  <data name="Auth.SocialEmailRequired" xml:space="preserve"><value>È richiesta un'email verificata dal provider social.</value></data>
+  <data name="Auth.SocialLinkFailed" xml:space="preserve"><value>Impossibile collegare l'account social.</value></data>
+  <data name="Auth.SocialSignInFailed" xml:space="preserve"><value>Accesso social non riuscito. Riprova.</value></data>
+  <data name="Auth.SocialAlreadyLinked" xml:space="preserve"><value>Questo account social è già collegato a un altro utente.</value></data>
+  <data name="Auth.GoogleNotConfigured" xml:space="preserve"><value>L'accesso con Google non è configurato.</value></data>
+  <data name="Auth.FacebookNotConfigured" xml:space="preserve"><value>L'accesso con Facebook non è configurato.</value></data>
+  <data name="Auth.InvalidGoogleToken" xml:space="preserve"><value>ID token Google non valido.</value></data>
+  <data name="Auth.InvalidFacebookToken" xml:space="preserve"><value>Access token Facebook non valido.</value></data>
+  <data name="Auth.FacebookProfileFailed" xml:space="preserve"><value>Impossibile caricare il profilo Facebook.</value></data>
+  <data name="Auth.UnsupportedProvider" xml:space="preserve"><value>Provider social non supportato.</value></data>
+  <data name="Auth.RegistrationStarted" xml:space="preserve"><value>Registrazione avviata. Inserisci l'OTP ricevuto via email (o developmentOtp in Development).</value></data>
+  <data name="Auth.OtpSentIfExists" xml:space="preserve"><value>Se l'account esiste, è stato inviato un OTP.</value></data>
+  <data name="Auth.AccountNotVerified" xml:space="preserve"><value>L'account non è ancora verificato. Usa verify-registration con l'OTP inviato.</value></data>
+  <data name="Account.EmailExists" xml:space="preserve"><value>Esiste già un account con questa email.</value></data>
+  <data name="Account.UnableToCreate" xml:space="preserve"><value>Impossibile creare l'account.</value></data>
+  <data name="Account.UnableToChangeEmail" xml:space="preserve"><value>Impossibile modificare l'email.</value></data>
+  <data name="Account.UnableToComplete" xml:space="preserve"><value>Impossibile completare la richiesta.</value></data>
+  <data name="Profile.Retrieved" xml:space="preserve"><value>Profilo recuperato con successo.</value></data>
+  <data name="Profile.Updated" xml:space="preserve"><value>Profilo aggiornato con successo.</value></data>
+  <data name="Profile.EmailChangeCodeSent" xml:space="preserve"><value>Codice di verifica inviato alla nuova email.</value></data>
+  <data name="Profile.EmailChanged" xml:space="preserve"><value>Email modificata con successo.</value></data>
+  <data name="Entity.NotFound" xml:space="preserve"><value>L'entità "{0}" con chiave ({1}) non è stata trovata.</value></data>
+  <data name="Email.VerificationSubject" xml:space="preserve"><value>Il tuo codice di verifica Enterprise</value></data>
+  <data name="Email.VerificationBody" xml:space="preserve"><value>&lt;p&gt;Ciao,&lt;/p&gt;&lt;p&gt;Il tuo codice di verifica Enterprise è &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;&lt;p&gt;Questo codice scade tra pochi minuti. Se non hai richiesto questa email, puoi ignorarla.&lt;/p&gt;</value></data>
+  <data name="Email.SignInSubject" xml:space="preserve"><value>Il tuo codice di accesso Enterprise</value></data>
+  <data name="Email.SignInBody" xml:space="preserve"><value>&lt;p&gt;Ciao,&lt;/p&gt;&lt;p&gt;Il tuo codice di accesso Enterprise è &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;&lt;p&gt;Questo codice scade tra pochi minuti. Se non hai richiesto questa email, puoi ignorarla.&lt;/p&gt;</value></data>
+  <data name="Email.ResetSubject" xml:space="preserve"><value>Codice di reimpostazione password</value></data>
+  <data name="Email.ResetBody" xml:space="preserve"><value>&lt;p&gt;Il tuo codice di reimpostazione password è &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;</value></data>
+  <data name="Email.ChangeEmailSubject" xml:space="preserve"><value>Conferma la tua nuova email</value></data>
+  <data name="Email.ChangeEmailBody" xml:space="preserve"><value>&lt;p&gt;Il codice di verifica per il cambio email è &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;</value></data>
+</root>

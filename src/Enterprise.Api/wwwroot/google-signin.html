@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Enterprise — Google Sign-In (Dev)</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --card: #1a2332;
+      --text: #e7ecf3;
+      --muted: #9aa8bc;
+      --accent: #3d8bfd;
+      --ok: #3dd68c;
+      --err: #f07178;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: radial-gradient(1200px 600px at 20% -10%, #1b2a44, var(--bg));
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    main {
+      width: min(520px, 100%);
+      background: var(--card);
+      border: 1px solid #2a3648;
+      border-radius: 16px;
+      padding: 28px;
+    }
+    h1 { margin: 0 0 8px; font-size: 1.4rem; }
+    p { margin: 0 0 20px; color: var(--muted); line-height: 1.45; }
+    #buttonDiv { display: flex; justify-content: center; margin: 16px 0 8px; min-height: 44px; }
+    pre {
+      margin: 16px 0 0;
+      padding: 12px;
+      background: #0d1218;
+      border-radius: 10px;
+      overflow: auto;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 320px;
+    }
+    .ok { color: var(--ok); }
+    .err { color: var(--err); }
+    .hint { font-size: 0.85rem; color: var(--muted); margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Google register / login</h1>
+    <p>Sign in with Google. The page sends the ID token to your API and shows the JWT response.</p>
+    <div id="buttonDiv"></div>
+    <p class="hint">If the button is missing, add <code>http://localhost:5207</code> under Authorized JavaScript origins for this OAuth Client ID in Google Cloud Console.</p>
+    <pre id="out">Waiting for Google Sign-In…</pre>
+  </main>
+
+  <script>
+    const GOOGLE_CLIENT_ID = "900750236157-uc6n1jirj0qsisvp0pka4d897bp0iem8.apps.googleusercontent.com";
+    const API_URL = "/api/v1/client/auth/external";
+    const out = document.getElementById("out");
+
+    function show(msg, cls) {
+      out.className = cls || "";
+      out.textContent = typeof msg === "string" ? msg : JSON.stringify(msg, null, 2);
+    }
+
+    async function sendToApi(idToken) {
+      show("Calling API…");
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider: "Google", idToken })
+      });
+      const text = await res.text();
+      let body;
+      try { body = JSON.parse(text); } catch { body = text; }
+      if (!res.ok) {
+        show({ status: res.status, error: body }, "err");
+        return;
+      }
+      show({ status: res.status, ...body }, "ok");
+      if (body.accessToken) {
+        localStorage.setItem("enterprise.accessToken", body.accessToken);
+        localStorage.setItem("enterprise.refreshToken", body.refreshToken || "");
+      }
+    }
+
+    function initGoogle() {
+      if (!window.google?.accounts?.id) {
+        setTimeout(initGoogle, 100);
+        return;
+      }
+
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: async (response) => {
+          try {
+            await sendToApi(response.credential);
+          } catch (e) {
+            show(String(e), "err");
+          }
+        },
+        auto_select: false,
+        ux_mode: "popup"
+      });
+
+      google.accounts.id.renderButton(document.getElementById("buttonDiv"), {
+        theme: "outline",
+        size: "large",
+        text: "continue_with",
+        shape: "rectangular",
+        width: 320
+      });
+
+      show("Click “Continue with Google” to register or log in.");
+    }
+
+    window.onload = initGoogle;
+  </script>
+</body>
+</html>

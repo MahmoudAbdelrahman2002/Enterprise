@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Success" xml:space="preserve"><value>نجاح</value></data>
+  <data name="Created" xml:space="preserve"><value>تم الإنشاء</value></data>
+  <data name="Error.NotFound" xml:space="preserve"><value>المورد المطلوب غير موجود.</value></data>
+  <data name="Error.Conflict" xml:space="preserve"><value>الطلب يتعارض مع الحالة الحالية.</value></data>
+  <data name="Error.Unauthorized" xml:space="preserve"><value>فشل المصادقة.</value></data>
+  <data name="Error.Forbidden" xml:space="preserve"><value>ليس لديك صلاحية لتنفيذ هذا الإجراء.</value></data>
+  <data name="Error.BusinessRule" xml:space="preserve"><value>تم انتهاك قاعدة عمل.</value></data>
+  <data name="Error.EmailDelivery" xml:space="preserve"><value>تعذر إرسال البريد الإلكتروني. حاول مرة أخرى لاحقًا.</value></data>
+  <data name="Error.Unexpected" xml:space="preserve"><value>حدث خطأ غير متوقع. حاول مرة أخرى لاحقًا.</value></data>
+  <data name="Error.RateLimited" xml:space="preserve"><value>طلبات كثيرة جدًا. حاول مرة أخرى لاحقًا.</value></data>
+  <data name="Validation.Failed" xml:space="preserve"><value>حدث خطأ واحد أو أكثر في التحقق.</value></data>
+  <data name="Validation.CheckRequest" xml:space="preserve"><value>يرجى مراجعة الطلب وتصحيح أخطاء التحقق.</value></data>
+  <data name="Validation.Required" xml:space="preserve"><value>هذا الحقل مطلوب.</value></data>
+  <data name="Validation.Email" xml:space="preserve"><value>يلزم إدخال عنوان بريد إلكتروني صالح.</value></data>
+  <data name="Validation.MaxLength" xml:space="preserve"><value>يجب ألا يتجاوز {0} حرفًا.</value></data>
+  <data name="Validation.MinLength" xml:space="preserve"><value>يجب أن يتكون من {0} أحرف على الأقل.</value></data>
+  <data name="Validation.GreaterThan" xml:space="preserve"><value>يجب أن يكون أكبر من {0}.</value></data>
+  <data name="Validation.GreaterThanOrEqual" xml:space="preserve"><value>يجب أن يكون أكبر من أو يساوي {0}.</value></data>
+  <data name="Validation.OtpLength" xml:space="preserve"><value>يجب أن يتكون الرمز من {0} إلى {1} أحرف.</value></data>
+  <data name="Validation.SkuFormat" xml:space="preserve"><value>يجوز أن يحتوي رمز المنتج فقط على أحرف وأرقام وشرطات وشرطات سفلية.</value></data>
+  <data name="Validation.DeltaNonZero" xml:space="preserve"><value>يجب ألا تكون قيمة التغيير صفرًا.</value></data>
+  <data name="Validation.PasswordMinLength" xml:space="preserve"><value>يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.</value></data>
+  <data name="Validation.PasswordUppercase" xml:space="preserve"><value>يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل.</value></data>
+  <data name="Validation.PasswordLowercase" xml:space="preserve"><value>يجب أن تحتوي كلمة المرور على حرف صغير واحد على الأقل.</value></data>
+  <data name="Validation.PasswordDigit" xml:space="preserve"><value>يجب أن تحتوي كلمة المرور على رقم واحد على الأقل.</value></data>
+  <data name="Validation.PasswordSpecial" xml:space="preserve"><value>يجب أن تحتوي كلمة المرور على رمز خاص واحد على الأقل.</value></data>
+  <data name="Validation.ProviderUnsupported" xml:space="preserve"><value>يجب أن يكون الموفر Google أو Facebook.</value></data>
+  <data name="Validation.LocalizedEnRequired" xml:space="preserve"><value>النص باللغة الإنجليزية مطلوب.</value></data>
+  <data name="Product.ListRetrieved" xml:space="preserve"><value>تم جلب المنتجات بنجاح.</value></data>
+  <data name="Product.Retrieved" xml:space="preserve"><value>تم جلب المنتج بنجاح.</value></data>
+  <data name="Product.Created" xml:space="preserve"><value>تم إنشاء المنتج بنجاح.</value></data>
+  <data name="Product.Updated" xml:space="preserve"><value>تم تحديث المنتج بنجاح.</value></data>
+  <data name="Product.StockAdjusted" xml:space="preserve"><value>تم تعديل المخزون بنجاح.</value></data>
+  <data name="Product.Deleted" xml:space="preserve"><value>تم حذف المنتج بنجاح.</value></data>
+  <data name="Product.SkuExists" xml:space="preserve"><value>يوجد بالفعل منتج برمز '{0}'.</value></data>
+  <data name="Product.InsufficientStock" xml:space="preserve"><value>المنتج '{0}' لا يملك مخزونًا كافيًا. المطلوب: {1}، المتاح: {2}.</value></data>
+  <data name="Product.QuantityMustBePositive" xml:space="preserve"><value>يجب أن تكون الكمية موجبة.</value></data>
+  <data name="Auth.LoginSuccess" xml:space="preserve"><value>تم تسجيل الدخول بنجاح.</value></data>
+  <data name="Auth.RegistrationVerified" xml:space="preserve"><value>تم التحقق من التسجيل بنجاح.</value></data>
+  <data name="Auth.ExternalLoginSuccess" xml:space="preserve"><value>تم تسجيل الدخول الخارجي بنجاح.</value></data>
+  <data name="Auth.TokenRefreshed" xml:space="preserve"><value>تم تحديث الرمز بنجاح.</value></data>
+  <data name="Auth.TokenRevoked" xml:space="preserve"><value>تم إلغاء الرمز بنجاح.</value></data>
+  <data name="Auth.PasswordResetSuccess" xml:space="preserve"><value>تم إعادة تعيين كلمة المرور بنجاح.</value></data>
+  <data name="Auth.PasswordChanged" xml:space="preserve"><value>تم تغيير كلمة المرور بنجاح.</value></data>
+  <data name="Auth.ForgotPasswordSent" xml:space="preserve"><value>إذا كان الحساب موجودًا، فقد تم إرسال رمز إعادة التعيين.</value></data>
+  <data name="Auth.InvalidCredentials" xml:space="preserve"><value>البريد الإلكتروني أو كلمة المرور غير صحيحة.</value></data>
+  <data name="Auth.AccountLocked" xml:space="preserve"><value>الحساب مقفل مؤقتًا بسبب محاولات تسجيل دخول فاشلة متكررة. حاول لاحقًا.</value></data>
+  <data name="Auth.InvalidOrExpiredCode" xml:space="preserve"><value>رمز التحقق غير صالح أو منتهٍ.</value></data>
+  <data name="Auth.InvalidOrExpiredLoginCode" xml:space="preserve"><value>رمز تسجيل الدخول غير صالح أو منتهٍ.</value></data>
+  <data name="Auth.InvalidOrExpiredResetCode" xml:space="preserve"><value>رمز إعادة التعيين غير صالح أو منتهٍ.</value></data>
+  <data name="Auth.InvalidOrExpiredVerificationCode" xml:space="preserve"><value>رمز التحقق غير صالح أو منتهٍ.</value></data>
+  <data name="Auth.InvalidRefreshToken" xml:space="preserve"><value>رمز التحديث غير صالح.</value></data>
+  <data name="Auth.RefreshTokenReused" xml:space="preserve"><value>تم استخدام رمز التحديث مسبقًا. تم إلغاء جميع الجلسات لأمانك.</value></data>
+  <data name="Auth.RefreshTokenExpired" xml:space="preserve"><value>انتهت صلاحية رمز التحديث.</value></data>
+  <data name="Auth.RefreshTokenNotFound" xml:space="preserve"><value>رمز التحديث غير موجود.</value></data>
+  <data name="Auth.UnableToResetPassword" xml:space="preserve"><value>تعذر إعادة تعيين كلمة المرور.</value></data>
+  <data name="Auth.UnableToChangePassword" xml:space="preserve"><value>تعذر تغيير كلمة المرور.</value></data>
+  <data name="Auth.SocialEmailRequired" xml:space="preserve"><value>يلزم بريد إلكتروني موثّق من موفر الحساب الاجتماعي.</value></data>
+  <data name="Auth.SocialLinkFailed" xml:space="preserve"><value>تعذر ربط الحساب الاجتماعي.</value></data>
+  <data name="Auth.SocialSignInFailed" xml:space="preserve"><value>فشل تسجيل الدخول الاجتماعي. حاول مرة أخرى.</value></data>
+  <data name="Auth.SocialAlreadyLinked" xml:space="preserve"><value>هذا الحساب الاجتماعي مرتبط بمستخدم آخر.</value></data>
+  <data name="Auth.GoogleNotConfigured" xml:space="preserve"><value>تسجيل الدخول عبر Google غير مهيأ.</value></data>
+  <data name="Auth.FacebookNotConfigured" xml:space="preserve"><value>تسجيل الدخول عبر Facebook غير مهيأ.</value></data>
+  <data name="Auth.InvalidGoogleToken" xml:space="preserve"><value>رمز Google غير صالح.</value></data>
+  <data name="Auth.InvalidFacebookToken" xml:space="preserve"><value>رمز وصول Facebook غير صالح.</value></data>
+  <data name="Auth.FacebookProfileFailed" xml:space="preserve"><value>تعذر تحميل ملف Facebook الشخصي.</value></data>
+  <data name="Auth.UnsupportedProvider" xml:space="preserve"><value>موفر الحساب الاجتماعي غير مدعوم.</value></data>
+  <data name="Auth.RegistrationStarted" xml:space="preserve"><value>بدأت عملية التسجيل. أدخل رمز التحقق من بريدك الإلكتروني (أو developmentOtp في بيئة التطوير).</value></data>
+  <data name="Auth.OtpSentIfExists" xml:space="preserve"><value>إذا كان الحساب موجودًا، فقد تم إرسال رمز تحقق.</value></data>
+  <data name="Auth.AccountNotVerified" xml:space="preserve"><value>الحساب غير موثّق بعد. استخدم verify-registration مع رمز التحقق المُرسل.</value></data>
+  <data name="Account.EmailExists" xml:space="preserve"><value>يوجد بالفعل حساب بهذا البريد الإلكتروني.</value></data>
+  <data name="Account.UnableToCreate" xml:space="preserve"><value>تعذر إنشاء الحساب.</value></data>
+  <data name="Account.UnableToChangeEmail" xml:space="preserve"><value>تعذر تغيير البريد الإلكتروني.</value></data>
+  <data name="Account.UnableToComplete" xml:space="preserve"><value>تعذر إكمال الطلب.</value></data>
+  <data name="Profile.Retrieved" xml:space="preserve"><value>تم جلب الملف الشخصي بنجاح.</value></data>
+  <data name="Profile.Updated" xml:space="preserve"><value>تم تحديث الملف الشخصي بنجاح.</value></data>
+  <data name="Profile.EmailChangeCodeSent" xml:space="preserve"><value>تم إرسال رمز التحقق إلى البريد الإلكتروني الجديد.</value></data>
+  <data name="Profile.EmailChanged" xml:space="preserve"><value>تم تغيير البريد الإلكتروني بنجاح.</value></data>
+  <data name="Entity.NotFound" xml:space="preserve"><value>الكيان "{0}" بالمفتاح ({1}) غير موجود.</value></data>
+  <data name="Email.VerificationSubject" xml:space="preserve"><value>رمز التحقق من Enterprise</value></data>
+  <data name="Email.VerificationBody" xml:space="preserve"><value>&lt;p dir="rtl"&gt;مرحبًا،&lt;/p&gt;&lt;p dir="rtl"&gt;رمز التحقق من Enterprise هو &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;&lt;p dir="rtl"&gt;ينتهي هذا الرمز خلال دقائق. إذا لم تطلب هذا البريد، يمكنك تجاهله.&lt;/p&gt;</value></data>
+  <data name="Email.SignInSubject" xml:space="preserve"><value>رمز تسجيل الدخول إلى Enterprise</value></data>
+  <data name="Email.SignInBody" xml:space="preserve"><value>&lt;p dir="rtl"&gt;مرحبًا،&lt;/p&gt;&lt;p dir="rtl"&gt;رمز تسجيل الدخول إلى Enterprise هو &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;&lt;p dir="rtl"&gt;ينتهي هذا الرمز خلال دقائق. إذا لم تطلب هذا البريد، يمكنك تجاهله.&lt;/p&gt;</value></data>
+  <data name="Email.ResetSubject" xml:space="preserve"><value>رمز إعادة تعيين كلمة المرور</value></data>
+  <data name="Email.ResetBody" xml:space="preserve"><value>&lt;p dir="rtl"&gt;رمز إعادة تعيين كلمة المرور هو &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;</value></data>
+  <data name="Email.ChangeEmailSubject" xml:space="preserve"><value>أكد بريدك الإلكتروني الجديد</value></data>
+  <data name="Email.ChangeEmailBody" xml:space="preserve"><value>&lt;p dir="rtl"&gt;رمز التحقق لتغيير البريد الإلكتروني هو &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;</value></data>
+</root>

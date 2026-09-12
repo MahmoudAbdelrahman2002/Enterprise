@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Enterprise — Facebook Sign-In (Dev)</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --card: #1a2332;
+      --text: #e7ecf3;
+      --muted: #9aa8bc;
+      --fb: #1877f2;
+      --ok: #3dd68c;
+      --err: #f07178;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: radial-gradient(1200px 600px at 80% -10%, #1a2740, var(--bg));
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    main {
+      width: min(520px, 100%);
+      background: var(--card);
+      border: 1px solid #2a3648;
+      border-radius: 16px;
+      padding: 28px;
+    }
+    h1 { margin: 0 0 8px; font-size: 1.4rem; }
+    p { margin: 0 0 16px; color: var(--muted); line-height: 1.45; }
+    button {
+      display: block;
+      width: 100%;
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      background: var(--fb);
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    pre {
+      margin: 16px 0 0;
+      padding: 12px;
+      background: #0d1218;
+      border-radius: 10px;
+      overflow: auto;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 320px;
+    }
+    .ok { color: var(--ok); }
+    .err { color: var(--err); }
+    .hint { font-size: 0.85rem; color: var(--muted); margin-top: 12px; }
+    code { color: #c6d4ea; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Facebook register / login</h1>
+    <p>Sign in with Facebook. This page sends the access token to <code>POST /api/v1/client/auth/external</code>.</p>
+    <button id="fbBtn" type="button" disabled>Loading Facebook SDK…</button>
+    <p class="hint">
+      1) Create an app at <code>developers.facebook.com</code><br />
+      2) Put App ID + App Secret in <code>ExternalAuth:Facebook</code><br />
+      3) Replace <code>FACEBOOK_APP_ID</code> below with the same App ID<br />
+      4) In Facebook Login settings add Valid OAuth Redirect URI:
+      <code>http://localhost:5207/facebook-signin.html</code><br />
+      5) Use Cases → Facebook Login → Customize → add permission <code>email</code> (Ready for testing)
+    </p>
+    <pre id="out">Waiting for Facebook SDK…</pre>
+  </main>
+
+  <script>
+    // Must match ExternalAuth:Facebook:AppId in appsettings.Development.json
+    const FACEBOOK_APP_ID = "1729977438234085";
+    const API_URL = "/api/v1/client/auth/external";
+    const out = document.getElementById("out");
+    const btn = document.getElementById("fbBtn");
+
+    function show(msg, cls) {
+      out.className = cls || "";
+      out.textContent = typeof msg === "string" ? msg : JSON.stringify(msg, null, 2);
+    }
+
+    async function sendToApi(accessToken) {
+      show("Calling API…");
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider: "Facebook", idToken: accessToken })
+      });
+      const text = await res.text();
+      let body;
+      try { body = JSON.parse(text); } catch { body = text; }
+      if (!res.ok) {
+        show({ status: res.status, error: body }, "err");
+        return;
+      }
+      show({ status: res.status, ...body }, "ok");
+      if (body.accessToken) {
+        localStorage.setItem("enterprise.accessToken", body.accessToken);
+        localStorage.setItem("enterprise.refreshToken", body.refreshToken || "");
+      }
+    }
+
+    function onFbReady() {
+      if (FACEBOOK_APP_ID.startsWith("YOUR_")) {
+        btn.disabled = true;
+        btn.textContent = "Set FACEBOOK_APP_ID first";
+        show("Replace YOUR_FACEBOOK_APP_ID in this file and in appsettings.Development.json, then restart the API.", "err");
+        return;
+      }
+
+      FB.init({
+        appId: FACEBOOK_APP_ID,
+        cookie: true,
+        xfbml: false,
+        version: "v21.0"
+      });
+
+      btn.disabled = false;
+      btn.textContent = "Continue with Facebook";
+      show("Click the button to register or log in with Facebook.");
+    }
+
+    btn.addEventListener("click", () => {
+      FB.login((response) => {
+        if (!response.authResponse?.accessToken) {
+          show("Facebook login cancelled or failed.", "err");
+          return;
+        }
+        sendToApi(response.authResponse.accessToken).catch((e) => show(String(e), "err"));
+      }, { scope: "email,public_profile" });
+    });
+
+    window.fbAsyncInit = onFbReady;
+
+    (function (d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "https://connect.facebook.net/en_US/sdk.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, "script", "facebook-jssdk"));
+  </script>
+</body>
+</html>
