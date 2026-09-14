@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Enterprise.Application.Common.Authorization;
 using Enterprise.Domain.Enums;
 using Enterprise.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -10,16 +11,6 @@ namespace Enterprise.Infrastructure.Persistence.Seed;
 
 public static class DbSeeder
 {
-    private static readonly string[] AdminPermissions =
-    [
-        "Products.Read",
-        "Products.Create",
-        "Products.Update",
-        "Products.Delete",
-        "ApiKeys.Create",
-        "Roles.Manage"
-    ];
-
     public static async Task SeedAsync(
         ApplicationDbContext context,
         UserManager<ApplicationUser> userManager,
@@ -37,8 +28,9 @@ public static class DbSeeder
             await context.Database.EnsureCreatedAsync(cancellationToken);
         }
 
-        await EnsureRoleAsync(roleManager, UserAccountService.ClientRoleName, system: true, permissions: ["Products.Read"]);
-        await EnsureRoleAsync(roleManager, UserAccountService.AdminRoleName, system: true, permissions: AdminPermissions);
+        await EnsureRoleAsync(roleManager, UserAccountService.ClientRoleName, UserType.Client, system: true, permissions: ["Products.Read"]);
+        await EnsureRoleAsync(roleManager, UserAccountService.AdminRoleName, UserType.Admin, system: true, permissions: PermissionCatalog.GetNamesForPortal(UserType.Admin));
+        await EnsureRoleAsync(roleManager, UserAccountService.ProviderRoleName, UserType.Provider, system: true, permissions: PermissionCatalog.GetNamesForPortal(UserType.Provider));
         await SeedAdminUserAsync(userManager, configuration, logger);
         await SeedSampleProductsAsync(context, logger, cancellationToken);
 
@@ -48,20 +40,46 @@ public static class DbSeeder
     private static async Task EnsureRoleAsync(
         RoleManager<ApplicationRole> roleManager,
         string roleName,
+        UserType roleType,
         bool system,
         IEnumerable<string> permissions)
     {
         var role = await roleManager.FindByNameAsync(roleName);
         if (role is null)
         {
-            role = new ApplicationRole(roleName) { Id = Guid.NewGuid(), IsSystem = system };
+            role = new ApplicationRole(roleName, roleType) { Id = Guid.NewGuid(), IsSystem = system };
             await roleManager.CreateAsync(role);
+        }
+        else
+        {
+            var needsUpdate = false;
+            if (role.IsSystem != system)
+            {
+                role.IsSystem = system;
+                needsUpdate = true;
+            }
+            if (role.RoleType != roleType)
+            {
+                role.RoleType = roleType;
+                needsUpdate = true;
+            }
+            if (needsUpdate)
+            {
+                await roleManager.UpdateAsync(role);
+            }
         }
 
         var existingClaims = await roleManager.GetClaimsAsync(role);
+
+        var legacyRoleManage = existingClaims.FirstOrDefault(c => c.Type == "permission" && c.Value == "Roles.Manage");
+        if (legacyRoleManage is not null)
+        {
+            await roleManager.RemoveClaimAsync(role, legacyRoleManage);
+        }
+
         foreach (var permission in permissions)
         {
-            if (existingClaims.Any(c => c.Type == "permission" && c.Value == permission))
+            if (existingClaims.Any(c => c.Type == "permission" && string.Equals(c.Value, permission, StringComparison.OrdinalIgnoreCase)))
             {
                 continue;
             }
@@ -92,6 +110,7 @@ public static class DbSeeder
             existing.EmailConfirmed = true;
             existing.IsActive = true;
             existing.UserType = UserType.Admin;
+            existing.IsSystem = true;
             await userManager.UpdateAsync(existing);
 
             if (!string.IsNullOrWhiteSpace(configuration["SeedData:AdminPassword"]))
@@ -117,7 +136,8 @@ public static class DbSeeder
             FirstName = firstName,
             LastName = lastName,
             UserType = UserType.Admin,
-            IsActive = true
+            IsActive = true,
+            IsSystem = true
         };
 
         var result = await userManager.CreateAsync(admin, adminPassword);

@@ -9,4 +9,5 @@ public sealed class ApplicationUser : IdentityUser<Guid>
     public string LastName { get; set; } = string.Empty;
     public UserType UserType { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsSystem { get; set; }
 }

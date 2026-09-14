@@ -41,6 +41,25 @@
   <data name="Product.SkuExists" xml:space="preserve"><value>A product with SKU '{0}' already exists.</value></data>
   <data name="Product.InsufficientStock" xml:space="preserve"><value>Product '{0}' has insufficient stock. Requested: {1}, available: {2}.</value></data>
   <data name="Product.QuantityMustBePositive" xml:space="preserve"><value>Quantity must be positive.</value></data>
+  <data name="Provider.ListRetrieved" xml:space="preserve"><value>Providers retrieved successfully.</value></data>
+  <data name="Provider.Retrieved" xml:space="preserve"><value>Provider retrieved successfully.</value></data>
+  <data name="Provider.Created" xml:space="preserve"><value>Provider created successfully.</value></data>
+  <data name="Provider.Updated" xml:space="preserve"><value>Provider updated successfully.</value></data>
+  <data name="Provider.Activated" xml:space="preserve"><value>Provider activated successfully.</value></data>
+  <data name="Provider.Deactivated" xml:space="preserve"><value>Provider deactivated successfully.</value></data>
+  <data name="Provider.Deleted" xml:space="preserve"><value>Provider deleted successfully.</value></data>
+  <data name="Provider.UnableToCreate" xml:space="preserve"><value>Unable to create provider account.</value></data>
+  <data name="Role.ListRetrieved" xml:space="preserve"><value>Roles retrieved successfully.</value></data>
+  <data name="Role.Retrieved" xml:space="preserve"><value>Role retrieved successfully.</value></data>
+  <data name="Role.Created" xml:space="preserve"><value>Role created successfully.</value></data>
+  <data name="Role.Updated" xml:space="preserve"><value>Role updated successfully.</value></data>
+  <data name="Role.Deleted" xml:space="preserve"><value>Role deleted successfully.</value></data>
+  <data name="Role.NameExists" xml:space="preserve"><value>A role with this name already exists in this scope.</value></data>
+  <data name="Role.CannotModifySystemRole" xml:space="preserve"><value>System roles cannot be modified.</value></data>
+  <data name="Role.CannotDeleteSystemRole" xml:space="preserve"><value>System roles cannot be deleted.</value></data>
+  <data name="Role.CannotDeleteSystemUser" xml:space="preserve"><value>System accounts cannot be deleted.</value></data>
+  <data name="Role.InvalidPermissions" xml:space="preserve"><value>One or more permissions are invalid for this portal scope.</value></data>
+  <data name="Permission.ListRetrieved" xml:space="preserve"><value>Permissions retrieved successfully.</value></data>
   <data name="Auth.LoginSuccess" xml:space="preserve"><value>Login successful.</value></data>
   <data name="Auth.RegistrationVerified" xml:space="preserve"><value>Registration verified successfully.</value></data>
   <data name="Auth.ExternalLoginSuccess" xml:space="preserve"><value>External login successful.</value></data>

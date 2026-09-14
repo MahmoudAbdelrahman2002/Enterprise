@@ -15,6 +15,7 @@ public sealed class UserAccountService(
 {
     public const string ClientRoleName = "Client";
     public const string AdminRoleName = "Admin";
+    public const string ProviderRoleName = "Provider";
 
     public async Task<AuthUserSnapshot?> FindByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
@@ -113,11 +114,59 @@ public sealed class UserAccountService(
 
         if (!await roleManager.RoleExistsAsync(ClientRoleName))
         {
-            await roleManager.CreateAsync(new ApplicationRole(ClientRoleName) { Id = Guid.NewGuid(), IsSystem = true });
+            await roleManager.CreateAsync(new ApplicationRole(ClientRoleName, UserType.Client) { Id = Guid.NewGuid(), IsSystem = true });
         }
 
         await userManager.AddToRoleAsync(user, ClientRoleName);
         return new AccountOperationResult(true);
+    }
+
+    public async Task<CreateProviderResult> CreateProviderAsync(
+        string email,
+        string password,
+        string firstName,
+        string lastName,
+        CancellationToken cancellationToken = default)
+    {
+        var existing = await userManager.FindByEmailAsync(email);
+        if (existing is not null)
+        {
+            return new CreateProviderResult(false, Error: MessageKeys.Account.EmailExists);
+        }
+
+        var user = new ApplicationUser
+        {
+            Id = Guid.NewGuid(),
+            UserName = email,
+            Email = email,
+            FirstName = firstName,
+            LastName = lastName,
+            UserType = UserType.Provider,
+            EmailConfirmed = true,
+            IsActive = true,
+            IsSystem = true
+        };
+
+        var result = await userManager.CreateAsync(user, password);
+        if (!result.Succeeded)
+        {
+            return new CreateProviderResult(false, Error: result.Errors.ToMessageKey());
+        }
+
+        if (!await roleManager.RoleExistsAsync(ProviderRoleName))
+        {
+            await roleManager.CreateAsync(new ApplicationRole(ProviderRoleName, UserType.Provider) { Id = Guid.NewGuid(), IsSystem = true });
+        }
+
+        await userManager.AddToRoleAsync(user, ProviderRoleName);
+        return new CreateProviderResult(true, user.Id);
+    }
+
+    public async Task SetActiveAsync(Guid userId, bool isActive, CancellationToken cancellationToken = default)
+    {
+        var user = await RequireUserAsync(userId);
+        user.IsActive = isActive;
+        await userManager.UpdateAsync(user);
     }
 
     public async Task ConfirmEmailAsync(Guid userId, CancellationToken cancellationToken = default)
@@ -255,6 +304,7 @@ public sealed class UserAccountService(
             user.EmailConfirmed,
             user.IsActive,
             roles.ToList(),
-            permissions.Distinct(StringComparer.OrdinalIgnoreCase).ToList());
+            permissions.Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
+            user.IsSystem);
     }
 }

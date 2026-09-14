@@ -41,6 +41,25 @@
   <data name="Product.SkuExists" xml:space="preserve"><value>يوجد بالفعل منتج برمز '{0}'.</value></data>
   <data name="Product.InsufficientStock" xml:space="preserve"><value>المنتج '{0}' لا يملك مخزونًا كافيًا. المطلوب: {1}، المتاح: {2}.</value></data>
   <data name="Product.QuantityMustBePositive" xml:space="preserve"><value>يجب أن تكون الكمية موجبة.</value></data>
+  <data name="Provider.ListRetrieved" xml:space="preserve"><value>تم جلب المزودين بنجاح.</value></data>
+  <data name="Provider.Retrieved" xml:space="preserve"><value>تم جلب المزود بنجاح.</value></data>
+  <data name="Provider.Created" xml:space="preserve"><value>تم إنشاء المزود بنجاح.</value></data>
+  <data name="Provider.Updated" xml:space="preserve"><value>تم تحديث المزود بنجاح.</value></data>
+  <data name="Provider.Activated" xml:space="preserve"><value>تم تفعيل المزود بنجاح.</value></data>
+  <data name="Provider.Deactivated" xml:space="preserve"><value>تم إلغاء تفعيل المزود بنجاح.</value></data>
+  <data name="Provider.Deleted" xml:space="preserve"><value>تم حذف المزود بنجاح.</value></data>
+  <data name="Provider.UnableToCreate" xml:space="preserve"><value>تعذر إنشاء حساب المزود.</value></data>
+  <data name="Role.ListRetrieved" xml:space="preserve"><value>تم استرجاع قائمة الأدوار بنجاح.</value></data>
+  <data name="Role.Retrieved" xml:space="preserve"><value>تم استرجاع تفاصيل الدور بنجاح.</value></data>
+  <data name="Role.Created" xml:space="preserve"><value>تم إنشاء الدور بنجاح.</value></data>
+  <data name="Role.Updated" xml:space="preserve"><value>تم تحديث الدور بنجاح.</value></data>
+  <data name="Role.Deleted" xml:space="preserve"><value>تم حذف الدور بنجاح.</value></data>
+  <data name="Role.NameExists" xml:space="preserve"><value>يوجد دور بنفس هذا الاسم بالفعل في هذا النطاق.</value></data>
+  <data name="Role.CannotModifySystemRole" xml:space="preserve"><value>لا يمكن تعديل أدوار النظام المحمية.</value></data>
+  <data name="Role.CannotDeleteSystemRole" xml:space="preserve"><value>لا يمكن حذف أدوار النظام المحمية.</value></data>
+  <data name="Role.CannotDeleteSystemUser" xml:space="preserve"><value>لا يمكن حذف حسابات النظام المحمية.</value></data>
+  <data name="Role.InvalidPermissions" xml:space="preserve"><value>واحدة أو أكثر من الصلاحيات المحددة غير صالحة لهذا النطاق.</value></data>
+  <data name="Permission.ListRetrieved" xml:space="preserve"><value>تم استرجاع قائمة الصلاحيات بنجاح.</value></data>
   <data name="Auth.LoginSuccess" xml:space="preserve"><value>تم تسجيل الدخول بنجاح.</value></data>
   <data name="Auth.RegistrationVerified" xml:space="preserve"><value>تم التحقق من التسجيل بنجاح.</value></data>
   <data name="Auth.ExternalLoginSuccess" xml:space="preserve"><value>تم تسجيل الدخول الخارجي بنجاح.</value></data>

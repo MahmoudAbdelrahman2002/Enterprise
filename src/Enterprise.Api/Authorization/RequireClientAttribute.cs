@@ -5,3 +5,5 @@ namespace Enterprise.Api.Authorization;
 public sealed class RequireClientAttribute() : AuthorizeAttribute("RequireClient");
 
 public sealed class RequireAdminAttribute() : AuthorizeAttribute("RequireAdmin");
+
+public sealed class RequireProviderAttribute() : AuthorizeAttribute("RequireProvider");

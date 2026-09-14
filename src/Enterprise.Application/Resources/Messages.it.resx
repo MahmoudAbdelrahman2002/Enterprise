@@ -41,6 +41,25 @@
   <data name="Product.SkuExists" xml:space="preserve"><value>Esiste già un prodotto con SKU '{0}'.</value></data>
   <data name="Product.InsufficientStock" xml:space="preserve"><value>Il prodotto '{0}' non ha scorte sufficienti. Richiesto: {1}, disponibile: {2}.</value></data>
   <data name="Product.QuantityMustBePositive" xml:space="preserve"><value>La quantità deve essere positiva.</value></data>
+  <data name="Provider.ListRetrieved" xml:space="preserve"><value>Provider recuperati con successo.</value></data>
+  <data name="Provider.Retrieved" xml:space="preserve"><value>Provider recuperato con successo.</value></data>
+  <data name="Provider.Created" xml:space="preserve"><value>Provider creato con successo.</value></data>
+  <data name="Provider.Updated" xml:space="preserve"><value>Provider aggiornato con successo.</value></data>
+  <data name="Provider.Activated" xml:space="preserve"><value>Provider attivato con successo.</value></data>
+  <data name="Provider.Deactivated" xml:space="preserve"><value>Provider disattivato con successo.</value></data>
+  <data name="Provider.Deleted" xml:space="preserve"><value>Provider eliminato con successo.</value></data>
+  <data name="Provider.UnableToCreate" xml:space="preserve"><value>Impossibile creare l'account provider.</value></data>
+  <data name="Role.ListRetrieved" xml:space="preserve"><value>Ruoli recuperati con successo.</value></data>
+  <data name="Role.Retrieved" xml:space="preserve"><value>Ruolo recuperato con successo.</value></data>
+  <data name="Role.Created" xml:space="preserve"><value>Ruolo creato con successo.</value></data>
+  <data name="Role.Updated" xml:space="preserve"><value>Ruolo aggiornato con successo.</value></data>
+  <data name="Role.Deleted" xml:space="preserve"><value>Ruolo eliminato con successo.</value></data>
+  <data name="Role.NameExists" xml:space="preserve"><value>Esiste già un ruolo con questo nome in questo ambito.</value></data>
+  <data name="Role.CannotModifySystemRole" xml:space="preserve"><value>I ruoli di sistema non possono essere modificati.</value></data>
+  <data name="Role.CannotDeleteSystemRole" xml:space="preserve"><value>I ruoli di sistema non possono essere eliminati.</value></data>
+  <data name="Role.CannotDeleteSystemUser" xml:space="preserve"><value>Gli account di sistema non possono essere eliminati.</value></data>
+  <data name="Role.InvalidPermissions" xml:space="preserve"><value>Uno o più permessi non sono validi per questo ambito.</value></data>
+  <data name="Permission.ListRetrieved" xml:space="preserve"><value>Permessi recuperati con successo.</value></data>
   <data name="Auth.LoginSuccess" xml:space="preserve"><value>Accesso effettuato con successo.</value></data>
   <data name="Auth.RegistrationVerified" xml:space="preserve"><value>Registrazione verificata con successo.</value></data>
   <data name="Auth.ExternalLoginSuccess" xml:space="preserve"><value>Accesso esterno effettuato con successo.</value></data>

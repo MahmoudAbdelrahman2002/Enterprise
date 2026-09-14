@@ -9,6 +9,7 @@ namespace Enterprise.Domain.Interfaces;
 public interface IUnitOfWork
 {
     IProductRepository Products { get; }
+    IProviderRepository Providers { get; }
     IRefreshTokenRepository RefreshTokens { get; }
     IApiKeyRepository ApiKeys { get; }
 

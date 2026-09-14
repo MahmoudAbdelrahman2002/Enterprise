@@ -2,7 +2,7 @@ using Enterprise.Application.Common.Auth;
 using Enterprise.Application.Common.Exceptions;
 using Enterprise.Application.Common.Localization;
 
-namespace Enterprise.Infrastructure.Identity.ExternalAuth;
+namespace Enterprise.Infrastructure.Identity.ApiKeyAuth.ExternalAuth;
 
 public sealed class ExternalAuthProviderResolver(IEnumerable<IExternalAuthProvider> providers)
     : IExternalAuthProviderResolver

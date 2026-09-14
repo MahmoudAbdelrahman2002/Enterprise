@@ -5,6 +5,8 @@ namespace Enterprise.Application.Common.Interfaces;
 
 public sealed record AccountOperationResult(bool Succeeded, string? Error = null);
 
+public sealed record CreateProviderResult(bool Succeeded, Guid? UserId = null, string? Error = null);
+
 /// <summary>
 /// Facade over ASP.NET Core Identity so Application handlers never take a dependency on
 /// <c>UserManager&lt;T&gt;</c> / Identity entity types directly.
@@ -24,6 +26,18 @@ public interface IUserAccountService
     /// </summary>
     Task<AccountOperationResult> CreateClientFromExternalAsync(
         string email, string firstName, string lastName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Creates a Provider account with a real password (admin-provisioned). Email is confirmed.
+    /// </summary>
+    Task<CreateProviderResult> CreateProviderAsync(
+        string email,
+        string password,
+        string firstName,
+        string lastName,
+        CancellationToken cancellationToken = default);
+
+    Task SetActiveAsync(Guid userId, bool isActive, CancellationToken cancellationToken = default);
 
     Task<AccountOperationResult> AddLoginAsync(
         Guid userId,

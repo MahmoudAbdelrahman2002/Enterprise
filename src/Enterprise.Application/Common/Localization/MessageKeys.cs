@@ -56,6 +56,18 @@ public static class MessageKeys
         public const string QuantityMustBePositive = "Product.QuantityMustBePositive";
     }
 
+    public static class Provider
+    {
+        public const string ListRetrieved = "Provider.ListRetrieved";
+        public const string Retrieved = "Provider.Retrieved";
+        public const string Created = "Provider.Created";
+        public const string Updated = "Provider.Updated";
+        public const string Activated = "Provider.Activated";
+        public const string Deactivated = "Provider.Deactivated";
+        public const string Deleted = "Provider.Deleted";
+        public const string UnableToCreate = "Provider.UnableToCreate";
+    }
+
     public static class Auth
     {
         public const string LoginSuccess = "Auth.LoginSuccess";
@@ -112,6 +124,25 @@ public static class MessageKeys
     public static class Entity
     {
         public const string NotFound = "Entity.NotFound";
+    }
+
+    public static class Role
+    {
+        public const string ListRetrieved = "Role.ListRetrieved";
+        public const string Retrieved = "Role.Retrieved";
+        public const string Created = "Role.Created";
+        public const string Updated = "Role.Updated";
+        public const string Deleted = "Role.Deleted";
+        public const string NameExists = "Role.NameExists";
+        public const string CannotModifySystemRole = "Role.CannotModifySystemRole";
+        public const string CannotDeleteSystemRole = "Role.CannotDeleteSystemRole";
+        public const string CannotDeleteSystemUser = "Role.CannotDeleteSystemUser";
+        public const string InvalidPermissions = "Role.InvalidPermissions";
+    }
+
+    public static class Permission
+    {
+        public const string ListRetrieved = "Permission.ListRetrieved";
     }
 
     public static class Email

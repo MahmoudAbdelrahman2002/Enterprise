@@ -5,7 +5,7 @@ using Enterprise.Application.Common.Settings;
 using Google.Apis.Auth;
 using Microsoft.Extensions.Options;
 
-namespace Enterprise.Infrastructure.Identity.ExternalAuth;
+namespace Enterprise.Infrastructure.Identity.ApiKeyAuth.ExternalAuth;
 
 public sealed class GoogleExternalAuthProvider(IOptions<ExternalAuthSettings> options) : IExternalAuthProvider
 {

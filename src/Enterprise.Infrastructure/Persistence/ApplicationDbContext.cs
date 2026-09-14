@@ -16,6 +16,7 @@ public sealed class ApplicationDbContext(
 {
     public DbSet<Product> Products => Set<Product>();
     public DbSet<ProductTranslation> ProductTranslations => Set<ProductTranslation>();
+    public DbSet<Provider> Providers => Set<Provider>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
     public DbSet<OtpChallenge> OtpChallenges => Set<OtpChallenge>();
@@ -51,6 +52,31 @@ public sealed class ApplicationDbContext(
             .WithMany()
             .HasForeignKey(k => k.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Provider>()
+            .HasOne<ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ApplicationRole>(builder =>
+        {
+            builder.Property(r => r.RoleType).IsRequired();
+            builder.Property(r => r.IsSystem).IsRequired();
+            builder.Property(r => r.ProviderId).IsRequired(false);
+
+            builder.HasIndex(r => new { r.RoleType, r.ProviderId });
+
+            builder.HasOne<Provider>()
+                .WithMany()
+                .HasForeignKey(r => r.ProviderId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ApplicationUser>(builder =>
+        {
+            builder.Property(u => u.IsSystem).IsRequired();
+        });
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {

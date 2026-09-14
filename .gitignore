@@ -49,3 +49,7 @@ TestResults/
 ## Temporary & local folders
 .build-check/
 .cursor/
+*.PublishSettings
+publish.zip
+publish-temp/
+publish-output/

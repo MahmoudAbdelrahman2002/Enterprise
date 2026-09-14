@@ -8,9 +8,10 @@ using Enterprise.Infrastructure.Caching;
 using Enterprise.Infrastructure.Common;
 using Enterprise.Infrastructure.Email;
 using Enterprise.Infrastructure.Identity;
-using Enterprise.Infrastructure.Localization;
 using Enterprise.Infrastructure.Identity.ApiKeyAuth;
-using Enterprise.Infrastructure.Identity.ExternalAuth;
+using Enterprise.Infrastructure.Identity.ApiKeyAuth.ExternalAuth;
+using Enterprise.Infrastructure.Localization;
+using Enterprise.Infrastructure.Providers;
 using Enterprise.Infrastructure.Persistence;
 using Enterprise.Infrastructure.Persistence.Interceptors;
 using Hangfire;
@@ -45,6 +46,8 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IUserAccountService, UserAccountService>();
+        services.AddScoped<IRoleManagerService, RoleManagerService>();
+        services.AddScoped<IProviderAdminQueryService, ProviderAdminQueryService>();
         services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<IEmailSender, EmailSender>();
         services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
@@ -156,7 +159,11 @@ public static class DependencyInjection
             .AddPolicy("RequireAdmin", policy => policy
                 .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme, ApiKeyAuthenticationDefaults.SchemeName)
                 .RequireAuthenticatedUser()
-                .RequireClaim("user_type", nameof(Domain.Enums.UserType.Admin)));
+                .RequireClaim("user_type", nameof(Domain.Enums.UserType.Admin)))
+            .AddPolicy("RequireProvider", policy => policy
+                .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme, ApiKeyAuthenticationDefaults.SchemeName)
+                .RequireAuthenticatedUser()
+                .RequireClaim("user_type", nameof(Domain.Enums.UserType.Provider)));
     }
 
     private static void AddBackgroundJobs(IServiceCollection services, IConfiguration configuration)

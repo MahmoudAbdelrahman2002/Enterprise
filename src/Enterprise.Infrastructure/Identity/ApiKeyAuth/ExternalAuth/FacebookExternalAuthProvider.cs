@@ -6,7 +6,7 @@ using Enterprise.Application.Common.Localization;
 using Enterprise.Application.Common.Settings;
 using Microsoft.Extensions.Options;
 
-namespace Enterprise.Infrastructure.Identity.ExternalAuth;
+namespace Enterprise.Infrastructure.Identity.ApiKeyAuth.ExternalAuth;
 
 public sealed class FacebookExternalAuthProvider(
     IHttpClientFactory httpClientFactory,

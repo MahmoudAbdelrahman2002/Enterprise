@@ -11,4 +11,5 @@ public sealed record AuthUserSnapshot(
     bool EmailConfirmed,
     bool IsActive,
     IReadOnlyList<string> Roles,
-    IReadOnlyList<string> Permissions);
+    IReadOnlyList<string> Permissions,
+    bool IsSystem = false);
