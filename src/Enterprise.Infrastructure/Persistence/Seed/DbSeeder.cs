@@ -1,5 +1,7 @@
 using System.Security.Claims;
 using Enterprise.Application.Common.Authorization;
+using Enterprise.Domain.Common;
+using Enterprise.Domain.Entities;
 using Enterprise.Domain.Enums;
 using Enterprise.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -28,11 +30,13 @@ public static class DbSeeder
             await context.Database.EnsureCreatedAsync(cancellationToken);
         }
 
-        await EnsureRoleAsync(roleManager, UserAccountService.ClientRoleName, UserType.Client, system: true, permissions: ["Products.Read"]);
+        await EnsureRoleAsync(roleManager, UserAccountService.ClientRoleName, UserType.Client, system: true, permissions: []);
         await EnsureRoleAsync(roleManager, UserAccountService.AdminRoleName, UserType.Admin, system: true, permissions: PermissionCatalog.GetNamesForPortal(UserType.Admin));
         await EnsureRoleAsync(roleManager, UserAccountService.ProviderRoleName, UserType.Provider, system: true, permissions: PermissionCatalog.GetNamesForPortal(UserType.Provider));
+
         await SeedAdminUserAsync(userManager, configuration, logger);
-        await SeedSampleProductsAsync(context, logger, cancellationToken);
+        await SeedMarketplaceServicesAsync(context, logger, cancellationToken);
+        await SeedSampleProviderAsync(context, userManager, configuration, logger, cancellationToken);
 
         await context.SaveChangesAsync(cancellationToken);
     }
@@ -77,6 +81,13 @@ public static class DbSeeder
             await roleManager.RemoveClaimAsync(role, legacyRoleManage);
         }
 
+        foreach (var obsoleteProductClaim in existingClaims
+            .Where(c => c.Type == "permission" && c.Value is not null && c.Value.StartsWith("Products.", StringComparison.OrdinalIgnoreCase))
+            .ToList())
+        {
+            await roleManager.RemoveClaimAsync(role, obsoleteProductClaim);
+        }
+
         foreach (var permission in permissions)
         {
             if (existingClaims.Any(c => c.Type == "permission" && string.Equals(c.Value, permission, StringComparison.OrdinalIgnoreCase)))
@@ -111,6 +122,7 @@ public static class DbSeeder
             existing.IsActive = true;
             existing.UserType = UserType.Admin;
             existing.IsSystem = true;
+            existing.ProviderId = null;
             await userManager.UpdateAsync(existing);
 
             if (!string.IsNullOrWhiteSpace(configuration["SeedData:AdminPassword"]))
@@ -164,79 +176,138 @@ public static class DbSeeder
         }
     }
 
-    private sealed record SampleProductSeed(
-        string Sku,
-        decimal Price,
-        int Stock,
-        string EnName, string EnDesc, string EnCat,
-        string ItName, string ItDesc, string ItCat,
-        string ArName, string ArDesc, string ArCat,
-        bool Discontinued = false);
-
-    private static async Task SeedSampleProductsAsync(ApplicationDbContext context, ILogger logger, CancellationToken cancellationToken)
+    private static async Task SeedMarketplaceServicesAsync(
+        ApplicationDbContext context,
+        ILogger logger,
+        CancellationToken cancellationToken)
     {
-        SampleProductSeed[] samples =
-        [
-            new(
-                "SKU-LAPTOP-001", 1499.00m, 25,
-                "14\" Developer Laptop", "16GB RAM, 1TB NVMe SSD", "Electronics",
-                "Laptop da sviluppatore 14\"", "16 GB RAM, SSD NVMe da 1 TB", "Elettronica",
-                "حاسوب محمول للمطورين 14 بوصة", "ذاكرة 16 جيجابايت، SSD NVMe سعة 1 تيرابايت", "إلكترونيات"),
-            new(
-                "SKU-MONITOR-27", 399.00m, 60,
-                "27\" 4K Monitor", "IPS panel, USB-C, 60Hz", "Electronics",
-                "Monitor 4K da 27\"", "Pannello IPS, USB-C, 60Hz", "Elettronica",
-                "شاشة 4K مقاس 27 بوصة", "لوحة IPS، منفذ USB-C، 60 هرتز", "إلكترونيات"),
-            new(
-                "SKU-CHAIR-ERG", 249.99m, 15,
-                "Ergonomic Office Chair", "Adjustable lumbar support", "Furniture",
-                "Sedia da ufficio ergonomica", "Supporto lombare regolabile", "Arredamento",
-                "كرسي مكتب مريح", "دعم قطني قابل للتعديل", "أثاث"),
-            new(
-                "SKU-DESK-STAND", 599.00m, 10,
-                "Standing Desk", "Electric height adjustment", "Furniture",
-                "Scrivania regolabile in altezza", "Regolazione elettrica dell'altezza", "Arredamento",
-                "مكتب واقف", "تعديل كهربائي للارتفاع", "أثاث"),
-            new(
-                "SKU-KEYBOARD-MX", 129.00m, 100,
-                "Mechanical Keyboard", "Hot-swappable switches", "Accessories",
-                "Tastiera meccanica", "Switch sostituibili a caldo", "Accessori",
-                "لوحة مفاتيح ميكانيكية", "مفاتيح قابلة للاستبدال الساخن", "ملحقات",
-                Discontinued: true)
-        ];
-
-        var existingProducts = await context.Products
-            .Include(p => p.Translations)
-            .ToListAsync(cancellationToken);
-
-        if (existingProducts.Count == 0)
+        var seeds = new (string Code, int DisplayOrder, string En, string It, string Ar, string? EnDesc)[]
         {
-            logger.LogInformation("Seeding initial {Count} sample products with en/it/ar translations...", samples.Length);
-            foreach (var s in samples)
+            ("restaurant", 1, "Restaurant", "Ristorante", "مطعم", "Food and dining providers"),
+            ("pharmacy", 2, "Pharmacy", "Farmacia", "صيدلية", "Pharmacy and health providers"),
+        };
+
+        foreach (var seed in seeds)
+        {
+            var exists = await context.MarketplaceServices
+                .IgnoreQueryFilters()
+                .AnyAsync(s => s.Code == seed.Code, cancellationToken);
+
+            if (exists)
             {
-                var p = new Domain.Entities.Product(s.Sku, s.Price, s.Stock);
-                p.UpsertTranslation("en", s.EnName, s.EnDesc, s.EnCat);
-                p.UpsertTranslation("it", s.ItName, s.ItDesc, s.ItCat);
-                p.UpsertTranslation("ar", s.ArName, s.ArDesc, s.ArCat);
-                if (s.Discontinued) p.Discontinue();
-                context.Products.Add(p);
+                continue;
+            }
+
+            var service = new MarketplaceService(seed.Code, seed.DisplayOrder, isActive: true);
+            service.UpsertTranslation(SupportedLanguages.English, seed.En, seed.EnDesc);
+            service.UpsertTranslation(SupportedLanguages.Italian, seed.It, seed.EnDesc);
+            service.UpsertTranslation(SupportedLanguages.Arabic, seed.Ar, seed.EnDesc);
+
+            context.MarketplaceServices.Add(service);
+            logger.LogInformation("Seeded marketplace service {Code}.", seed.Code);
+        }
+
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
+    private static async Task SeedSampleProviderAsync(
+        ApplicationDbContext context,
+        UserManager<ApplicationUser> userManager,
+        IConfiguration configuration,
+        ILogger logger,
+        CancellationToken cancellationToken)
+    {
+        var email = configuration["SeedData:ProviderEmail"] ?? "provider@enterprise.local";
+        var password = configuration["SeedData:ProviderPassword"] ?? "Provider@12345!";
+        var firstName = configuration["SeedData:ProviderFirstName"] ?? "Demo";
+        var lastName = configuration["SeedData:ProviderLastName"] ?? "Provider";
+        var companyName = configuration["SeedData:ProviderCompanyName"] ?? "Demo Restaurant";
+        var phone = configuration["SeedData:ProviderPhone"];
+        var serviceCode = (configuration["SeedData:ProviderServiceCode"] ?? "restaurant").Trim().ToLowerInvariant();
+
+        var restaurant = await context.MarketplaceServices
+            .FirstOrDefaultAsync(s => s.Code == serviceCode && s.IsActive, cancellationToken)
+            ?? await context.MarketplaceServices.FirstOrDefaultAsync(s => s.IsActive, cancellationToken);
+
+        var existingUser = await userManager.FindByEmailAsync(email);
+        if (existingUser is not null)
+        {
+            var existingProvider = await context.Providers
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(p => p.UserId == existingUser.Id, cancellationToken);
+
+            if (existingProvider is not null)
+            {
+                // Match CreateProvider: link is Provider.UserId only; AspNetUsers.ProviderId stays null.
+                if (existingUser.ProviderId is not null)
+                {
+                    existingUser.ProviderId = null;
+                    await userManager.UpdateAsync(existingUser);
+                }
+
+                logger.LogInformation("Sample provider already present for {Email}.", email);
+                return;
+            }
+        }
+
+        ApplicationUser user;
+        if (existingUser is null)
+        {
+            user = new ApplicationUser
+            {
+                Id = Guid.NewGuid(),
+                UserName = email,
+                Email = email,
+                EmailConfirmed = true,
+                FirstName = firstName,
+                LastName = lastName,
+                UserType = UserType.Provider,
+                IsActive = true,
+                IsSystem = false,
+                ProviderId = null
+            };
+
+            var createResult = await userManager.CreateAsync(user, password);
+            if (!createResult.Succeeded)
+            {
+                throw new InvalidOperationException(
+                    $"Failed to seed provider user: {string.Join(", ", createResult.Errors.Select(e => e.Description))}");
+            }
+
+            if (!await userManager.IsInRoleAsync(user, UserAccountService.ProviderRoleName))
+            {
+                await userManager.AddToRoleAsync(user, UserAccountService.ProviderRoleName);
             }
         }
         else
         {
-            logger.LogInformation("Checking and backfilling translations for {Count} existing products...", existingProducts.Count);
-            foreach (var s in samples)
+            user = existingUser;
+            if (!await userManager.IsInRoleAsync(user, UserAccountService.ProviderRoleName))
             {
-                var existing = existingProducts.FirstOrDefault(p => p.Sku == s.Sku);
-                if (existing is null) continue;
-
-                existing.UpsertTranslation("en", s.EnName, s.EnDesc, s.EnCat);
-                existing.UpsertTranslation("it", s.ItName, s.ItDesc, s.ItCat);
-                existing.UpsertTranslation("ar", s.ArName, s.ArDesc, s.ArCat);
+                await userManager.AddToRoleAsync(user, UserAccountService.ProviderRoleName);
             }
         }
 
+        var provider = new Provider(
+            user.Id,
+            companyName,
+            string.IsNullOrWhiteSpace(phone) ? null : phone.Trim(),
+            restaurant?.Id);
+
+        context.Providers.Add(provider);
         await context.SaveChangesAsync(cancellationToken);
+
+        user.UserType = UserType.Provider;
+        user.IsActive = true;
+        user.EmailConfirmed = true;
+        user.ProviderId = null;
+        await userManager.UpdateAsync(user);
+
+        logger.LogInformation(
+            "Seeded sample provider {Email} / company {Company} linked to service {ServiceCode}.",
+            email,
+            companyName,
+            restaurant?.Code ?? "(none)");
     }
 
     private static string GenerateRandomPassword() =>

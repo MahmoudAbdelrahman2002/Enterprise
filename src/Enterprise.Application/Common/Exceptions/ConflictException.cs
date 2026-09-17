@@ -8,4 +8,9 @@ public sealed class ConflictException : AppException
         : base(errorCode, args)
     {
     }
+
+    public ConflictException(string errorCode, IEnumerable<string>? errors, params object[] args)
+        : base(errorCode, errors, args)
+    {
+    }
 }

@@ -57,6 +57,11 @@ public sealed class ApiKeyAuthenticationHandler(
             .. user.Permissions.Select(permission => new Claim("permission", permission))
         ];
 
+        if (user.ProviderId.HasValue)
+        {
+            claims.Add(new Claim("provider_id", user.ProviderId.Value.ToString()));
+        }
+
         var identity = new ClaimsIdentity(claims, Scheme.Name);
         var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), Scheme.Name);
         return AuthenticateResult.Success(ticket);

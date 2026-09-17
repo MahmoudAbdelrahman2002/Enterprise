@@ -16,5 +16,11 @@ public sealed class ProviderConfiguration : IEntityTypeConfiguration<Provider>
 
         builder.HasIndex(p => p.UserId).IsUnique().HasFilter("[IsDeleted] = 0");
         builder.HasIndex(p => p.CompanyName);
+        builder.HasIndex(p => p.ServiceId);
+
+        builder.HasOne(p => p.Service)
+            .WithMany()
+            .HasForeignKey(p => p.ServiceId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

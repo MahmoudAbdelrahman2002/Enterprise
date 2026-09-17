@@ -1,6 +1,7 @@
 using Enterprise.Application.Common.Exceptions;
 using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Localization;
+using Enterprise.Domain.Entities;
 using Enterprise.Domain.Interfaces;
 using MediatR;
 
@@ -13,6 +14,15 @@ public sealed class CreateProviderCommandHandler(
 {
     public async Task<ProviderDto> Handle(CreateProviderCommand request, CancellationToken cancellationToken)
     {
+        if (request.ServiceId.HasValue)
+        {
+            var service = await unitOfWork.Services.GetByIdAsync(request.ServiceId.Value, cancellationToken);
+            if (service is null || !service.IsActive)
+            {
+                throw NotFoundException.For(nameof(MarketplaceService), request.ServiceId.Value);
+            }
+        }
+
         var createResult = await userAccountService.CreateProviderAsync(
             request.Email,
             request.Password,
@@ -27,13 +37,18 @@ public sealed class CreateProviderCommandHandler(
                 throw new ConflictException(MessageKeys.Account.EmailExists);
             }
 
-            throw new ConflictException(createResult.Error ?? MessageKeys.Provider.UnableToCreate);
+            throw new ConflictException(createResult.Error ?? MessageKeys.Provider.UnableToCreate, createResult.Errors);
         }
 
         var userId = createResult.UserId.Value;
         try
         {
-            var provider = new Domain.Entities.Provider(userId, request.CompanyName.Trim(), NormalizePhone(request.PhoneNumber));
+            var provider = new Domain.Entities.Provider(
+                userId,
+                request.CompanyName.Trim(),
+                NormalizePhone(request.PhoneNumber),
+                request.ServiceId);
+
             unitOfWork.Providers.Add(provider);
             await unitOfWork.SaveChangesAsync(cancellationToken);
 

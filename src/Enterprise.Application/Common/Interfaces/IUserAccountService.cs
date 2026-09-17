@@ -3,9 +3,9 @@ using Enterprise.Domain.Enums;
 
 namespace Enterprise.Application.Common.Interfaces;
 
-public sealed record AccountOperationResult(bool Succeeded, string? Error = null);
+public sealed record AccountOperationResult(bool Succeeded, string? Error = null, IReadOnlyList<string>? Errors = null);
 
-public sealed record CreateProviderResult(bool Succeeded, Guid? UserId = null, string? Error = null);
+public sealed record CreateProviderResult(bool Succeeded, Guid? UserId = null, string? Error = null, IReadOnlyList<string>? Errors = null);
 
 /// <summary>
 /// Facade over ASP.NET Core Identity so Application handlers never take a dependency on

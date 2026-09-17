@@ -77,7 +77,7 @@ namespace Enterprise.Infrastructure.Persistence.Migrations
                     b.ToTable("ApiKeys", (string)null);
                 });
 
-            modelBuilder.Entity("Enterprise.Domain.Entities.Product", b =>
+            modelBuilder.Entity("Enterprise.Domain.Entities.Category", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -95,6 +95,16 @@ namespace Enterprise.Infrastructure.Persistence.Migrations
                     b.Property<string>("DeletedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("DisplayOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -104,45 +114,28 @@ namespace Enterprise.Infrastructure.Persistence.Migrations
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("Price")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Sku")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<int>("StockQuantity")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ProviderId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Sku")
-                        .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
+                    b.HasIndex("DisplayOrder");
 
-                    b.HasIndex("Status");
+                    b.HasIndex("IsActive");
 
-                    b.ToTable("Products", (string)null);
+                    b.HasIndex("ProviderId");
+
+                    b.ToTable("Categories", (string)null);
                 });
 
-            modelBuilder.Entity("Enterprise.Domain.Entities.ProductTranslation", b =>
+            modelBuilder.Entity("Enterprise.Domain.Entities.CategoryTranslation", b =>
                 {
-                    b.Property<Guid>("ProductId")
+                    b.Property<Guid>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("LanguageCode")
                         .HasMaxLength(5)
                         .HasColumnType("nvarchar(5)");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Description")
                         .HasMaxLength(2000)
@@ -153,13 +146,91 @@ namespace Enterprise.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.HasKey("ProductId", "LanguageCode");
-
-                    b.HasIndex("LanguageCode", "Category");
+                    b.HasKey("CategoryId", "LanguageCode");
 
                     b.HasIndex("LanguageCode", "Name");
 
-                    b.ToTable("ProductTranslations", (string)null);
+                    b.ToTable("CategoryTranslations", (string)null);
+                });
+
+            modelBuilder.Entity("Enterprise.Domain.Entities.MarketplaceService", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DisplayOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModifiedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.HasIndex("DisplayOrder");
+
+                    b.HasIndex("IsActive");
+
+                    b.ToTable("MarketplaceServices", (string)null);
+                });
+
+            modelBuilder.Entity("Enterprise.Domain.Entities.MarketplaceServiceTranslation", b =>
+                {
+                    b.Property<Guid>("MarketplaceServiceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("LanguageCode")
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("MarketplaceServiceId", "LanguageCode");
+
+                    b.HasIndex("LanguageCode", "Name");
+
+                    b.ToTable("MarketplaceServiceTranslations", (string)null);
                 });
 
             modelBuilder.Entity("Enterprise.Domain.Entities.Provider", b =>
@@ -198,12 +269,17 @@ namespace Enterprise.Infrastructure.Persistence.Migrations
                         .HasMaxLength(40)
                         .HasColumnType("nvarchar(40)");
 
+                    b.Property<Guid?>("ServiceId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyName");
+
+                    b.HasIndex("ServiceId");
 
                     b.HasIndex("UserId")
                         .IsUnique()
@@ -358,6 +434,9 @@ namespace Enterprise.Infrastructure.Persistence.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<Guid?>("ProviderId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -380,6 +459,8 @@ namespace Enterprise.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("ProviderId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -534,22 +615,49 @@ namespace Enterprise.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Enterprise.Domain.Entities.ProductTranslation", b =>
+            modelBuilder.Entity("Enterprise.Domain.Entities.Category", b =>
                 {
-                    b.HasOne("Enterprise.Domain.Entities.Product", null)
+                    b.HasOne("Enterprise.Domain.Entities.Provider", "Provider")
+                        .WithMany()
+                        .HasForeignKey("ProviderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Provider");
+                });
+
+            modelBuilder.Entity("Enterprise.Domain.Entities.CategoryTranslation", b =>
+                {
+                    b.HasOne("Enterprise.Domain.Entities.Category", null)
                         .WithMany("Translations")
-                        .HasForeignKey("ProductId")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Enterprise.Domain.Entities.MarketplaceServiceTranslation", b =>
+                {
+                    b.HasOne("Enterprise.Domain.Entities.MarketplaceService", null)
+                        .WithMany("Translations")
+                        .HasForeignKey("MarketplaceServiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
             modelBuilder.Entity("Enterprise.Domain.Entities.Provider", b =>
                 {
+                    b.HasOne("Enterprise.Domain.Entities.MarketplaceService", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Enterprise.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Service");
                 });
 
             modelBuilder.Entity("Enterprise.Domain.Entities.RefreshToken", b =>
@@ -567,6 +675,14 @@ namespace Enterprise.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("ProviderId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Enterprise.Infrastructure.Identity.ApplicationUser", b =>
+                {
+                    b.HasOne("Enterprise.Domain.Entities.Provider", null)
+                        .WithMany()
+                        .HasForeignKey("ProviderId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -620,7 +736,12 @@ namespace Enterprise.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Enterprise.Domain.Entities.Product", b =>
+            modelBuilder.Entity("Enterprise.Domain.Entities.Category", b =>
+                {
+                    b.Navigation("Translations");
+                });
+
+            modelBuilder.Entity("Enterprise.Domain.Entities.MarketplaceService", b =>
                 {
                     b.Navigation("Translations");
                 });

@@ -36,7 +36,7 @@ There is **no separate admin login handler**, **no Admin entity**, and **no admi
 | JWT generation | `JwtTokenService` | **Same** `JwtTokenService` |
 | Authorization check | `PermissionAuthorizationHandler` | **Same** handler |
 | What differs | Role = `User` in DB | Role = `SuperAdmin` in DB (seeded) |
-| Permissions in JWT | `Products.Read` only | All permissions |
+| Permissions in JWT | Portal permissions for Client (none by default) | All Admin portal permissions |
 
 The only place admin differs from user at **code** level:
 1. **Registration** assigns `User` role — admin is never created via register
@@ -50,7 +50,7 @@ The only place admin differs from user at **code** level:
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  Enterprise.Api                                                  │
-│  AuthController, ProductsController, RequirePermissionAttribute  │
+│  AuthController, AdminServicesController, RequirePermissionAttribute  │
 │  PermissionPolicyProvider, PermissionAuthorizationHandler        │
 │  Program.cs (middleware pipeline)                                │
 └────────────────────────────┬────────────────────────────────────┘
@@ -125,10 +125,11 @@ Registers:
 On startup in Development only:
 ```
 DbSeeder.SeedAsync()
-  → SeedPermissionsAsync()     // Products.Read, Products.Create, etc.
+  → SeedPermissionsAsync()     // Providers.*, Roles.*, Services.*, etc.
   → SeedRolesAsync()           // User, Admin, SuperAdmin + permission links
   → SeedAdminUserAsync()       // admin@enterprise.local + SuperAdmin role
-  → SeedSampleProductsAsync()
+  → SeedAdminUserAsync()
+  → CleanUpLegacySampleDataAsync()
 ```
 
 ---
@@ -250,8 +251,8 @@ var permissionNames = userWithRoles.UserRoles
     .Select(rp => rp.Permission.Name)
     .Distinct()
     .ToList();
-// User:     ["Products.Read"]
-// Admin:    ["Products.Read", "Products.Create", "Products.Update", "Products.Delete", "ApiKeys.Create", "Roles.Manage"]
+// Client:   []
+// Admin:    ["Providers.Read", "Providers.Create", "Services.Read", "Services.Create", "Roles.Read", "Admins.Read", ...]
 ```
 
 ---
@@ -297,7 +298,7 @@ List<Claim> claims =
 
 ## Code Flow: Protected Request (User vs Admin)
 
-Example: `POST /api/v1/products` requires `Products.Create`.
+Example: `POST /api/v1/admin/services` requires `Services.Create`.
 
 ```mermaid
 sequenceDiagram
@@ -306,20 +307,20 @@ sequenceDiagram
     participant JwtBearerHandler
     participant AuthZ
     participant PermissionHandler
-    participant ProductsController
+    participant AdminServicesController
     participant CreateHandler
 
-    Client->>Middleware: POST /products + Bearer token
+    Client->>Middleware: POST /admin/services + Bearer token
     Middleware->>JwtBearerHandler: Validate JWT signature, expiry, issuer
     JwtBearerHandler->>JwtBearerHandler: Build ClaimsPrincipal from claims
-    Middleware->>AuthZ: [RequirePermission("Products.Create")]
-    AuthZ->>PermissionHandler: PermissionRequirement("Products.Create")
-    alt User token (no Products.Create claim)
+    Middleware->>AuthZ: [RequirePermission("Services.Create")]
+    AuthZ->>PermissionHandler: PermissionRequirement("Services.Create")
+    alt User token (no Services.Create claim)
         PermissionHandler-->>Client: 403 Forbidden
     end
-    alt Admin token (has Products.Create claim)
-        PermissionHandler->>ProductsController: Authorized
-        ProductsController->>CreateHandler: CreateProductCommand
+    alt Admin token (has Services.Create claim)
+        PermissionHandler->>AdminServicesController: Authorized
+        AdminServicesController->>CreateHandler: CreateMarketplaceServiceCommand
         CreateHandler-->>Client: 201 Created
     end
 ```
@@ -331,12 +332,12 @@ sequenceDiagram
 | 1 | ASP.NET Core pipeline | `UseAuthentication()` → `JwtBearerHandler` validates token |
 | 2 | `JwtBearerHandler` | Validates issuer, audience, signing key, lifetime (`ClockSkew = Zero`) |
 | 3 | `JwtBearerHandler` | Populates `HttpContext.User` with claims from JWT |
-| 4 | `UseAuthorization()` | Reads `[RequirePermission("Products.Create")]` on action |
-| 5 | `RequirePermissionAttribute` | Translates to policy `"Permission:Products.Create"` |
+| 4 | `UseAuthorization()` | Reads `[RequirePermission("Services.Create")]` on action |
+| 5 | `RequirePermissionAttribute` | Translates to policy `"Permission:Services.Create"` |
 | 6 | `PermissionPolicyProvider` | Dynamically builds policy requiring `PermissionRequirement` |
-| 7 | `PermissionAuthorizationHandler` | `context.User.HasClaim("permission", "Products.Create")` |
+| 7 | `PermissionAuthorizationHandler` | `context.User.HasClaim("permission", "Services.Create")` |
 | 8 | Result | **User:** no claim → 403 · **Admin:** has claim → proceed |
-| 9 | `ProductsController.cs` | `Mediator.Send(CreateProductCommand)` |
+| 9 | `AdminServicesController.cs` | `Mediator.Send(CreateMarketplaceServiceCommand)` |
 | 10 | Handler | Business logic, no auth checks (already authorized at controller) |
 
 ### Why controllers don't check roles
@@ -473,8 +474,8 @@ Users ──< UserRoles >── Roles ──< RolePermissions >── Permission
 
 | Role | Permissions granted |
 |---|---|
-| `User` | `Products.Read` |
-| `Admin` | `Products.*`, `ApiKeys.Create` |
+| `Client` | _(none by default)_ |
+| `Admin` | All Admin portal permissions (`Providers.*`, `Services.*`, `Roles.*`, `Admins.*`, `ApiKeys.Create`) |
 | `SuperAdmin` | All permissions including `Roles.Manage` |
 
 ### Admin user seed (`DbSeeder.SeedAdminUserAsync`)
@@ -530,7 +531,7 @@ This is the **only** code path that creates an admin account.
 | Policy provider | `src/Enterprise.Api/Authorization/PermissionPolicyProvider.cs` |
 | Handler | `src/Enterprise.Api/Authorization/PermissionAuthorizationHandler.cs` |
 | Requirement | `src/Enterprise.Api/Authorization/PermissionRequirement.cs` |
-| Example controller | `src/Enterprise.Api/Controllers/V1/ProductsController.cs` |
+| Example controller | `src/Enterprise.Api/Controllers/V1/Admin/AdminServicesController.cs` |
 | Auth DI setup | `src/Enterprise.Infrastructure/DependencyInjection.cs` |
 | Program.cs pipeline | `src/Enterprise.Api/Program.cs` |
 

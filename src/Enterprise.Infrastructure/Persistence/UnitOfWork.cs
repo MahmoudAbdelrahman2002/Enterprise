@@ -5,16 +5,17 @@ namespace Enterprise.Infrastructure.Persistence;
 
 public sealed class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
 {
-    private IProductRepository? _products;
     private IProviderRepository? _providers;
+    private IMarketplaceServiceRepository? _services;
     private IRefreshTokenRepository? _refreshTokens;
     private IApiKeyRepository? _apiKeys;
+    private ICategoryRepository? _categories;
 
-    public IProductRepository Products => _products ??= new ProductRepository(context);
     public IProviderRepository Providers => _providers ??= new ProviderRepository(context);
+    public IMarketplaceServiceRepository Services => _services ??= new MarketplaceServiceRepository(context);
     public IRefreshTokenRepository RefreshTokens => _refreshTokens ??= new RefreshTokenRepository(context);
     public IApiKeyRepository ApiKeys => _apiKeys ??= new ApiKeyRepository(context);
-
+    public ICategoryRepository Categories => _categories ??= new CategoryRepository(context);
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
         context.SaveChangesAsync(cancellationToken);
 }

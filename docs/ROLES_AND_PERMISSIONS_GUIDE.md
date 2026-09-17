@@ -31,7 +31,7 @@ flowchart TD
     end
 
     SuperAdmin -->|"Create, Activate, Deactivate"| SuperProvider
-    SuperProvider -->|"Manage Store Products & Inventory"| PlatformCatalog["Platform Product Catalog"]
+    SuperProvider -->|"Manage Store Staff & Roles"| PlatformCatalog["Store Operations"]
     Client -->|"Browse & Checkout"| PlatformCatalog
     SuperAdmin -->|"Full Platform & Catalog Governance"| PlatformCatalog
 ```
@@ -55,7 +55,7 @@ These principals represent permanent, non-deletable system identities (`IsSystem
 * **Protection & Security:** Both the merchant account and the `Provider` role are marked as **`IsSystem = true`**. Store staff members cannot delete, deactivate, or modify the Super Provider identity.
 
 ### C) Client (End Shopper):
-* Public shopper role with self-service registration, holding catalog read privileges (`Products.Read`) and guarded by the `[RequireClient]` policy.
+* Public shopper role with self-service registration, guarded by the `[RequireClient]` policy.
 
 ---
 
@@ -65,7 +65,7 @@ These roles are dynamically created and configured by administrators in the Admi
 
 | Custom Role Type | Created By | Permitted Scope | Real-World Examples |
 | :--- | :--- | :--- | :--- |
-| **Custom Admin Role** | Super Admin in Admin Dashboard | Subset of **Admin Portal** permissions | **Provider Operations Officer:** Has `Providers.Read` & `Providers.Update`<br>**Catalog Auditor:** Has `Products.Read` & `Products.Update` only |
+| **Custom Admin Role** | Super Admin in Admin Dashboard | Subset of **Admin Portal** permissions | **Provider Operations Officer:** Has `Providers.Read` & `Providers.Update`<br>**Services Manager:** Has `Services.Read` & `Services.Update` only |
 | **Custom Provider Role** | Super Provider in Merchant Dashboard | Subset of **Provider Portal** permissions scoped to that specific store | **Store Cashier:** Can view catalog and process orders<br>**Warehouse Associate:** Can adjust stock levels only |
 
 ### Multi-Tenant Store Scoping & Isolation
@@ -86,12 +86,16 @@ Permissions are not defined arbitrarily or hard-coded into single lists. Instead
      `Providers.Read` | `Providers.Create` | `Providers.Update` | `Providers.Delete`
    * *Example - Admin Roles Management Module:*  
      `Roles.Read` | `Roles.Create` | `Roles.Update` | `Roles.Delete`
+   * *Example - Admin Staff Management Module:*  
+     `Admins.Read` | `Admins.Create` | `Admins.Update` | `Admins.Delete`
+   * *Example - Marketplace Services Module:*  
+     `Services.Read` | `Services.Create` | `Services.Update` | `Services.Delete`
 3. **When adding a Provider Module:**
    * Define permissions belonging to the merchant portal:
    * *Example - Store Roles Management Module:*  
      `ProviderRoles.Read` | `ProviderRoles.Create` | `ProviderRoles.Update` | `ProviderRoles.Delete`
-   * *Example - Catalog Exploration Module:*  
-     `Products.Read`
+   * *Example - Store Staff Management Module:*  
+     `ProviderStaff.Read` | `ProviderStaff.Create` | `ProviderStaff.Update` | `ProviderStaff.Delete`
 4. **Automated Seeder Synchronization:**
    * Whenever new modules and permissions are added to `PermissionCatalog.cs`, the startup `DbSeeder`:
      * Automatically assigns all Admin permissions to **Super Admin**.
@@ -110,7 +114,7 @@ Role and permission governance is partitioned into two dedicated controller surf
 #### 1. Admin Permissions Checklist:
 * **`GET /api/v1/admin/permissions`**  
   * **Authorization:** `[RequireAdmin]` + `[RequirePermission("Roles.Read")]`  
-  * **Function:** Returns all Admin portal permissions grouped by module (`Providers`, `Roles`, `Products`, `ApiKeys`) for rendering checkbox trees in admin staff role creation/editing UI.
+  * **Function:** Returns all Admin portal permissions grouped by module (`Providers`, `Roles`, `ApiKeys`, `Admins`, `Services`) for rendering checkbox trees in admin staff role creation/editing UI.
 
 #### 2. Admin Roles CRUD:
 | Method | Route | Required Permission | Responsibility |
@@ -121,6 +125,27 @@ Role and permission governance is partitioned into two dedicated controller surf
 | **PUT** | `/api/v1/admin/roles/{id}` | `Roles.Update` | Updates role name and synchronizes assigned permission claims (system roles are immutable). |
 | **DELETE** | `/api/v1/admin/roles/{id}` | `Roles.Delete` | Deletes a custom admin role (deleting `IsSystem = true` roles is blocked). |
 
+#### 3. Admin Staff Management CRUD:
+| Method | Route | Required Permission | Responsibility |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/api/v1/admin/users` | `Admins.Read` | Paged list of administrative staff members with search, role filtering, and active status filtering. |
+| **GET** | `/api/v1/admin/users/{id}` | `Admins.Read` | Fetches details, assigned role, and effective permissions for an administrative staff member. |
+| **POST** | `/api/v1/admin/users` | `Admins.Create` | Creates a new administrative user, assigns one admin role, and sends welcome email with credentials & dashboard link. |
+| **PUT** | `/api/v1/admin/users/{id}` | `Admins.Update` | Updates staff member personal details and reassigns role (system accounts are protected). |
+| **POST** | `/api/v1/admin/users/{id}/set-active` | `Admins.Update` | Activates or deactivates an admin account (`{ "isActive": boolean }`). Cannot deactivate Super Admin. |
+| **DELETE** | `/api/v1/admin/users/{id}` | `Admins.Delete` | Deletes a custom administrative staff member (deleting `IsSystem = true` is blocked). |
+
+#### 4. Marketplace Services Management CRUD:
+| Method | Route | Required Permission | Responsibility |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/api/v1/admin/services` | `Services.Read` | Paged list of marketplace services with search and active status filters. |
+| **GET** | `/api/v1/admin/services/lookup` | `Services.Read` | Dropdown selector list of active services for provider assignment. |
+| **GET** | `/api/v1/admin/services/{id}` | `Services.Read` | Fetches details and all translations for a marketplace service. |
+| **POST** | `/api/v1/admin/services` | `Services.Create` | Creates a new marketplace category with multilingual names and descriptions. |
+| **PUT** | `/api/v1/admin/services/{id}` | `Services.Update` | Modifies service code, display order, and localized translations. |
+| **POST** | `/api/v1/admin/services/{id}/set-active` | `Services.Update` | Toggles service active state (`{ "isActive": boolean }`). |
+| **DELETE** | `/api/v1/admin/services/{id}` | `Services.Delete` | Soft deletes service (blocked if linked to active providers). |
+
 ---
 
 ### II. Provider Dashboard (`/api/v1/provider`)
@@ -130,7 +155,7 @@ Managed exclusively from within the **Merchant Dashboard** for their respective 
 #### 1. Provider Permissions Checklist:
 * **`GET /api/v1/provider/permissions`**  
   * **Authorization:** `[RequireProvider]` + `[RequirePermission("ProviderRoles.Read")]`  
-  * **Function:** Returns all permissions available for the store portal (`ProviderRoles.*`, `Products.Read`, and upcoming store-level modules).
+  * **Function:** Returns all permissions available for the store portal (`ProviderRoles`, `ProviderStaff`).
 
 #### 2. Provider Roles CRUD:
 | Method | Route | Required Permission | Responsibility |
@@ -141,6 +166,16 @@ Managed exclusively from within the **Merchant Dashboard** for their respective 
 | **PUT** | `/api/v1/provider/roles/{id}` | `ProviderRoles.Update` | Updates the role name and permissions (Super Provider role cannot be altered). |
 | **DELETE** | `/api/v1/provider/roles/{id}` | `ProviderRoles.Delete` | Deletes a custom store role (Super Provider system role cannot be deleted). |
 
+#### 3. Provider Store Staff Management CRUD:
+| Method | Route | Required Permission | Responsibility |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/api/v1/provider/staff` | `ProviderStaff.Read` | Paged list of store staff members belonging exclusively to caller's store. |
+| **GET** | `/api/v1/provider/staff/{id}` | `ProviderStaff.Read` | Fetches details, role, and effective permissions for a store staff member. |
+| **POST** | `/api/v1/provider/staff` | `ProviderStaff.Create` | Creates a store employee, assigns one store role, and sends welcome email with credentials & dashboard link. |
+| **PUT** | `/api/v1/provider/staff/{id}` | `ProviderStaff.Update` | Updates employee details and reassigns role (Super Provider owner account cannot be altered). |
+| **POST** | `/api/v1/provider/staff/{id}/set-active` | `ProviderStaff.Update` | Activates or deactivates a store employee account (`{ "isActive": boolean }`). Cannot deactivate Super Provider. |
+| **DELETE** | `/api/v1/provider/staff/{id}` | `ProviderStaff.Delete` | Deletes a custom store employee account (deleting `IsSystem = true` is blocked). |
+
 ---
 
 ## 6. Technical Enforcement & Security Mechanisms
@@ -148,9 +183,10 @@ Managed exclusively from within the **Merchant Dashboard** for their respective 
 1. **Storage Schema:**
    * Permissions are stored as claims inside `AspNetRoleClaims` (`ClaimType = "permission"`).
    * Roles contain `IsSystem`, `RoleType`, and nullable `ProviderId` foreign key to `Providers`.
-   * Users contain `IsSystem` to safeguard root accounts.
+   * Users contain `IsSystem` to safeguard root accounts, and nullable `ProviderId` foreign key to `Providers` for store staff multi-tenant scoping.
 2. **JWT Claims Flattening:**
    * Upon authentication, the identity service resolves all assigned roles, extracts their associated permission claims, flattens them into a unique set, and embeds them directly into the JWT `permission` array.
+   * If `user.ProviderId` is set, `provider_id` is embedded in the JWT claims for store isolation.
 3. **Dual-Layer Endpoint Protection:**
    * Endpoints enforce two independent authorization gates:
      ```csharp
@@ -160,3 +196,22 @@ Managed exclusively from within the **Merchant Dashboard** for their respective 
 4. **System Protection Guards (`IsSystem`):**
    * Handlers verify `IsSystem` before processing update or delete actions.
    * If `IsSystem == true`, the mutation is rejected with `ConflictException` and HTTP status `409 Conflict`.
+
+---
+
+## 7. Staff Management Architecture
+
+Staff accounts are provisioned and managed under dedicated endpoints, assigning exactly one role from the portal's registered roles, and dispatching credentials via automated welcome email:
+
+### I. Admin Staff (`/api/v1/admin/users`)
+- **Protected by:** `[RequireAdmin]` and `Admins.*` permissions (`Admins.Read`, `Admins.Create`, `Admins.Update`, `Admins.Delete`).
+- **Functionality:** Create, list, inspect, update details/role, toggle active status, and delete administrative staff.
+- **Root Admin Safeguard:** Root Super Admin (`IsSystem = true`) cannot be deactivated or deleted.
+- **Onboarding:** Automatically emails credentials (email, temporary password) and direct Admin Dashboard URL.
+
+### II. Store Staff (`/api/v1/provider/staff`)
+- **Protected by:** `[RequireProvider]` and `ProviderStaff.*` permissions (`ProviderStaff.Read`, `ProviderStaff.Create`, `ProviderStaff.Update`, `ProviderStaff.Delete`).
+- **Functionality:** Create, list, inspect, update details/role, toggle active status, and delete store staff.
+- **Store Tenant Scoping:** Every staff member is bound to `ProviderId == currentProvider.Id`.
+- **Store Owner Safeguard:** Store Owner Super Provider (`IsSystem = true`) cannot be deactivated or deleted.
+- **Onboarding:** Automatically emails credentials (email, temporary password) and direct Merchant Dashboard URL.

@@ -43,4 +43,6 @@ public class GenericRepository<T>(ApplicationDbContext context) : IRepository<T>
 
     private IQueryable<T> ApplySpecification(ISpecification<T> specification) =>
         SpecificationEvaluator<T>.GetQuery(DbSet.AsQueryable(), specification);
+    public async Task<IReadOnlyList<T>> GetAllAsync(CancellationToken cancellationToken = default) =>
+        await DbSet.AsNoTracking().ToListAsync(cancellationToken);
 }

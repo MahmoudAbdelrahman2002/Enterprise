@@ -31,7 +31,7 @@ public sealed class CreateProviderRoleCommandHandler(
 
         if (!result.Succeeded)
         {
-            throw new ConflictException(result.Error ?? MessageKeys.Error.Conflict);
+            throw new ConflictException(result.Error ?? MessageKeys.Error.Conflict, result.Errors);
         }
 
         var created = await roleManagerService.GetRoleByIdAsync(

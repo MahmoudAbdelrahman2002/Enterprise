@@ -33,6 +33,15 @@ public sealed class CurrentUserService(IHttpContextAccessor httpContextAccessor)
         }
     }
 
+    public Guid? ProviderId
+    {
+        get
+        {
+            var value = User?.FindFirstValue("provider_id");
+            return Guid.TryParse(value, out var id) ? id : null;
+        }
+    }
+
     public IReadOnlyCollection<string> Roles =>
         User?.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList() ?? [];
 

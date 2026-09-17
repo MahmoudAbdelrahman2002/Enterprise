@@ -34,7 +34,7 @@ public sealed class DeleteProviderRoleCommandHandler(
                 throw NotFoundException.For("Role", request.Id);
             }
 
-            throw new ConflictException(result.Error ?? MessageKeys.Error.Conflict);
+            throw new ConflictException(result.Error ?? MessageKeys.Error.Conflict, result.Errors);
         }
     }
 }

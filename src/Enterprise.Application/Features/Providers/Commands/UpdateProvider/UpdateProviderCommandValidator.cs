@@ -17,5 +17,9 @@ public sealed class UpdateProviderCommandValidator : AbstractValidator<UpdatePro
             .MaximumLength(40)
             .WithMessage(_ => localizer[MessageKeys.Validation.MaxLength, 40])
             .When(x => !string.IsNullOrWhiteSpace(x.PhoneNumber));
+        RuleFor(x => x.ServiceId!)
+            .NotEmpty()
+            .WithMessage(_ => localizer[MessageKeys.Validation.Required])
+            .When(x => x.ServiceId.HasValue);
     }
 }

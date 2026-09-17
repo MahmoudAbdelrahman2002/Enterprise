@@ -6,7 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Enterprise.Infrastructure.Providers;
 
-public sealed class ProviderAdminQueryService(ApplicationDbContext context) : IProviderAdminQueryService
+public sealed class ProviderAdminQueryService(
+    ApplicationDbContext context,
+    ICurrentCulture culture) : IProviderAdminQueryService
 {
     public async Task<PagedResult<ProviderAdminListItemDto>> GetPagedAsync(
         string? searchTerm,
@@ -16,7 +18,7 @@ public sealed class ProviderAdminQueryService(ApplicationDbContext context) : IP
         CancellationToken cancellationToken = default)
     {
         var query =
-            from provider in context.Providers.AsNoTracking()
+            from provider in context.Providers.AsNoTracking().Include(p => p.Service)
             join user in context.Users.AsNoTracking() on provider.UserId equals user.Id
             where user.UserType == UserType.Provider
             select new { provider, user };
@@ -38,11 +40,17 @@ public sealed class ProviderAdminQueryService(ApplicationDbContext context) : IP
 
         var totalCount = await query.CountAsync(cancellationToken);
 
-        var items = await query
+        var rawRows = await query
             .OrderByDescending(x => x.provider.CreatedAtUtc)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .Select(x => new ProviderAdminListItemDto(
+            .ToListAsync(cancellationToken);
+
+        var language = culture.LanguageCode;
+        var items = rawRows.Select(x =>
+        {
+            var serviceName = x.provider.Service?.ResolveContent(language).Name;
+            return new ProviderAdminListItemDto(
                 x.provider.Id,
                 x.provider.UserId,
                 x.user.Email ?? string.Empty,
@@ -50,9 +58,11 @@ public sealed class ProviderAdminQueryService(ApplicationDbContext context) : IP
                 x.user.LastName,
                 x.provider.CompanyName,
                 x.provider.PhoneNumber,
+                x.provider.ServiceId,
+                serviceName,
                 x.user.IsActive,
-                x.provider.CreatedAtUtc))
-            .ToListAsync(cancellationToken);
+                x.provider.CreatedAtUtc);
+        }).ToList();
 
         return new PagedResult<ProviderAdminListItemDto>(items, totalCount, pageNumber, pageSize);
     }
@@ -61,7 +71,7 @@ public sealed class ProviderAdminQueryService(ApplicationDbContext context) : IP
         Guid providerId, CancellationToken cancellationToken = default)
     {
         var row = await (
-            from provider in context.Providers.AsNoTracking()
+            from provider in context.Providers.AsNoTracking().Include(p => p.Service)
             join user in context.Users.AsNoTracking() on provider.UserId equals user.Id
             where provider.Id == providerId && user.UserType == UserType.Provider
             select new { provider, user }
@@ -72,6 +82,9 @@ public sealed class ProviderAdminQueryService(ApplicationDbContext context) : IP
             return null;
         }
 
+        var language = culture.LanguageCode;
+        var serviceName = row.provider.Service?.ResolveContent(language).Name;
+
         return new ProviderAdminDetailDto(
             row.provider.Id,
             row.provider.UserId,
@@ -80,6 +93,8 @@ public sealed class ProviderAdminQueryService(ApplicationDbContext context) : IP
             row.user.LastName,
             row.provider.CompanyName,
             row.provider.PhoneNumber,
+            row.provider.ServiceId,
+            serviceName,
             row.user.IsActive,
             row.user.EmailConfirmed,
             row.provider.CreatedAtUtc,

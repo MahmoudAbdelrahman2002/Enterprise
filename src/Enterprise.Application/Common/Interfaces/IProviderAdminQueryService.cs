@@ -10,6 +10,8 @@ public sealed record ProviderAdminListItemDto(
     string LastName,
     string CompanyName,
     string? PhoneNumber,
+    Guid? ServiceId,
+    string? ServiceName,
     bool IsActive,
     DateTime CreatedAtUtc);
 
@@ -21,6 +23,8 @@ public sealed record ProviderAdminDetailDto(
     string LastName,
     string CompanyName,
     string? PhoneNumber,
+    Guid? ServiceId,
+    string? ServiceName,
     bool IsActive,
     bool EmailConfirmed,
     DateTime CreatedAtUtc,

@@ -163,7 +163,8 @@ public sealed class RoleManagerService(
         var result = await roleManager.CreateAsync(role);
         if (!result.Succeeded)
         {
-            return new CreateRoleResult(false, Error: result.Errors.FirstOrDefault()?.Description);
+            var errors = result.Errors.Select(e => e.Description).ToList();
+            return new CreateRoleResult(false, Error: errors.FirstOrDefault(), Errors: errors);
         }
         
         foreach (var permission in distinctPermissions)
@@ -225,7 +226,8 @@ public sealed class RoleManagerService(
             var updateResult = await roleManager.UpdateAsync(role);
             if (!updateResult.Succeeded)
             {
-                return new UpdateRoleResult(false, Error: updateResult.Errors.FirstOrDefault()?.Description);
+                var errors = updateResult.Errors.Select(e => e.Description).ToList();
+                return new UpdateRoleResult(false, Error: errors.FirstOrDefault(), Errors: errors);
             }
         }
 
@@ -276,7 +278,8 @@ public sealed class RoleManagerService(
         var result = await roleManager.DeleteAsync(role);
         if (!result.Succeeded)
         {
-            return new DeleteRoleResult(false, Error: result.Errors.FirstOrDefault()?.Description);
+            var errors = result.Errors.Select(e => e.Description).ToList();
+            return new DeleteRoleResult(false, Error: errors.FirstOrDefault(), Errors: errors);
         }
 
         return new DeleteRoleResult(true);

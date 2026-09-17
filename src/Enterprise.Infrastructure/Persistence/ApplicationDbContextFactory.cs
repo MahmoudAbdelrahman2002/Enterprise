@@ -28,6 +28,7 @@ public sealed class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Ap
         public string? Email => "design-time";
         public bool IsAuthenticated => false;
         public UserType? UserType => null;
+        public Guid? ProviderId => null;
         public IReadOnlyCollection<string> Roles => [];
         public IReadOnlyCollection<string> Permissions => [];
     }

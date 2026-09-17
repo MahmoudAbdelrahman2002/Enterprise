@@ -21,11 +21,11 @@ public sealed record RoleDetailDto(
     int UsersCount,
     IReadOnlyList<string> Permissions);
 
-public sealed record CreateRoleResult(bool Succeeded, Guid? RoleId = null, string? Error = null);
+public sealed record CreateRoleResult(bool Succeeded, Guid? RoleId = null, string? Error = null, IReadOnlyList<string>? Errors = null);
 
-public sealed record UpdateRoleResult(bool Succeeded, string? Error = null);
+public sealed record UpdateRoleResult(bool Succeeded, string? Error = null, IReadOnlyList<string>? Errors = null);
 
-public sealed record DeleteRoleResult(bool Succeeded, string? Error = null);
+public sealed record DeleteRoleResult(bool Succeeded, string? Error = null, IReadOnlyList<string>? Errors = null);
 
 public interface IRoleManagerService
 {

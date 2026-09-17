@@ -90,6 +90,11 @@ try
 
     app.MapControllers().RequireRateLimiting(RateLimitingExtensions.GlobalPolicy);
 
+    if (app.Environment.IsDevelopment())
+    {
+        app.MapGet("/", () => Results.Redirect("/swagger"));
+    }
+
     app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
     {
         Predicate = _ => false // liveness = "is the process up", no dependency checks

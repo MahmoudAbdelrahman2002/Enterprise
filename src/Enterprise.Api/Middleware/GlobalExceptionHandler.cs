@@ -63,8 +63,8 @@ public sealed class GlobalExceptionHandler(
                 [localizer[MessageKeys.Error.Forbidden]]),
             DomainException ex => (
                 StatusCodes.Status409Conflict,
-                Localize(ex.ErrorCode, ex.Args, MessageKeys.Error.BusinessRule),
-                [Localize(ex.ErrorCode, ex.Args, MessageKeys.Error.BusinessRule)]),
+                ResolveMessage(ex.ErrorCode, ex.Args, MessageKeys.Error.BusinessRule),
+                [ResolveMessage(ex.ErrorCode, ex.Args, MessageKeys.Error.BusinessRule)]),
             EmailDeliveryException ex => Fail(StatusCodes.Status503ServiceUnavailable, ex, MessageKeys.Error.EmailDelivery),
             AppException ex => Fail(StatusCodes.Status400BadRequest, ex, MessageKeys.Error.Unexpected),
             _ => (
@@ -76,28 +76,54 @@ public sealed class GlobalExceptionHandler(
     private (int StatusCode, string Message, IReadOnlyList<string> Errors) Fail(
         int statusCode, AppException exception, string fallbackKey)
     {
-        var message = Localize(exception.ErrorCode, exception.Args, fallbackKey);
-        return (statusCode, message, [message]);
+        var message = ResolveMessage(exception.ErrorCode, exception.Args, fallbackKey);
+
+        var errors = exception.Errors.Count > 0
+            ? exception.Errors.Select(e => ResolveMessage(e, [], fallbackKey)).Where(e => !string.IsNullOrWhiteSpace(e)).Distinct().ToList()
+            : [message];
+
+        // If there are specific errors and message was a fallback or a semicolon-joined string, pick the first error as message
+        if (errors.Count > 0 && (message == localizer[fallbackKey] || (!string.IsNullOrWhiteSpace(exception.ErrorCode) && exception.ErrorCode.Contains(';'))))
+        {
+            message = errors[0];
+        }
+
+        return (statusCode, message, errors);
     }
 
-    private string Localize(string errorCode, object[] args, string fallbackKey)
+    private string ResolveMessage(string? errorCode, object[] args, string fallbackKey)
     {
-        var localized = args.Length == 0
-            ? localizer[errorCode]
-            : localizer[errorCode, args];
-
-        if (string.IsNullOrWhiteSpace(localized) || localized == errorCode)
+        if (string.IsNullOrWhiteSpace(errorCode))
         {
             return localizer[fallbackKey];
         }
 
-        return localized;
+        var localized = args.Length == 0
+            ? localizer[errorCode]
+            : localizer[errorCode, args];
+
+        if (!string.IsNullOrWhiteSpace(localized) && localized != errorCode)
+        {
+            return localized;
+        }
+
+        // If errorCode contains spaces or doesn't have a dot (resource key notation), it is already a descriptive message
+        if (errorCode.Contains(' ') || !errorCode.Contains('.'))
+        {
+            return errorCode;
+        }
+
+        return localizer[fallbackKey];
     }
 
     private IReadOnlyList<string> FlattenValidationErrors(ValidationException exception)
     {
         var flattened = exception.Errors
-            .SelectMany(pair => pair.Value.Select(message => $"{pair.Key}: {message}"))
+            .SelectMany(pair => pair.Value.Select(message =>
+            {
+                var resolvedMessage = ResolveValidationMessage(message);
+                return $"{pair.Key}: {resolvedMessage}";
+            }))
             .Where(message => !string.IsNullOrWhiteSpace(message))
             .Distinct()
             .ToList();
@@ -105,5 +131,21 @@ public sealed class GlobalExceptionHandler(
         return flattened.Count > 0
             ? flattened
             : [localizer[MessageKeys.Validation.CheckRequest]];
+    }
+
+    private string ResolveValidationMessage(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return string.Empty;
+        }
+
+        var localized = localizer[message];
+        if (!string.IsNullOrWhiteSpace(localized) && localized != message)
+        {
+            return localized;
+        }
+
+        return message;
     }
 }

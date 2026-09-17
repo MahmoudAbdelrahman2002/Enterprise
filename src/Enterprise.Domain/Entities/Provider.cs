@@ -12,24 +12,29 @@ public sealed class Provider : BaseAuditableEntity, ISoftDelete
     {
     }
 
-    public Provider(Guid userId, string companyName, string? phoneNumber = null)
+    public Provider(Guid userId, string companyName, string? phoneNumber = null, Guid? serviceId = null)
     {
         UserId = userId;
         CompanyName = companyName;
         PhoneNumber = phoneNumber;
+        ServiceId = serviceId;
     }
 
     public Guid UserId { get; private set; }
     public string CompanyName { get; private set; } = null!;
     public string? PhoneNumber { get; private set; }
 
+    public Guid? ServiceId { get; private set; }
+    public MarketplaceService? Service { get; private set; }
+
     public bool IsDeleted { get; set; }
     public DateTime? DeletedAtUtc { get; set; }
     public string? DeletedBy { get; set; }
 
-    public void UpdateDetails(string companyName, string? phoneNumber)
+    public void UpdateDetails(string companyName, string? phoneNumber, Guid? serviceId = null)
     {
         CompanyName = companyName;
         PhoneNumber = phoneNumber;
+        ServiceId = serviceId;
     }
 }

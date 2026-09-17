@@ -28,6 +28,11 @@ public sealed class JwtTokenService(IOptions<JwtSettings> jwtSettings) : ITokenS
             .. user.Permissions.Select(permission => new Claim("permission", permission))
         ];
 
+        if (user.ProviderId.HasValue)
+        {
+            claims.Add(new Claim("provider_id", user.ProviderId.Value.ToString()));
+        }
+
         var expiresAtUtc = DateTime.UtcNow.AddMinutes(_settings.AccessTokenExpirationMinutes);
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.SecretKey));
         var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);

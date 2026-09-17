@@ -8,10 +8,10 @@ namespace Enterprise.Domain.Interfaces;
 /// </summary>
 public interface IUnitOfWork
 {
-    IProductRepository Products { get; }
     IProviderRepository Providers { get; }
+    IMarketplaceServiceRepository Services { get; }
     IRefreshTokenRepository RefreshTokens { get; }
     IApiKeyRepository ApiKeys { get; }
-
+    ICategoryRepository Categories { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

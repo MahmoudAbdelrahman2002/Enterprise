@@ -113,6 +113,24 @@
       "value": "",
       "type": "string",
       "description": "Automatically populated provider role Id from create"
+    },
+    {
+      "key": "adminStaffId",
+      "value": "",
+      "type": "string",
+      "description": "Automatically populated admin staff member Id from create"
+    },
+    {
+      "key": "providerStaffId",
+      "value": "",
+      "type": "string",
+      "description": "Automatically populated provider staff member Id from create"
+    },
+    {
+      "key": "productId",
+      "value": "",
+      "type": "string",
+      "description": "Automatically populated product Id from create"
     }
   ],
   "item": [
@@ -1916,7 +1934,509 @@
           "response": []
         }
       ]
-    }
+    },
+    {
+      "name": "10. Admin Staff Management",
+      "item": [
+        {
+          "name": "10.1 List Admin Staff",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" },
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users?pageNumber=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "users"],
+              "query": [
+                { "key": "pageNumber", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            },
+            "description": "Lists administrative staff members with assigned roles."
+          },
+          "response": []
+        },
+        {
+          "name": "10.2 Get Admin Staff by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" },
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users/{{adminStaffId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "users", "{{adminStaffId}}"]
+            },
+            "description": "Retrieves an administrative staff member by ID."
+          },
+          "response": []
+        },
+        {
+          "name": "10.3 Create Admin Staff",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.id) {",
+                  "    pm.collectionVariables.set('adminStaffId', jsonData.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Sarah\",\n  \"lastName\": \"Connor\",\n  \"email\": \"sarah.connor@enterprise.local\",\n  \"phoneNumber\": \"+1234567890\",\n  \"password\": \"AdminStaff@12345!\",\n  \"roleId\": \"{{adminRoleId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "users"]
+            },
+            "description": "Creates an admin staff member, assigns one role, and sends welcome email with credentials."
+          },
+          "response": []
+        },
+        {
+          "name": "10.4 Update Admin Staff",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Sarah\",\n  \"lastName\": \"Connor-Updated\",\n  \"phoneNumber\": \"+1234567899\",\n  \"roleId\": \"{{adminRoleId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users/{{adminStaffId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "users", "{{adminStaffId}}"]
+            },
+            "description": "Updates administrative staff details and role."
+          },
+          "response": []
+        },
+        {
+          "name": "10.5 Set Admin Staff Active",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isActive\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users/{{adminStaffId}}/set-active",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "users", "{{adminStaffId}}", "set-active"]
+            },
+            "description": "Activates or deactivates an administrative staff account."
+          },
+          "response": []
+        },
+        {
+          "name": "10.6 Delete Admin Staff",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" },
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users/{{adminStaffId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "users", "{{adminStaffId}}"]
+            },
+            "description": "Deletes an administrative staff account (Super Admin is protected)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "11. Provider Staff Management",
+      "item": [
+        {
+          "name": "11.1 List Provider Staff",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{providerAccessToken}}" },
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/provider/staff?pageNumber=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "provider", "staff"],
+              "query": [
+                { "key": "pageNumber", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            },
+            "description": "Lists store staff members for the authenticated provider."
+          },
+          "response": []
+        },
+        {
+          "name": "11.2 Get Provider Staff by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{providerAccessToken}}" },
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/provider/staff/{{providerStaffId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "provider", "staff", "{{providerStaffId}}"]
+            },
+            "description": "Retrieves a store staff member by ID."
+          },
+          "response": []
+        },
+        {
+          "name": "11.3 Create Provider Staff",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.id) {",
+                  "    pm.collectionVariables.set('providerStaffId', jsonData.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{providerAccessToken}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Alex\",\n  \"lastName\": \"Smith\",\n  \"email\": \"alex.smith@example.com\",\n  \"phoneNumber\": \"+1987654321\",\n  \"password\": \"StoreStaff@12345!\",\n  \"roleId\": \"{{providerRoleId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/provider/staff",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "provider", "staff"]
+            },
+            "description": "Creates a store staff member, assigns one role, and sends welcome email with credentials."
+          },
+          "response": []
+        },
+        {
+          "name": "11.4 Update Provider Staff",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{providerAccessToken}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Alex\",\n  \"lastName\": \"Smith-Updated\",\n  \"phoneNumber\": \"+1987654399\",\n  \"roleId\": \"{{providerRoleId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/provider/staff/{{providerStaffId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "provider", "staff", "{{providerStaffId}}"]
+            },
+            "description": "Updates store staff details and role."
+          },
+          "response": []
+        },
+        {
+          "name": "11.5 Set Provider Staff Active",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{providerAccessToken}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isActive\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/provider/staff/{{providerStaffId}}/set-active",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "provider", "staff", "{{providerStaffId}}", "set-active"]
+            },
+            "description": "Activates or deactivates a store staff account."
+          },
+          "response": []
+        },
+        {
+          "name": "11.6 Delete Provider Staff",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{providerAccessToken}}" },
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/provider/staff/{{providerStaffId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "provider", "staff", "{{providerStaffId}}"]
+            },
+            "description": "Deletes a store staff account (Super Provider is protected)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "12. Products Catalog (/api/v1/products)",
+      "description": "Public storefront and localized product browsing APIs.",
+      "item": [
+        {
+          "name": "12.1 List Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products?pageNumber=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "products"],
+              "query": [
+                { "key": "pageNumber", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            },
+            "description": "Public catalog list localized according to Accept-Language."
+          },
+          "response": []
+        },
+        {
+          "name": "12.2 Get Product by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "products", "{{productId}}"]
+            },
+            "description": "Retrieves localized product details by ID."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "13. Admin Products Management (/api/v1/admin/products)",
+      "description": "Backoffice catalog product management with multi-language translations and stock adjustments.",
+      "item": [
+        {
+          "name": "13.1 List Admin Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" },
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/products?pageNumber=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "products"],
+              "query": [
+                { "key": "pageNumber", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            },
+            "description": "Admin list of products with inventory details."
+          },
+          "response": []
+        },
+        {
+          "name": "13.2 Get Admin Product by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" },
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "products", "{{productId}}"]
+            },
+            "description": "Retrieves complete admin product details with all translations."
+          },
+          "response": []
+        },
+        {
+          "name": "13.3 Create Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.id) {",
+                  "    pm.collectionVariables.set('productId', jsonData.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku\": \"PROD-WRL-001\",\n  \"name\": {\n    \"en\": \"Wireless Noise Cancelling Headphones\",\n    \"ar\": \"سماعات رأس لاسلكية عازلة للضوضاء\",\n    \"it\": \"Cuffie Wireless con Cancellazione del Rumore\"\n  },\n  \"description\": {\n    \"en\": \"Premium wireless headphones with active noise cancellation and 30-hour battery life.\",\n    \"ar\": \"سماعات رأس لاسلكية ممتازة مع خاصية عزل الضوضاء وعمر بطارية يصل إلى 30 ساعة.\",\n    \"it\": \"Cuffie wireless premium con cancellazione attiva del rumore e 30 ore di autonomia.\"\n  },\n  \"category\": {\n    \"en\": \"Electronics\",\n    \"ar\": \"إلكترونيات\",\n    \"it\": \"Elettronica\"\n  },\n  \"price\": 149.99,\n  \"stockQuantity\": 50\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "products"]
+            },
+            "description": "Creates a new catalog product with multi-language translations and initial stock."
+          },
+          "response": []
+        },
+        {
+          "name": "13.4 Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": {\n    \"en\": \"Wireless Noise Cancelling Headphones Pro\",\n    \"ar\": \"سماعات رأس لاسلكية عازلة للضوضاء برو\",\n    \"it\": \"Cuffie Wireless con Cancellazione del Rumore Pro\"\n  },\n  \"description\": {\n    \"en\": \"Updated description with enhanced sound quality.\",\n    \"ar\": \"وصف محدث مع جودة صوت محسنة.\",\n    \"it\": \"Descrizione aggiornata con qualità audio migliorata.\"\n  },\n  \"category\": {\n    \"en\": \"Audio & Electronics\",\n    \"ar\": \"صوتيات وإلكترونيات\",\n    \"it\": \"Audio ed Elettronica\"\n  },\n  \"price\": 169.99\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "products", "{{productId}}"]
+            },
+            "description": "Updates product title, description, category translations, and price."
+          },
+          "response": []
+        },
+        {
+          "name": "13.5 Adjust Stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"delta\": 20\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/products/{{productId}}/adjust-stock",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "products", "{{productId}}", "adjust-stock"]
+            },
+            "description": "Increases (positive delta) or decreases (negative delta) available inventory."
+          },
+          "response": []
+        },
+        {
+          "name": "13.6 Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" },
+              { "key": "Accept-Language", "value": "{{lang}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "products", "{{productId}}"]
+            },
+            "description": "Soft-deletes the product from the catalog."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "14. Health Checks",
+      "description": "Process liveness and readiness monitoring endpoints.",
+      "item": [
+        {
+          "name": "14.1 Liveness Probe",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/health/live",
+              "host": ["{{baseUrl}}"],
+              "path": ["health", "live"]
+            },
+            "description": "Confirms the API process is alive and responsive."
+          },
+          "response": []
+        },
+        {
+          "name": "14.2 Readiness Probe",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/health/ready",
+              "host": ["{{baseUrl}}"],
+              "path": ["health", "ready"]
+            },
+            "description": "Verifies SQL Database connectivity and readiness."
+          },
+          "response": []
+        }
       ]
     }
   ]

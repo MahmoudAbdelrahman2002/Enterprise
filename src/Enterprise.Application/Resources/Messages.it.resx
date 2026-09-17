@@ -32,15 +32,6 @@
   <data name="Validation.PasswordSpecial" xml:space="preserve"><value>La password deve contenere almeno un carattere speciale.</value></data>
   <data name="Validation.ProviderUnsupported" xml:space="preserve"><value>Il provider deve essere Google o Facebook.</value></data>
   <data name="Validation.LocalizedEnRequired" xml:space="preserve"><value>Il testo in inglese è obbligatorio.</value></data>
-  <data name="Product.ListRetrieved" xml:space="preserve"><value>Prodotti recuperati con successo.</value></data>
-  <data name="Product.Retrieved" xml:space="preserve"><value>Prodotto recuperato con successo.</value></data>
-  <data name="Product.Created" xml:space="preserve"><value>Prodotto creato con successo.</value></data>
-  <data name="Product.Updated" xml:space="preserve"><value>Prodotto aggiornato con successo.</value></data>
-  <data name="Product.StockAdjusted" xml:space="preserve"><value>Scorte aggiornate con successo.</value></data>
-  <data name="Product.Deleted" xml:space="preserve"><value>Prodotto eliminato con successo.</value></data>
-  <data name="Product.SkuExists" xml:space="preserve"><value>Esiste già un prodotto con SKU '{0}'.</value></data>
-  <data name="Product.InsufficientStock" xml:space="preserve"><value>Il prodotto '{0}' non ha scorte sufficienti. Richiesto: {1}, disponibile: {2}.</value></data>
-  <data name="Product.QuantityMustBePositive" xml:space="preserve"><value>La quantità deve essere positiva.</value></data>
   <data name="Provider.ListRetrieved" xml:space="preserve"><value>Provider recuperati con successo.</value></data>
   <data name="Provider.Retrieved" xml:space="preserve"><value>Provider recuperato con successo.</value></data>
   <data name="Provider.Created" xml:space="preserve"><value>Provider creato con successo.</value></data>
@@ -60,6 +51,22 @@
   <data name="Role.CannotDeleteSystemUser" xml:space="preserve"><value>Gli account di sistema non possono essere eliminati.</value></data>
   <data name="Role.InvalidPermissions" xml:space="preserve"><value>Uno o più permessi non sono validi per questo ambito.</value></data>
   <data name="Permission.ListRetrieved" xml:space="preserve"><value>Permessi recuperati con successo.</value></data>
+  <data name="AdminUser.ListRetrieved" xml:space="preserve"><value>Elenco del personale amministrativo recuperato con successo.</value></data>
+  <data name="AdminUser.Retrieved" xml:space="preserve"><value>Membro del personale amministrativo recuperato con successo.</value></data>
+  <data name="AdminUser.Created" xml:space="preserve"><value>Membro del personale amministrativo creato con successo e credenziali inviate via email.</value></data>
+  <data name="AdminUser.Updated" xml:space="preserve"><value>Membro del personale amministrativo aggiornato con successo.</value></data>
+  <data name="AdminUser.Activated" xml:space="preserve"><value>Membro del personale amministrativo attivato con successo.</value></data>
+  <data name="AdminUser.Deactivated" xml:space="preserve"><value>Membro del personale amministrativo disattivato con successo.</value></data>
+  <data name="AdminUser.Deleted" xml:space="preserve"><value>Membro del personale amministrativo eliminato con successo.</value></data>
+  <data name="AdminUser.RoleNotFound" xml:space="preserve"><value>Il ruolo specificato non è stato trovato nell'ambito amministrativo.</value></data>
+  <data name="ProviderStaff.ListRetrieved" xml:space="preserve"><value>Elenco del personale del negozio recuperato con successo.</value></data>
+  <data name="ProviderStaff.Retrieved" xml:space="preserve"><value>Membro del personale del negozio recuperato con successo.</value></data>
+  <data name="ProviderStaff.Created" xml:space="preserve"><value>Membro del personale del negozio creato con successo e credenziali inviate via email.</value></data>
+  <data name="ProviderStaff.Updated" xml:space="preserve"><value>Membro del personale del negozio aggiornato con successo.</value></data>
+  <data name="ProviderStaff.Activated" xml:space="preserve"><value>Membro del personale del negozio attivato con successo.</value></data>
+  <data name="ProviderStaff.Deactivated" xml:space="preserve"><value>Membro del personale del negozio disattivato con successo.</value></data>
+  <data name="ProviderStaff.Deleted" xml:space="preserve"><value>Membro del personale del negozio eliminato con successo.</value></data>
+  <data name="ProviderStaff.RoleNotFound" xml:space="preserve"><value>Il ruolo specificato non è stato trovato nell'ambito del negozio.</value></data>
   <data name="Auth.LoginSuccess" xml:space="preserve"><value>Accesso effettuato con successo.</value></data>
   <data name="Auth.RegistrationVerified" xml:space="preserve"><value>Registrazione verificata con successo.</value></data>
   <data name="Auth.ExternalLoginSuccess" xml:space="preserve"><value>Accesso esterno effettuato con successo.</value></data>
@@ -110,4 +117,21 @@
   <data name="Email.ResetBody" xml:space="preserve"><value>&lt;p&gt;Il tuo codice di reimpostazione password è &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;</value></data>
   <data name="Email.ChangeEmailSubject" xml:space="preserve"><value>Conferma la tua nuova email</value></data>
   <data name="Email.ChangeEmailBody" xml:space="preserve"><value>&lt;p&gt;Il codice di verifica per il cambio email è &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;</value></data>
+  <data name="Service.ListRetrieved" xml:space="preserve"><value>Servizi del marketplace recuperati con successo.</value></data>
+  <data name="Service.Retrieved" xml:space="preserve"><value>Servizio del marketplace recuperato con successo.</value></data>
+  <data name="Service.Created" xml:space="preserve"><value>Servizio del marketplace creato con successo.</value></data>
+  <data name="Service.Updated" xml:space="preserve"><value>Servizio del marketplace aggiornato con successo.</value></data>
+  <data name="Service.Deleted" xml:space="preserve"><value>Servizio del marketplace eliminato con successo.</value></data>
+  <data name="Service.Activated" xml:space="preserve"><value>Servizio del marketplace attivato con successo.</value></data>
+  <data name="Service.Deactivated" xml:space="preserve"><value>Servizio del marketplace disattivato con successo.</value></data>
+  <data name="Service.CodeExists" xml:space="preserve"><value>Esiste già un servizio con questo codice.</value></data>
+  <data name="Service.HasLinkedProviders" xml:space="preserve"><value>Impossibile eliminare il servizio perché è attualmente collegato a uno o più fornitori.</value></data>
+  <data name="Service.NotFound" xml:space="preserve"><value>Il servizio del marketplace non è stato trovato.</value></data>
+  <data name="Category.ListRetrieved" xml:space="preserve"><value>Categorie recuperate con successo.</value></data>
+  <data name="Category.Retrieved" xml:space="preserve"><value>Categoria recuperata con successo.</value></data>
+  <data name="Category.Created" xml:space="preserve"><value>Categoria creata con successo.</value></data>
+  <data name="Category.Updated" xml:space="preserve"><value>Categoria aggiornata con successo.</value></data>
+  <data name="Category.Deleted" xml:space="preserve"><value>Categoria eliminata con successo.</value></data>
+  <data name="Category.Activated" xml:space="preserve"><value>Categoria attivata con successo.</value></data>
+  <data name="Category.Deactivated" xml:space="preserve"><value>Categoria disattivata con successo.</value></data>
 </root>

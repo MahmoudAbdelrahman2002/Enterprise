@@ -37,7 +37,7 @@ public sealed class UpdateProviderRoleCommandHandler(
                 throw NotFoundException.For("Role", request.Id);
             }
 
-            throw new ConflictException(result.Error ?? MessageKeys.Error.Conflict);
+            throw new ConflictException(result.Error ?? MessageKeys.Error.Conflict, result.Errors);
         }
 
         var updated = await roleManagerService.GetRoleByIdAsync(

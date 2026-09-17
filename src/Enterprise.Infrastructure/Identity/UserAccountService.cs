@@ -150,7 +150,8 @@ public sealed class UserAccountService(
         var result = await userManager.CreateAsync(user, password);
         if (!result.Succeeded)
         {
-            return new CreateProviderResult(false, Error: result.Errors.ToMessageKey());
+            var errors = result.Errors.ToMessageKeysOrDescriptions();
+            return new CreateProviderResult(false, Error: result.Errors.ToMessageKey(), Errors: errors);
         }
 
         if (!await roleManager.RoleExistsAsync(ProviderRoleName))
@@ -207,7 +208,7 @@ public sealed class UserAccountService(
         var result = await userManager.ChangePasswordAsync(user, currentPassword, newPassword);
         return result.Succeeded
             ? new AccountOperationResult(true)
-            : new AccountOperationResult(false, result.Errors.ToMessageKey());
+            : new AccountOperationResult(false, result.Errors.ToMessageKey(), result.Errors.ToMessageKeysOrDescriptions());
     }
 
     public async Task<AccountOperationResult> ResetPasswordAsync(
@@ -218,7 +219,7 @@ public sealed class UserAccountService(
         var result = await userManager.ResetPasswordAsync(user, token, newPassword);
         return result.Succeeded
             ? new AccountOperationResult(true)
-            : new AccountOperationResult(false, result.Errors.ToMessageKey());
+            : new AccountOperationResult(false, result.Errors.ToMessageKey(), result.Errors.ToMessageKeysOrDescriptions());
     }
 
     public async Task UpdateProfileAsync(
@@ -305,6 +306,7 @@ public sealed class UserAccountService(
             user.IsActive,
             roles.ToList(),
             permissions.Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
-            user.IsSystem);
+            user.IsSystem,
+            user.ProviderId);
     }
 }

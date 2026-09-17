@@ -152,8 +152,8 @@ exactly the case CSRF protection exists for.
 All data access goes through EF Core's LINQ provider and parameterized queries via
 `GenericRepository<T>`/`ISpecification<T>` — there is no raw string-concatenated SQL anywhere in
 the template. EF Core parameterizes every value that flows into a generated query, so user input
-(product search terms, filters, sort fields validated against an allow-list in
-`ProductFilterSpecification`) cannot break out of its parameter slot.
+(search terms, filters, sort fields validated against allow-lists in specifications)
+cannot break out of its parameter slot.
 
 ## XSS
 

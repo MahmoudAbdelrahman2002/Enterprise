@@ -10,4 +10,5 @@ public sealed class ApplicationUser : IdentityUser<Guid>
     public UserType UserType { get; set; }
     public bool IsActive { get; set; } = true;
     public bool IsSystem { get; set; }
+    public Guid? ProviderId { get; set; }
 }

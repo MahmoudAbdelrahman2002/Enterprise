@@ -57,7 +57,7 @@ public sealed class AdminProvidersController : ApiControllerBase
         Guid id, [FromBody] UpdateProviderRequest request, CancellationToken cancellationToken)
     {
         var command = new UpdateProviderCommand(
-            id, request.FirstName, request.LastName, request.CompanyName, request.PhoneNumber);
+            id, request.FirstName, request.LastName, request.CompanyName, request.PhoneNumber, request.ServiceId);
         return OkResponse(await Mediator.Send(command, cancellationToken), MessageKeys.Provider.Updated);
     }
 
@@ -88,6 +88,7 @@ public sealed record UpdateProviderRequest(
     string FirstName,
     string LastName,
     string CompanyName,
-    string? PhoneNumber);
+    string? PhoneNumber,
+    Guid? ServiceId = null);
 
 public sealed record SetProviderActiveRequest(bool IsActive);

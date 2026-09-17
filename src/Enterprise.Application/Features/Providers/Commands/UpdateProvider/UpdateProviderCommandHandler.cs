@@ -1,5 +1,6 @@
 using Enterprise.Application.Common.Exceptions;
 using Enterprise.Application.Common.Interfaces;
+using Enterprise.Domain.Entities;
 using Enterprise.Domain.Interfaces;
 using MediatR;
 
@@ -15,9 +16,19 @@ public sealed class UpdateProviderCommandHandler(
         var provider = await unitOfWork.Providers.GetByIdAsync(request.Id, cancellationToken)
             ?? throw NotFoundException.For(nameof(Domain.Entities.Provider), request.Id);
 
+        if (request.ServiceId.HasValue)
+        {
+            var service = await unitOfWork.Services.GetByIdAsync(request.ServiceId.Value, cancellationToken);
+            if (service is null || !service.IsActive)
+            {
+                throw NotFoundException.For(nameof(MarketplaceService), request.ServiceId.Value);
+            }
+        }
+
         provider.UpdateDetails(
             request.CompanyName.Trim(),
-            string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber.Trim());
+            string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber.Trim(),
+            request.ServiceId);
 
         await userAccountService.UpdateProfileAsync(
             provider.UserId, request.FirstName.Trim(), request.LastName.Trim(), cancellationToken);

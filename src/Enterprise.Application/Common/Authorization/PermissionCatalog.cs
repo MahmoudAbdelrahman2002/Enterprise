@@ -15,14 +15,6 @@ public sealed record PermissionDefinition(
 
 public static class Permissions
 {
-    public static class Products
-    {
-        public const string Read = "Products.Read";
-        public const string Create = "Products.Create";
-        public const string Update = "Products.Update";
-        public const string Delete = "Products.Delete";
-    }
-
     public static class Providers
     {
         public const string Read = "Providers.Read";
@@ -44,6 +36,22 @@ public static class Permissions
         public const string Create = "ApiKeys.Create";
     }
 
+    public static class Admins
+    {
+        public const string Read = "Admins.Read";
+        public const string Create = "Admins.Create";
+        public const string Update = "Admins.Update";
+        public const string Delete = "Admins.Delete";
+    }
+
+    public static class Services
+    {
+        public const string Read = "Services.Read";
+        public const string Create = "Services.Create";
+        public const string Update = "Services.Update";
+        public const string Delete = "Services.Delete";
+    }
+
     public static class ProviderRoles
     {
         public const string Read = "ProviderRoles.Read";
@@ -51,18 +59,28 @@ public static class Permissions
         public const string Update = "ProviderRoles.Update";
         public const string Delete = "ProviderRoles.Delete";
     }
+
+    public static class ProviderStaff
+    {
+        public const string Read = "ProviderStaff.Read";
+        public const string Create = "ProviderStaff.Create";
+        public const string Update = "ProviderStaff.Update";
+        public const string Delete = "ProviderStaff.Delete";
+    }
+
+    public static class ProviderCategory
+    {
+        public const string Read = "ProviderCategory.Read";
+        public const string Create = "ProviderCategory.Create";
+        public const string Update = "ProviderCategory.Update";
+        public const string Delete = "ProviderCategory.Delete";
+    }
 }
 
 public static class PermissionCatalog
 {
     private static readonly List<PermissionDefinition> _allPermissions =
     [
-        // Admin Portal - Products Module
-        new(Permissions.Products.Read, UserType.Admin, "Products", "Read", "View products in the catalog"),
-        new(Permissions.Products.Create, UserType.Admin, "Products", "Create", "Create new catalog products"),
-        new(Permissions.Products.Update, UserType.Admin, "Products", "Update", "Update existing catalog products"),
-        new(Permissions.Products.Delete, UserType.Admin, "Products", "Delete", "Delete catalog products"),
-
         // Admin Portal - Providers Module
         new(Permissions.Providers.Read, UserType.Admin, "Providers", "Read", "View marketplace providers"),
         new(Permissions.Providers.Create, UserType.Admin, "Providers", "Create", "Onboard new marketplace providers"),
@@ -78,14 +96,35 @@ public static class PermissionCatalog
         // Admin Portal - ApiKeys Module
         new(Permissions.ApiKeys.Create, UserType.Admin, "ApiKeys", "Create", "Generate service API keys"),
 
+        // Admin Portal - Admins Module
+        new(Permissions.Admins.Read, UserType.Admin, "Admins", "Read", "View platform administrative staff"),
+        new(Permissions.Admins.Create, UserType.Admin, "Admins", "Create", "Create new administrative staff"),
+        new(Permissions.Admins.Update, UserType.Admin, "Admins", "Update", "Update administrative staff and status"),
+        new(Permissions.Admins.Delete, UserType.Admin, "Admins", "Delete", "Delete administrative staff"),
+
+        // Admin Portal - Services Module
+        new(Permissions.Services.Read, UserType.Admin, "Services", "Read", "View marketplace services"),
+        new(Permissions.Services.Create, UserType.Admin, "Services", "Create", "Create new marketplace services"),
+        new(Permissions.Services.Update, UserType.Admin, "Services", "Update", "Update marketplace services and translations"),
+        new(Permissions.Services.Delete, UserType.Admin, "Services", "Delete", "Delete marketplace services"),
+
         // Provider Portal - Provider Roles Module
         new(Permissions.ProviderRoles.Read, UserType.Provider, "ProviderRoles", "Read", "View store staff roles"),
         new(Permissions.ProviderRoles.Create, UserType.Provider, "ProviderRoles", "Create", "Create store staff roles"),
         new(Permissions.ProviderRoles.Update, UserType.Provider, "ProviderRoles", "Update", "Modify store staff roles"),
         new(Permissions.ProviderRoles.Delete, UserType.Provider, "ProviderRoles", "Delete", "Delete store staff roles"),
 
-        // Provider Portal - Products Module (Catalog browsing)
-        new(Permissions.Products.Read, UserType.Provider, "Products", "Read", "Browse general product catalog")
+        // Provider Portal - ProviderStaff Module
+        new(Permissions.ProviderStaff.Read, UserType.Provider, "ProviderStaff", "Read", "View store staff members"),
+        new(Permissions.ProviderStaff.Create, UserType.Provider, "ProviderStaff", "Create", "Create store staff members"),
+        new(Permissions.ProviderStaff.Update, UserType.Provider, "ProviderStaff", "Update", "Update store staff and status"),
+        new(Permissions.ProviderStaff.Delete, UserType.Provider, "ProviderStaff", "Delete", "Delete store staff members"),
+
+        // Provider Portal - ProviderCategory Module
+        new(Permissions.ProviderCategory.Read, UserType.Provider, "ProviderCategory", "Read", "View store categories"),
+        new(Permissions.ProviderCategory.Create, UserType.Provider, "ProviderCategory", "Create", "Create store categories"),
+        new(Permissions.ProviderCategory.Update, UserType.Provider, "ProviderCategory", "Update", "Update store categories"),
+        new(Permissions.ProviderCategory.Delete, UserType.Provider, "ProviderCategory", "Delete", "Delete store categories"),
     ];
 
     public static IReadOnlyList<PermissionDefinition> All => _allPermissions;

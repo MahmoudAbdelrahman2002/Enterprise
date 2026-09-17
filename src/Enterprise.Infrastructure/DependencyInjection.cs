@@ -47,6 +47,7 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IUserAccountService, UserAccountService>();
         services.AddScoped<IRoleManagerService, RoleManagerService>();
+        services.AddScoped<IStaffManagerService, StaffManagerService>();
         services.AddScoped<IProviderAdminQueryService, ProviderAdminQueryService>();
         services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<IEmailSender, EmailSender>();
@@ -65,6 +66,7 @@ public static class DependencyInjection
         services.Configure<AccountLockoutSettings>(configuration.GetSection(AccountLockoutSettings.SectionName));
         services.Configure<OtpSettings>(configuration.GetSection(OtpSettings.SectionName));
         services.Configure<SmtpSettings>(configuration.GetSection(SmtpSettings.SectionName));
+        services.Configure<DashboardUrlSettings>(configuration.GetSection(DashboardUrlSettings.SectionName));
         services.Configure<ExternalAuthSettings>(configuration.GetSection(ExternalAuthSettings.SectionName));
 
         return services;

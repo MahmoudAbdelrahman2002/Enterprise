@@ -12,4 +12,5 @@ public sealed record AuthUserSnapshot(
     bool IsActive,
     IReadOnlyList<string> Roles,
     IReadOnlyList<string> Permissions,
-    bool IsSystem = false);
+    bool IsSystem = false,
+    Guid? ProviderId = null);

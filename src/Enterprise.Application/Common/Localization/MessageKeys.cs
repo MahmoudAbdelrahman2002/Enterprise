@@ -43,19 +43,6 @@ public static class MessageKeys
         public const string LocalizedEnRequired = "Validation.LocalizedEnRequired";
     }
 
-    public static class Product
-    {
-        public const string ListRetrieved = "Product.ListRetrieved";
-        public const string Retrieved = "Product.Retrieved";
-        public const string Created = "Product.Created";
-        public const string Updated = "Product.Updated";
-        public const string StockAdjusted = "Product.StockAdjusted";
-        public const string Deleted = "Product.Deleted";
-        public const string SkuExists = "Product.SkuExists";
-        public const string InsufficientStock = "Product.InsufficientStock";
-        public const string QuantityMustBePositive = "Product.QuantityMustBePositive";
-    }
-
     public static class Provider
     {
         public const string ListRetrieved = "Provider.ListRetrieved";
@@ -126,6 +113,44 @@ public static class MessageKeys
         public const string NotFound = "Entity.NotFound";
     }
 
+    public static class AdminUser
+    {
+        public const string ListRetrieved = "AdminUser.ListRetrieved";
+        public const string Retrieved = "AdminUser.Retrieved";
+        public const string Created = "AdminUser.Created";
+        public const string Updated = "AdminUser.Updated";
+        public const string Activated = "AdminUser.Activated";
+        public const string Deactivated = "AdminUser.Deactivated";
+        public const string Deleted = "AdminUser.Deleted";
+        public const string RoleNotFound = "AdminUser.RoleNotFound";
+    }
+
+    public static class ProviderStaff
+    {
+        public const string ListRetrieved = "ProviderStaff.ListRetrieved";
+        public const string Retrieved = "ProviderStaff.Retrieved";
+        public const string Created = "ProviderStaff.Created";
+        public const string Updated = "ProviderStaff.Updated";
+        public const string Activated = "ProviderStaff.Activated";
+        public const string Deactivated = "ProviderStaff.Deactivated";
+        public const string Deleted = "ProviderStaff.Deleted";
+        public const string RoleNotFound = "ProviderStaff.RoleNotFound";
+    }
+
+    public static class Service
+    {
+        public const string ListRetrieved = "Service.ListRetrieved";
+        public const string Retrieved = "Service.Retrieved";
+        public const string Created = "Service.Created";
+        public const string Updated = "Service.Updated";
+        public const string Deleted = "Service.Deleted";
+        public const string Activated = "Service.Activated";
+        public const string Deactivated = "Service.Deactivated";
+        public const string CodeExists = "Service.CodeExists";
+        public const string HasLinkedProviders = "Service.HasLinkedProviders";
+        public const string NotFound = "Service.NotFound";
+    }
+
     public static class Role
     {
         public const string ListRetrieved = "Role.ListRetrieved";
@@ -155,5 +180,18 @@ public static class MessageKeys
         public const string ResetBody = "Email.ResetBody";
         public const string ChangeEmailSubject = "Email.ChangeEmailSubject";
         public const string ChangeEmailBody = "Email.ChangeEmailBody";
+    }
+    public static class Category
+    {
+        public const string ListRetrieved = "Category.ListRetrieved";
+        public const string Retrieved = "Category.Retrieved";
+        public const string Created = "Category.Created";
+        public const string Updated = "Category.Updated";
+        public const string Deleted = "Category.Deleted";
+        public const string Activated = "Category.Activated";
+        public const string Deactivated = "Category.Deactivated";
+        public const string NotFound = "Category.NotFound";
+        public const string UnableToDelete = "Category.UnableToDelete";
+        
     }
 }

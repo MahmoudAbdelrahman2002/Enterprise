@@ -9,4 +9,5 @@ public sealed record CreateProviderCommand(
     string FirstName,
     string LastName,
     string CompanyName,
-    string? PhoneNumber) : IRequest<ProviderDto>;
+    string? PhoneNumber,
+    Guid? ServiceId = null) : IRequest<ProviderDto>;

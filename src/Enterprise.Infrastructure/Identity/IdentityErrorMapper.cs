@@ -17,7 +17,22 @@ internal static class IdentityErrorMapper
             "PasswordRequiresUpper" => MessageKeys.Validation.PasswordUppercase,
             "PasswordRequiresNonAlphanumeric" => MessageKeys.Validation.PasswordSpecial,
             "PasswordMismatch" => MessageKeys.Auth.InvalidCredentials,
-            _ => MessageKeys.Account.UnableToComplete
+            _ => errors.FirstOrDefault()?.Description ?? MessageKeys.Account.UnableToComplete
         };
+    }
+
+    public static IReadOnlyList<string> ToMessageKeysOrDescriptions(this IEnumerable<IdentityError> errors)
+    {
+        return errors.Select(e => e.Code switch
+        {
+            "DuplicateEmail" or "DuplicateUserName" => MessageKeys.Account.EmailExists,
+            "PasswordTooShort" => MessageKeys.Validation.PasswordMinLength,
+            "PasswordRequiresDigit" => MessageKeys.Validation.PasswordDigit,
+            "PasswordRequiresLower" => MessageKeys.Validation.PasswordLowercase,
+            "PasswordRequiresUpper" => MessageKeys.Validation.PasswordUppercase,
+            "PasswordRequiresNonAlphanumeric" => MessageKeys.Validation.PasswordSpecial,
+            "PasswordMismatch" => MessageKeys.Auth.InvalidCredentials,
+            _ => string.IsNullOrWhiteSpace(e.Description) ? MessageKeys.Account.UnableToComplete : e.Description
+        }).Distinct().ToList();
     }
 }

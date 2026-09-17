@@ -8,6 +8,7 @@ public interface ICurrentUserService
     string? Email { get; }
     bool IsAuthenticated { get; }
     UserType? UserType { get; }
+    Guid? ProviderId { get; }
     IReadOnlyCollection<string> Roles { get; }
     IReadOnlyCollection<string> Permissions { get; }
 }

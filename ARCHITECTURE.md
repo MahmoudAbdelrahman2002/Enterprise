@@ -55,8 +55,9 @@ Enterprise.slnx
 │   │   ├── Common/Models/           PagedResult<T>, PaginationParams
 │   │   ├── Common/Exceptions/       NotFoundException, ValidationException, ConflictException, ForbiddenAccessException, AuthenticationFailedException
 │   │   ├── Common/Mappings/         Mapster IRegister config
-│   │   ├── Features/Products/       Commands/{Create,Update,Delete,AdjustStock} + Queries/{GetById,GetList}
-│   │   └── Features/Auth/           Commands/{Register,Login,RefreshToken,RevokeToken,GenerateApiKey}
+│   │   ├── Features/Admin/          Admin roles, users, services CQRS modules
+│   │   ├── Features/Provider/       Provider roles, staff CQRS modules
+│   │   └── Features/Providers/      Admin provider management CQRS
 │   │
 │   ├── Enterprise.Infrastructure/   Depends on Application + Domain (implements their interfaces).
 │   │   ├── Persistence/             ApplicationDbContext, Configurations, Interceptors, Repositories, Seed, Migrations
@@ -66,7 +67,7 @@ Enterprise.slnx
 │   │   └── DependencyInjection.cs
 │   │
 │   └── Enterprise.Api/              Composition root.
-│       ├── Controllers/V1/          ProductsController, AuthController
+│       ├── Controllers/V1/          Admin/*, Provider/*, Client auth & profile controllers
 │       ├── Middleware/              GlobalExceptionHandler, SecurityHeadersMiddleware, CorrelationIdMiddleware
 │       ├── Authorization/           PermissionRequirement, PermissionAuthorizationHandler, PermissionPolicyProvider, RequirePermissionAttribute
 │       ├── Extensions/              SwaggerServiceExtensions, VersioningServiceExtensions, RateLimitingExtensions, HangfireDashboardAuthorizationFilter
@@ -120,9 +121,9 @@ lockout policy instead of leaving `AccessFailedCount++` scattered in a handler) 
 
 `ISpecification<T>` / `BaseSpecification<T>` encapsulate a query's criteria, includes, ordering
 and paging as a single object, so `GenericRepository<T>` stays generic instead of growing a
-bespoke method per feature (`GetActiveProductsSortedByPriceAsync(...)`, `GetProductsInCategory
-Async(...)`, and so on, multiplying combinatorially). `ProductFilterSpecification` is the one
-concrete example, covering search/filter/sort/paging for the product list endpoint in one class.
+bespoke method per feature (e.g. many one-off query methods multiplying combinatorially).
+`MarketplaceServiceFilterSpecification` is one concrete example, covering search/filter/paging
+for the admin services list endpoint in a single class.
 
 `SpecificationEvaluator` (which turns an `ISpecification<T>` into an EF Core `IQueryable<T>` via
 `.Where()`/`.Include()`/`.OrderBy()`) lives in **Infrastructure**, not Domain, even though the
@@ -141,9 +142,8 @@ This is a deliberate, debatable choice, not cargo-culted boilerplate:
 - It centralizes the soft-delete/audit convention application-wide instead of leaving it to
   every handler to remember.
 - It keeps `Application` handlers persistence-ignorant — they depend on `Domain` interfaces
-  (`IProductRepository`, `IUnitOfWork`), never on `DbContext` or `DbSet<T>` — which is what
-  makes handler unit tests possible without a database at all (see
-  `CreateProductCommandHandlerTests`, which mocks `IUnitOfWork` directly).
+  (`IMarketplaceServiceRepository`, `IUnitOfWork`), never on `DbContext` or `DbSet<T>` — which is what
+  makes handler unit tests possible without a database at all.
 
 The tradeoff is acknowledged: some teams skip this layer and inject `DbContext` straight into
 handlers. Here, it earns its keep specifically because of the Specification pattern requirement

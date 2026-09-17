@@ -32,15 +32,6 @@
   <data name="Validation.PasswordSpecial" xml:space="preserve"><value>يجب أن تحتوي كلمة المرور على رمز خاص واحد على الأقل.</value></data>
   <data name="Validation.ProviderUnsupported" xml:space="preserve"><value>يجب أن يكون الموفر Google أو Facebook.</value></data>
   <data name="Validation.LocalizedEnRequired" xml:space="preserve"><value>النص باللغة الإنجليزية مطلوب.</value></data>
-  <data name="Product.ListRetrieved" xml:space="preserve"><value>تم جلب المنتجات بنجاح.</value></data>
-  <data name="Product.Retrieved" xml:space="preserve"><value>تم جلب المنتج بنجاح.</value></data>
-  <data name="Product.Created" xml:space="preserve"><value>تم إنشاء المنتج بنجاح.</value></data>
-  <data name="Product.Updated" xml:space="preserve"><value>تم تحديث المنتج بنجاح.</value></data>
-  <data name="Product.StockAdjusted" xml:space="preserve"><value>تم تعديل المخزون بنجاح.</value></data>
-  <data name="Product.Deleted" xml:space="preserve"><value>تم حذف المنتج بنجاح.</value></data>
-  <data name="Product.SkuExists" xml:space="preserve"><value>يوجد بالفعل منتج برمز '{0}'.</value></data>
-  <data name="Product.InsufficientStock" xml:space="preserve"><value>المنتج '{0}' لا يملك مخزونًا كافيًا. المطلوب: {1}، المتاح: {2}.</value></data>
-  <data name="Product.QuantityMustBePositive" xml:space="preserve"><value>يجب أن تكون الكمية موجبة.</value></data>
   <data name="Provider.ListRetrieved" xml:space="preserve"><value>تم جلب المزودين بنجاح.</value></data>
   <data name="Provider.Retrieved" xml:space="preserve"><value>تم جلب المزود بنجاح.</value></data>
   <data name="Provider.Created" xml:space="preserve"><value>تم إنشاء المزود بنجاح.</value></data>
@@ -60,6 +51,22 @@
   <data name="Role.CannotDeleteSystemUser" xml:space="preserve"><value>لا يمكن حذف حسابات النظام المحمية.</value></data>
   <data name="Role.InvalidPermissions" xml:space="preserve"><value>واحدة أو أكثر من الصلاحيات المحددة غير صالحة لهذا النطاق.</value></data>
   <data name="Permission.ListRetrieved" xml:space="preserve"><value>تم استرجاع قائمة الصلاحيات بنجاح.</value></data>
+  <data name="AdminUser.ListRetrieved" xml:space="preserve"><value>تم استرجاع قائمة موظفي الإدارة بنجاح.</value></data>
+  <data name="AdminUser.Retrieved" xml:space="preserve"><value>تم استرجاع بيانات موظف الإدارة بنجاح.</value></data>
+  <data name="AdminUser.Created" xml:space="preserve"><value>تم إنشاء موظف الإدارة بنجاح وإرسال بيانات تسجيل الدخول إلى بريده الإلكتروني.</value></data>
+  <data name="AdminUser.Updated" xml:space="preserve"><value>تم تحديث بيانات موظف الإدارة بنجاح.</value></data>
+  <data name="AdminUser.Activated" xml:space="preserve"><value>تم تفعيل موظف الإدارة بنجاح.</value></data>
+  <data name="AdminUser.Deactivated" xml:space="preserve"><value>تم تعطيل موظف الإدارة بنجاح.</value></data>
+  <data name="AdminUser.Deleted" xml:space="preserve"><value>تم حذف موظف الإدارة بنجاح.</value></data>
+  <data name="AdminUser.RoleNotFound" xml:space="preserve"><value>الدور المحدد غير موجود في نطاق إدارة النظام.</value></data>
+  <data name="ProviderStaff.ListRetrieved" xml:space="preserve"><value>تم استرجاع قائمة موظفي المتجر بنجاح.</value></data>
+  <data name="ProviderStaff.Retrieved" xml:space="preserve"><value>تم استرجاع بيانات موظف المتجر بنجاح.</value></data>
+  <data name="ProviderStaff.Created" xml:space="preserve"><value>تم إنشاء موظف المتجر بنجاح وإرسال بيانات تسجيل الدخول إلى بريده الإلكتروني.</value></data>
+  <data name="ProviderStaff.Updated" xml:space="preserve"><value>تم تحديث بيانات موظف المتجر بنجاح.</value></data>
+  <data name="ProviderStaff.Activated" xml:space="preserve"><value>تم تفعيل موظف المتجر بنجاح.</value></data>
+  <data name="ProviderStaff.Deactivated" xml:space="preserve"><value>تم تعطيل موظف المتجر بنجاح.</value></data>
+  <data name="ProviderStaff.Deleted" xml:space="preserve"><value>تم حذف موظف المتجر بنجاح.</value></data>
+  <data name="ProviderStaff.RoleNotFound" xml:space="preserve"><value>الدور المحدد غير موجود في نطاق هذا المتجر.</value></data>
   <data name="Auth.LoginSuccess" xml:space="preserve"><value>تم تسجيل الدخول بنجاح.</value></data>
   <data name="Auth.RegistrationVerified" xml:space="preserve"><value>تم التحقق من التسجيل بنجاح.</value></data>
   <data name="Auth.ExternalLoginSuccess" xml:space="preserve"><value>تم تسجيل الدخول الخارجي بنجاح.</value></data>
@@ -110,4 +117,21 @@
   <data name="Email.ResetBody" xml:space="preserve"><value>&lt;p dir="rtl"&gt;رمز إعادة تعيين كلمة المرور هو &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;</value></data>
   <data name="Email.ChangeEmailSubject" xml:space="preserve"><value>أكد بريدك الإلكتروني الجديد</value></data>
   <data name="Email.ChangeEmailBody" xml:space="preserve"><value>&lt;p dir="rtl"&gt;رمز التحقق لتغيير البريد الإلكتروني هو &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;</value></data>
+  <data name="Service.ListRetrieved" xml:space="preserve"><value>تم استرجاع قائمة خدمات السوق بنجاح.</value></data>
+  <data name="Service.Retrieved" xml:space="preserve"><value>تم استرجاع بيانات خدمة السوق بنجاح.</value></data>
+  <data name="Service.Created" xml:space="preserve"><value>تم إنشاء خدمة السوق بنجاح.</value></data>
+  <data name="Service.Updated" xml:space="preserve"><value>تم تحديث خدمة السوق بنجاح.</value></data>
+  <data name="Service.Deleted" xml:space="preserve"><value>تم حذف خدمة السوق بنجاح.</value></data>
+  <data name="Service.Activated" xml:space="preserve"><value>تم تفعيل خدمة السوق بنجاح.</value></data>
+  <data name="Service.Deactivated" xml:space="preserve"><value>تم تعطيل خدمة السوق بنجاح.</value></data>
+  <data name="Service.CodeExists" xml:space="preserve"><value>توجد خدمة مسجلة بهذا الكود مسبقاً.</value></data>
+  <data name="Service.HasLinkedProviders" xml:space="preserve"><value>لا يمكن حذف الخدمة لأنها مرتبطة حالياً بمزود خدمة واحد أو أكثر.</value></data>
+  <data name="Service.NotFound" xml:space="preserve"><value>خدمة السوق غير موجودة.</value></data>
+  <data name="Category.ListRetrieved" xml:space="preserve"><value>تم استرجاع التصنيفات بنجاح.</value></data>
+  <data name="Category.Retrieved" xml:space="preserve"><value>تم استرجاع التصنيف بنجاح.</value></data>
+  <data name="Category.Created" xml:space="preserve"><value>تم إنشاء التصنيف بنجاح.</value></data>
+  <data name="Category.Updated" xml:space="preserve"><value>تم تحديث التصنيف بنجاح.</value></data>
+  <data name="Category.Deleted" xml:space="preserve"><value>تم حذف التصنيف بنجاح.</value></data>
+  <data name="Category.Activated" xml:space="preserve"><value>تم تفعيل التصنيف بنجاح.</value></data>
+  <data name="Category.Deactivated" xml:space="preserve"><value>تم تعطيل التصنيف بنجاح.</value></data>
 </root>

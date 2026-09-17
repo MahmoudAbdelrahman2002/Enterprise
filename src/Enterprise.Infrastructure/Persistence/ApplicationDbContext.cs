@@ -14,9 +14,11 @@ public sealed class ApplicationDbContext(
     AuditableEntitySaveChangesInterceptor auditableEntitySaveChangesInterceptor)
     : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>(options)
 {
-    public DbSet<Product> Products => Set<Product>();
-    public DbSet<ProductTranslation> ProductTranslations => Set<ProductTranslation>();
     public DbSet<Provider> Providers => Set<Provider>();
+    public DbSet<MarketplaceService> MarketplaceServices => Set<MarketplaceService>();
+    public DbSet<MarketplaceServiceTranslation> MarketplaceServiceTranslations => Set<MarketplaceServiceTranslation>();
+    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<CategoryTranslation> CategoryTranslations => Set<CategoryTranslation>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
     public DbSet<OtpChallenge> OtpChallenges => Set<OtpChallenge>();
@@ -76,6 +78,14 @@ public sealed class ApplicationDbContext(
         modelBuilder.Entity<ApplicationUser>(builder =>
         {
             builder.Property(u => u.IsSystem).IsRequired();
+            builder.Property(u => u.ProviderId).IsRequired(false);
+
+            builder.HasIndex(u => u.ProviderId);
+
+            builder.HasOne<Provider>()
+                .WithMany()
+                .HasForeignKey(u => u.ProviderId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
