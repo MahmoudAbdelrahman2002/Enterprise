@@ -3,11 +3,13 @@ using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Domain.Enums;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Admin.Roles.Commands.CreateAdminRole;
 
 public sealed class CreateAdminRoleCommandHandler(
-    IRoleManagerService roleManagerService)
+    IRoleManagerService roleManagerService,
+    ILogger<CreateAdminRoleCommandHandler> logger)
     : IRequestHandler<CreateAdminRoleCommand, RoleDetailDto>
 {
     public async Task<RoleDetailDto> Handle(
@@ -31,6 +33,7 @@ public sealed class CreateAdminRoleCommandHandler(
             providerId: null,
             cancellationToken);
 
+        logger.LogInformation("Created admin role {RoleId}", result.RoleId.Value);
         return created!;
     }
 }

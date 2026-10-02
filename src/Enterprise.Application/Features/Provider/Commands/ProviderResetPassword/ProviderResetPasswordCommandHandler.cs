@@ -3,12 +3,14 @@ using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Domain.Enums;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Provider.Commands.ProviderResetPassword;
 
 public sealed class ProviderResetPasswordCommandHandler(
     IUserAccountService userAccountService,
-    IOtpService otpService) : IRequestHandler<ProviderResetPasswordCommand>
+    IOtpService otpService,
+    ILogger<ProviderResetPasswordCommandHandler> logger) : IRequestHandler<ProviderResetPasswordCommand>
 {
     public async Task Handle(ProviderResetPasswordCommand request, CancellationToken cancellationToken)
     {
@@ -30,5 +32,7 @@ public sealed class ProviderResetPasswordCommandHandler(
         {
             throw new ConflictException(result.Error ?? MessageKeys.Auth.UnableToResetPassword);
         }
+
+        logger.LogInformation("Provider password reset succeeded for {Email}", request.Email);
     }
 }

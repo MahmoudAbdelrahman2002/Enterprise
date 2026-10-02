@@ -10,9 +10,13 @@ using Enterprise.Infrastructure.Identity;
 using Enterprise.Infrastructure.Persistence;
 using Enterprise.Infrastructure.Persistence.Seed;
 using Hangfire;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.ApplicationInsights.TelemetryConverters;
+using Stripe;
 
 // Bootstrap logger: captures any failure that happens before the full Serilog pipeline
 // (which needs configuration/DI to be built) is up - otherwise a crash during startup would
@@ -27,9 +31,37 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
-    builder.Host.UseSerilog((context, services, configuration) => configuration
-        .ReadFrom.Configuration(context.Configuration)
-        .ReadFrom.Services(services));
+    builder.Services.AddApplicationInsightsTelemetry();
+
+    builder.Host.UseSerilog((context, services, configuration) =>
+    {
+        var logDirectory = SerilogFileLoggingExtensions.ResolveFileLogDirectory(context.HostingEnvironment.ContentRootPath);
+        Directory.CreateDirectory(logDirectory);
+
+        configuration
+            .ReadFrom.Configuration(context.Configuration)
+            .ReadFrom.Services(services)
+            .WriteToRollingLogFile(logDirectory);
+
+        var appInsightsConnectionString = context.Configuration["ApplicationInsights:ConnectionString"];
+        if (!string.IsNullOrWhiteSpace(appInsightsConnectionString))
+        {
+            var telemetryConfiguration = services.GetService<TelemetryConfiguration>()
+                ?? TelemetryConfiguration.CreateDefault();
+            if (string.IsNullOrWhiteSpace(telemetryConfiguration.ConnectionString))
+            {
+                telemetryConfiguration.ConnectionString = appInsightsConnectionString;
+            }
+
+            configuration.WriteTo.ApplicationInsights(
+                telemetryConfiguration,
+                TelemetryConverter.Traces);
+
+            Log.Information("Serilog Application Insights sink enabled");
+        }
+
+        Log.Information("File logs directory: {LogDirectory}", logDirectory);
+    });
 
     // Composition root: each layer exposes exactly one `Add<Layer>()` extension method, so this
     // file stays a thin orchestrator instead of knowing which packages Application/Infrastructure
@@ -37,15 +69,36 @@ try
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
 
+    var stripeSecretKey = builder.Configuration["Stripe:SecretKey"];
+    if (!string.IsNullOrWhiteSpace(stripeSecretKey))
+    {
+        StripeConfiguration.ApiKey = stripeSecretKey;
+    }
+
     builder.Services.AddControllers();
     builder.Services.AddApiVersioningSetup();
     builder.Services.AddSwaggerSetup();
     builder.Services.AddApiLocalization();
     builder.Services.AddRateLimitingSetup();
 
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("SubitoWeb", policy =>
+        {
+            policy
+                .WithOrigins(
+                    "http://localhost:4200",
+                    "https://localhost:4200",
+                    "http://127.0.0.1:4200",
+                    "https://127.0.0.1:4200")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+    });
+
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
     builder.Services.AddProblemDetails();
-
+    
     // Registered AFTER AddInfrastructure() so these override the default authorization policy
     // provider/handler set registered there - see PermissionPolicyProvider's remarks for why a
     // dynamic provider is used instead of pre-registering every permission as a named policy.
@@ -54,17 +107,19 @@ try
 
     var app = builder.Build();
 
+    // Correlation must wrap request logging so Serilog request completion logs include CorrelationId.
+    app.UseMiddleware<CorrelationIdMiddleware>();
+
     app.UseSerilogRequestLogging(options =>
     {
         options.GetLevel = (httpContext, _, ex) =>
             ex is not null || httpContext.Response.StatusCode >= 500
-                ? Serilog.Events.LogEventLevel.Error
+                ? LogEventLevel.Error
                 : httpContext.Response.StatusCode >= 400
-                    ? Serilog.Events.LogEventLevel.Warning
-                    : Serilog.Events.LogEventLevel.Verbose;
+                    ? LogEventLevel.Warning
+                    : LogEventLevel.Information;
     });
 
-    app.UseMiddleware<CorrelationIdMiddleware>();
     app.UseExceptionHandler();
     app.UseApiLocalization();
     app.UseMiddleware<SecurityHeadersMiddleware>();
@@ -84,6 +139,8 @@ try
     }
 
     app.UseRateLimiter();
+
+    app.UseCors("SubitoWeb");
 
     app.UseAuthentication();
     app.UseAuthorization();
@@ -130,6 +187,10 @@ try
             job => job.ExecuteAsync(CancellationToken.None),
             Cron.Daily());
     }
+
+    Log.Information(
+        "File logs directory: {LogDirectory}",
+        SerilogFileLoggingExtensions.ResolveFileLogDirectory(app.Environment.ContentRootPath));
 
     app.Run();
 }

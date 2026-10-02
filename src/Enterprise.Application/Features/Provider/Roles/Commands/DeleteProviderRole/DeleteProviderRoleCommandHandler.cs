@@ -2,29 +2,25 @@ using Enterprise.Application.Common.Exceptions;
 using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Domain.Enums;
-using Enterprise.Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Provider.Roles.Commands.DeleteProviderRole;
 
 public sealed class DeleteProviderRoleCommandHandler(
     IRoleManagerService roleManagerService,
-    ICurrentUserService currentUserService,
-    IUnitOfWork unitOfWork)
+    IProviderContext providerContext,
+    ILogger<DeleteProviderRoleCommandHandler> logger)
     : IRequestHandler<DeleteProviderRoleCommand>
 {
     public async Task Handle(DeleteProviderRoleCommand request, CancellationToken cancellationToken)
     {
-        var userId = currentUserService.UserId
-            ?? throw new ForbiddenAccessException();
-
-        var provider = await unitOfWork.Providers.GetByUserIdAsync(userId, cancellationToken)
-            ?? throw NotFoundException.For(nameof(Enterprise.Domain.Entities.Provider), userId);
+        var providerId = await providerContext.GetProviderIdAsync(cancellationToken);
 
         var result = await roleManagerService.DeleteRoleAsync(
             request.Id,
             UserType.Provider,
-            provider.Id,
+            providerId,
             cancellationToken);
 
         if (!result.Succeeded)
@@ -36,5 +32,7 @@ public sealed class DeleteProviderRoleCommandHandler(
 
             throw new ConflictException(result.Error ?? MessageKeys.Error.Conflict, result.Errors);
         }
+
+        logger.LogInformation("Deleted role {RoleId} for provider {ProviderId}", request.Id, providerId);
     }
 }

@@ -2,30 +2,26 @@ using Enterprise.Application.Common.Exceptions;
 using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Domain.Enums;
-using Enterprise.Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Provider.Roles.Commands.CreateProviderRole;
 
 public sealed class CreateProviderRoleCommandHandler(
     IRoleManagerService roleManagerService,
-    ICurrentUserService currentUserService,
-    IUnitOfWork unitOfWork)
+    IProviderContext providerContext,
+    ILogger<CreateProviderRoleCommandHandler> logger)
     : IRequestHandler<CreateProviderRoleCommand, RoleDetailDto>
 {
     public async Task<RoleDetailDto> Handle(
         CreateProviderRoleCommand request, CancellationToken cancellationToken)
     {
-        var userId = currentUserService.UserId
-            ?? throw new ForbiddenAccessException();
-
-        var provider = await unitOfWork.Providers.GetByUserIdAsync(userId, cancellationToken)
-            ?? throw NotFoundException.For(nameof(Enterprise.Domain.Entities.Provider), userId);
+        var providerId = await providerContext.GetProviderIdAsync(cancellationToken);
 
         var result = await roleManagerService.CreateRoleAsync(
             request.Name,
             UserType.Provider,
-            provider.Id,
+            providerId,
             request.Permissions,
             cancellationToken);
 
@@ -37,9 +33,14 @@ public sealed class CreateProviderRoleCommandHandler(
         var created = await roleManagerService.GetRoleByIdAsync(
             result.RoleId!.Value,
             UserType.Provider,
-            provider.Id,
+            providerId,
             cancellationToken);
 
-        return created!;
+        logger.LogInformation(
+            "Created role {RoleId} with {PermissionCount} permissions for provider {ProviderId}",
+            created!.Id,
+            created.Permissions.Count,
+            providerId);
+        return created;
     }
 }

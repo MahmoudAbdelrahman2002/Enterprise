@@ -3,13 +3,15 @@ using Enterprise.Application.Common.Interfaces;
 using Enterprise.Domain.Entities;
 using Enterprise.Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Providers.Commands.UpdateProvider;
 
 public sealed class UpdateProviderCommandHandler(
     IUnitOfWork unitOfWork,
     IUserAccountService userAccountService,
-    IProviderAdminQueryService providerAdminQueryService) : IRequestHandler<UpdateProviderCommand, ProviderDto>
+    IProviderAdminQueryService providerAdminQueryService,
+    ILogger<UpdateProviderCommandHandler> logger) : IRequestHandler<UpdateProviderCommand, ProviderDto>
 {
     public async Task<ProviderDto> Handle(UpdateProviderCommand request, CancellationToken cancellationToken)
     {
@@ -39,6 +41,7 @@ public sealed class UpdateProviderCommandHandler(
         var detail = await providerAdminQueryService.GetByIdAsync(provider.Id, cancellationToken)
             ?? throw NotFoundException.For(nameof(Domain.Entities.Provider), request.Id);
 
+        logger.LogInformation("Updated provider {ProviderId}", request.Id);
         return detail.ToDto();
     }
 }

@@ -638,3 +638,60 @@ Every API endpoint returns an identical standardized JSON envelope:
 - **Security**: `Bearer <providerAccessToken>`
 - **Description**: Returns all active marketplace services localized to current user's language for display in store portal.
 - **Response (`200 OK`)**: Array of `{ "id": string, "code": string, "name": string, "description": string? }`.
+
+---
+
+## 17. Client storefront, orders, provider store, and admin oversight
+
+Checkout stays on Stripe: `POST /api/v1/client/{providerId}/payments` creates the session, and the webhook creates the order. There is no cash `POST .../orders`.
+
+### Client browse (anonymous)
+
+| Method | Route | Description |
+|---|---|---|
+| `GET` | `/api/v1/client/services/{serviceId}/providers` | Paged active stores for an active marketplace service. Query: `searchTerm`, `pageNumber`, `pageSize`. |
+| `GET` | `/api/v1/client/providers/{providerId}` | Storefront header: company, phone, image, service name. Inactive or deleted stores return 404. |
+| `GET` | `/api/v1/client/{providerId}/categories` | Active categories for an active store. Response includes `displayOrder`. |
+| `GET` | `/api/v1/client/{providerId}/categories/{id}` | Active category detail for an active store. |
+| `GET` | `/api/v1/client/categories/{categoryId}/products` | Active products in an active category whose store is public. |
+| `GET` | `/api/v1/client/categories/{categoryId}/products/{productId}` | Active product scoped to that category. 404 when the product, category, or store is not public. |
+| `GET` | `/api/v1/client/{providerId}/products` | Active products in active categories. Optional `categoryId`. |
+| `GET` | `/api/v1/client/products/{productId}` | Active product detail, including `categoryId` and `providerId`. |
+
+### Client orders (`RequireClient`)
+
+| Method | Route | Description |
+|---|---|---|
+| `GET` | `/api/v1/client/orders/by-session/{sessionId}` | Order created for this Stripe Checkout session. 404 when it is missing or belongs to another client. |
+| `POST` | `/api/v1/client/orders/{orderId}/cancel` | Owner only, and only while status is `Pending`. Later statuses return 409. |
+
+### Notifications (client, provider, admin)
+
+| Method | Route | Description |
+|---|---|---|
+| `POST` | `/api/v1/{portal}/notifications/{id}/read` | Marks one inbox row as read for the signed-in user. 404 when the row is missing or belongs to someone else. Opening `GET .../notifications` still marks the whole inbox as read. |
+
+`{portal}` is `client`, `provider`, or `admin`.
+
+### Provider store, catalog, and orders (`RequireProvider`)
+
+| Method | Route | Description |
+|---|---|---|
+| `GET` | `/api/v1/provider/store` | Company name, phone, image, and assigned service. |
+| `PUT` | `/api/v1/provider/store` | Body: `{ "companyName", "phoneNumber" }`. Does not change `serviceId`. |
+| `GET` | `/api/v1/provider/products` | Paged products for the caller's store. Query: `categoryId`, `status`, `searchTerm`, `pageNumber`, `pageSize`. Requires `ProviderProduct.Read`. |
+| `GET` | `/api/v1/provider/orders` | Paged store orders. Query: `status`, `from`, `to`, `pageNumber`, `pageSize`. `from` and `to` are inclusive UTC instants on `orderDateUtc`. Requires `ProviderOrder.Read`. |
+
+### Admin oversight
+
+| Method | Route | Permission | Description |
+|---|---|---|---|
+| `GET` | `/api/v1/admin/clients` | `Clients.Read` | Paged clients. Query: `searchTerm`, `isActive`, `pageNumber`, `pageSize`. |
+| `GET` | `/api/v1/admin/clients/{id}` | `Clients.Read` | Client account. |
+| `POST` | `/api/v1/admin/clients/{id}/set-active` | `Clients.Update` | Body: `{ "isActive": boolean }`. Inactive clients cannot sign in. |
+| `GET` | `/api/v1/admin/orders` | `Orders.Read` | Cross-store paged orders. Query: `providerId`, `status`, `from`, `to`, paging. |
+| `GET` | `/api/v1/admin/orders/{orderId}` | `Orders.Read` | Order detail. No admin status change. |
+| `GET` | `/api/v1/admin/providers/{id}/categories` | `Providers.Read` | Store categories, including inactive. |
+| `GET` | `/api/v1/admin/providers/{id}/products` | `Providers.Read` | Store products, any status. |
+
+The system admin role receives `Clients.Read`, `Clients.Update`, and `Orders.Read` on the next seed. Custom admin roles need those permissions assigned explicitly.

@@ -15,6 +15,7 @@ public sealed record RoleListItemDto(
 public sealed record RoleDetailDto(
     Guid Id,
     string Name,
+    LocalizedText Names,
     UserType RoleType,
     Guid? ProviderId,
     bool IsSystem,
@@ -43,7 +44,7 @@ public interface IRoleManagerService
         CancellationToken cancellationToken = default);
 
     Task<CreateRoleResult> CreateRoleAsync(
-        string name,
+        LocalizedText name,
         UserType portal,
         Guid? providerId,
         IEnumerable<string> permissions,
@@ -51,7 +52,7 @@ public interface IRoleManagerService
 
     Task<UpdateRoleResult> UpdateRoleAsync(
         Guid roleId,
-        string name,
+        LocalizedText name,
         UserType portal,
         Guid? providerId,
         IEnumerable<string> permissions,

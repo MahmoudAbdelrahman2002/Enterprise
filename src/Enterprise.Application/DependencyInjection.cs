@@ -43,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<IMapper, ServiceMapper>();
 
         services.AddScoped<ITokenIssuanceService, TokenIssuanceService>();
+        services.AddScoped<Features.Client.Payments.ICheckoutOrderService, Features.Client.Payments.CheckoutOrderService>();
         services.AddLocalization();
 
         return services;

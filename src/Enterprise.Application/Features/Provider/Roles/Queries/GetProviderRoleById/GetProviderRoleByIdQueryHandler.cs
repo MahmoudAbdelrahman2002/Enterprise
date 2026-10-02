@@ -1,30 +1,26 @@
 using Enterprise.Application.Common.Exceptions;
 using Enterprise.Application.Common.Interfaces;
 using Enterprise.Domain.Enums;
-using Enterprise.Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Provider.Roles.Queries.GetProviderRoleById;
 
 public sealed class GetProviderRoleByIdQueryHandler(
     IRoleManagerService roleManagerService,
-    ICurrentUserService currentUserService,
-    IUnitOfWork unitOfWork)
+    IProviderContext providerContext,
+    ILogger<GetProviderRoleByIdQueryHandler> logger)
     : IRequestHandler<GetProviderRoleByIdQuery, RoleDetailDto>
 {
     public async Task<RoleDetailDto> Handle(
         GetProviderRoleByIdQuery request, CancellationToken cancellationToken)
     {
-        var userId = currentUserService.UserId
-            ?? throw new ForbiddenAccessException();
-
-        var provider = await unitOfWork.Providers.GetByUserIdAsync(userId, cancellationToken)
-            ?? throw NotFoundException.For(nameof(Enterprise.Domain.Entities.Provider), userId);
+        var providerId = await providerContext.GetProviderIdAsync(cancellationToken);
 
         var role = await roleManagerService.GetRoleByIdAsync(
             request.Id,
             UserType.Provider,
-            provider.Id,
+            providerId,
             cancellationToken);
 
         if (role is null)
@@ -32,6 +28,7 @@ public sealed class GetProviderRoleByIdQueryHandler(
             throw NotFoundException.For("Role", request.Id);
         }
 
+        logger.LogInformation("Fetched role {RoleId} for provider {ProviderId}", role.Id, providerId);
         return role;
     }
 }

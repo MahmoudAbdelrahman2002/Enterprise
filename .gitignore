@@ -17,7 +17,6 @@ bld/
 ## Visual Studio / VS Code / JetBrains
 .vs/
 .vscode/
-.vscodecsdt/
 *.suo
 *.user
 *.userosscache

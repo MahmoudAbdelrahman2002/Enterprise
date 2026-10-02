@@ -3,11 +3,13 @@ using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Domain.Enums;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Admin.Roles.Commands.UpdateAdminRole;
 
 public sealed class UpdateAdminRoleCommandHandler(
-    IRoleManagerService roleManagerService)
+    IRoleManagerService roleManagerService,
+    ILogger<UpdateAdminRoleCommandHandler> logger)
     : IRequestHandler<UpdateAdminRoleCommand, RoleDetailDto>
 {
     public async Task<RoleDetailDto> Handle(
@@ -37,6 +39,7 @@ public sealed class UpdateAdminRoleCommandHandler(
             providerId: null,
             cancellationToken);
 
+        logger.LogInformation("Updated admin role {RoleId}", request.Id);
         return updated!;
     }
 }

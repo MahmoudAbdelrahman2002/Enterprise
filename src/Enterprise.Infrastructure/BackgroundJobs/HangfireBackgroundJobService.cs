@@ -10,6 +10,8 @@ public sealed class HangfireBackgroundJobService(
 {
     public string Enqueue<T>(Expression<Action<T>> methodCall) => backgroundJobClient.Enqueue(methodCall);
 
+    public string Enqueue<T>(Expression<Func<T, Task>> methodCall) => backgroundJobClient.Enqueue(methodCall);
+
     public string Schedule<T>(Expression<Action<T>> methodCall, TimeSpan delay) =>
         backgroundJobClient.Schedule(methodCall, delay);
 

@@ -73,4 +73,4 @@ public sealed class AdminRolesController : ApiControllerBase
     }
 }
 
-public sealed record UpdateAdminRoleRequest(string Name, IReadOnlyList<string> Permissions);
+public sealed record UpdateAdminRoleRequest(LocalizedText Name, IReadOnlyList<string> Permissions);

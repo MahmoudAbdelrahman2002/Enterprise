@@ -1,13 +1,17 @@
 using Asp.Versioning;
 using Enterprise.Api.Authorization;
 using Enterprise.Api.Controllers;
+using Enterprise.Api.Extensions;
 using Enterprise.Api.Models;
+using Enterprise.Application.Common.Authorization;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Application.Common.Models;
 using Enterprise.Application.Features.Admin.Services.Commands.CreateMarketplaceService;
 using Enterprise.Application.Features.Admin.Services.Commands.DeleteMarketplaceService;
+using Enterprise.Application.Features.Admin.Services.Commands.DeleteMarketplaceServiceImage;
 using Enterprise.Application.Features.Admin.Services.Commands.SetMarketplaceServiceActive;
 using Enterprise.Application.Features.Admin.Services.Commands.UpdateMarketplaceService;
+using Enterprise.Application.Features.Admin.Services.Commands.UploadMarketplaceServiceImage;
 using Enterprise.Application.Features.Admin.Services.DTOs;
 using Enterprise.Application.Features.Admin.Services.Queries.GetAdminServiceById;
 using Enterprise.Application.Features.Admin.Services.Queries.GetAdminServicesList;
@@ -82,7 +86,7 @@ public sealed class AdminServicesController : ApiControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [RequirePermission("Services.Delete")]
+    [RequirePermission(Permissions.Services.Delete)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]
@@ -90,6 +94,35 @@ public sealed class AdminServicesController : ApiControllerBase
     {
         await Mediator.Send(new DeleteMarketplaceServiceCommand(id), cancellationToken);
         return EmptyResponse(MessageKeys.Service.Deleted);
+    }
+
+    [HttpPost("{id:guid}/image")]
+    [RequirePermission(Permissions.Services.Update)]
+    [RequestSizeLimit(3 * 1024 * 1024)]
+    [ProducesResponseType(typeof(ApiResponse<MarketplaceServiceDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<MarketplaceServiceDto>>> UploadImage(
+        Guid id,
+        IFormFile file,
+        CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(
+            new UploadMarketplaceServiceImageCommand(id, file.ToImageUploadFile()),
+            cancellationToken);
+        return OkResponse(result, MessageKeys.Image.Uploaded);
+    }
+
+    [HttpDelete("{id:guid}/image")]
+    [RequirePermission(Permissions.Services.Update)]
+    [ProducesResponseType(typeof(ApiResponse<MarketplaceServiceDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<MarketplaceServiceDto>>> DeleteImage(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new DeleteMarketplaceServiceImageCommand(id), cancellationToken);
+        return OkResponse(result, MessageKeys.Image.Removed);
     }
 }
 

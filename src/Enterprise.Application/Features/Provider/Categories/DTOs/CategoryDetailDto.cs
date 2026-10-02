@@ -8,5 +8,6 @@ public sealed class CategoryDetailDto
     public string? Description { get; init; }
     public int DisplayOrder { get; init; }
     public bool IsActive { get; init; }
+    public string? ImageUrl { get; init; }
     public CategoryTranslationsDto? Translations { get; init; }
 }

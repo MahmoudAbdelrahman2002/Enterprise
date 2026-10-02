@@ -3,11 +3,13 @@ using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Domain.Enums;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Admin.Roles.Commands.DeleteAdminRole;
 
 public sealed class DeleteAdminRoleCommandHandler(
-    IRoleManagerService roleManagerService)
+    IRoleManagerService roleManagerService,
+    ILogger<DeleteAdminRoleCommandHandler> logger)
     : IRequestHandler<DeleteAdminRoleCommand>
 {
     public async Task Handle(DeleteAdminRoleCommand request, CancellationToken cancellationToken)
@@ -27,5 +29,7 @@ public sealed class DeleteAdminRoleCommandHandler(
 
             throw new ConflictException(result.Error ?? MessageKeys.Error.Conflict, result.Errors);
         }
+
+        logger.LogInformation("Deleted admin role {RoleId}", request.Id);
     }
 }

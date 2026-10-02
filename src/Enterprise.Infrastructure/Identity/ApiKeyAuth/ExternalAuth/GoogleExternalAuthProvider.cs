@@ -3,11 +3,14 @@ using Enterprise.Application.Common.Exceptions;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Application.Common.Settings;
 using Google.Apis.Auth;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Enterprise.Infrastructure.Identity.ApiKeyAuth.ExternalAuth;
 
-public sealed class GoogleExternalAuthProvider(IOptions<ExternalAuthSettings> options) : IExternalAuthProvider
+public sealed class GoogleExternalAuthProvider(
+    IOptions<ExternalAuthSettings> options,
+    ILogger<GoogleExternalAuthProvider> logger) : IExternalAuthProvider
 {
     public string ProviderName => ExternalAuthProviders.Google;
 
@@ -21,6 +24,7 @@ public sealed class GoogleExternalAuthProvider(IOptions<ExternalAuthSettings> op
 
         if (clientIds.Length == 0)
         {
+            logger.LogWarning("Google external auth validation failed: provider not configured");
             throw new AuthenticationFailedException(MessageKeys.Auth.GoogleNotConfigured);
         }
 
@@ -35,12 +39,16 @@ public sealed class GoogleExternalAuthProvider(IOptions<ExternalAuthSettings> op
 
             if (string.IsNullOrWhiteSpace(payload.Email))
             {
+                logger.LogWarning("Google external auth validation failed: email missing");
                 throw new AuthenticationFailedException(
                     MessageKeys.Auth.SocialEmailRequired);
             }
 
             if (!payload.EmailVerified)
             {
+                logger.LogWarning(
+                    "Google external auth validation failed: email not verified for subject {Subject}",
+                    payload.Subject);
                 throw new AuthenticationFailedException(
                     MessageKeys.Auth.SocialEmailRequired);
             }
@@ -62,8 +70,9 @@ public sealed class GoogleExternalAuthProvider(IOptions<ExternalAuthSettings> op
                 string.IsNullOrWhiteSpace(family) ? "Client" : family,
                 EmailVerified: true);
         }
-        catch (InvalidJwtException)
+        catch (InvalidJwtException ex)
         {
+            logger.LogWarning(ex, "Google external auth validation failed: invalid JWT");
             throw new AuthenticationFailedException(MessageKeys.Auth.InvalidGoogleToken);
         }
     }

@@ -4,12 +4,14 @@ using Enterprise.Application.Features.Admin.Services.DTOs;
 using Enterprise.Domain.Entities;
 using Enterprise.Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Admin.Services.Commands.SetMarketplaceServiceActive;
 
 public sealed class SetMarketplaceServiceActiveCommandHandler(
     IUnitOfWork unitOfWork,
-    ICurrentCulture culture) : IRequestHandler<SetMarketplaceServiceActiveCommand, MarketplaceServiceDto>
+    ICurrentCulture culture,
+    ILogger<SetMarketplaceServiceActiveCommandHandler> logger) : IRequestHandler<SetMarketplaceServiceActiveCommand, MarketplaceServiceDto>
 {
     public async Task<MarketplaceServiceDto> Handle(
         SetMarketplaceServiceActiveCommand request, CancellationToken cancellationToken)
@@ -20,6 +22,7 @@ public sealed class SetMarketplaceServiceActiveCommandHandler(
         service.SetActive(request.IsActive);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
+        logger.LogInformation("Set marketplace service {ServiceId} active={IsActive}", request.Id, request.IsActive);
         return service.ToDto(culture.LanguageCode);
     }
 }

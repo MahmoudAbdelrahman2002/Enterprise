@@ -1,3 +1,4 @@
+using Enterprise.Application.Common.Localization;
 using Enterprise.Application.Common.Models;
 using Enterprise.Application.Features.Admin.Services.DTOs;
 using Enterprise.Domain.Common;
@@ -20,6 +21,7 @@ public static class MarketplaceServiceMapping
             name,
             description,
             translations,
+            service.ImageUrl,
             service.CreatedAtUtc,
             service.LastModifiedAtUtc);
     }
@@ -39,32 +41,7 @@ public static class MarketplaceServiceMapping
         LocalizedText name,
         LocalizedText? description)
     {
-        service.UpsertTranslation(
-            SupportedLanguages.English,
-            name.En,
-            description?.En);
-
-        ApplyOptional(service, SupportedLanguages.Italian, name.It, description?.It, name.En, description?.En);
-        ApplyOptional(service, SupportedLanguages.Arabic, name.Ar, description?.Ar, name.En, description?.En);
-    }
-
-    private static void ApplyOptional(
-        MarketplaceService service,
-        string language,
-        string? name,
-        string? description,
-        string englishName,
-        string? englishDescription)
-    {
-        if (string.IsNullOrWhiteSpace(name) && string.IsNullOrWhiteSpace(description))
-        {
-            return;
-        }
-
-        service.UpsertTranslation(
-            language,
-            string.IsNullOrWhiteSpace(name) ? englishName : name,
-            string.IsNullOrWhiteSpace(description) ? englishDescription : description);
+        LocalizedContentHelper.Apply(service.UpsertTranslation, name, description);
     }
 
     private static MarketplaceServiceTranslationsDto ToTranslationsDto(this MarketplaceService service)

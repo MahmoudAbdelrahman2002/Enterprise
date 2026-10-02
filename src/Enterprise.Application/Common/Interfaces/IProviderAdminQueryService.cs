@@ -13,6 +13,7 @@ public sealed record ProviderAdminListItemDto(
     Guid? ServiceId,
     string? ServiceName,
     bool IsActive,
+    string? ImageUrl,
     DateTime CreatedAtUtc);
 
 public sealed record ProviderAdminDetailDto(
@@ -27,6 +28,7 @@ public sealed record ProviderAdminDetailDto(
     string? ServiceName,
     bool IsActive,
     bool EmailConfirmed,
+    string? ImageUrl,
     DateTime CreatedAtUtc,
     DateTime? LastModifiedAtUtc);
 

@@ -13,6 +13,7 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
 
         builder.Property(c => c.DisplayOrder).HasDefaultValue(0);
         builder.Property(c => c.IsActive).HasDefaultValue(true);
+        builder.Property(c => c.ImageUrl).HasMaxLength(2048);
 
         builder.HasIndex(c => c.ProviderId);
         builder.HasIndex(c => c.DisplayOrder);

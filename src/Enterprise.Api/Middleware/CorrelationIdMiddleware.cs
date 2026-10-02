@@ -19,6 +19,9 @@ public sealed class CorrelationIdMiddleware(RequestDelegate next)
             ? existing.ToString()
             : Guid.NewGuid().ToString("N");
 
+        // Align ASP.NET TraceIdentifier with X-Correlation-Id so API TraceId matches Serilog logs.
+        context.TraceIdentifier = correlationId;
+
         context.Response.OnStarting(() =>
         {
             context.Response.Headers[HeaderName] = correlationId;

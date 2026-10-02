@@ -9,6 +9,7 @@ using Enterprise.Application.Features.Auth.Common;
 using Enterprise.Domain.Enums;
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Client.Auth;
 
@@ -32,7 +33,8 @@ public sealed class ClientExternalLoginCommandValidator : AbstractValidator<Clie
 public sealed class ClientExternalLoginCommandHandler(
     IExternalAuthProviderResolver providerResolver,
     IUserAccountService userAccountService,
-    ITokenIssuanceService tokenIssuanceService) : IRequestHandler<ClientExternalLoginCommand, AuthResponseDto>
+    ITokenIssuanceService tokenIssuanceService,
+    ILogger<ClientExternalLoginCommandHandler> logger) : IRequestHandler<ClientExternalLoginCommand, AuthResponseDto>
 {
     public async Task<AuthResponseDto> Handle(
         ClientExternalLoginCommand request, CancellationToken cancellationToken)
@@ -54,7 +56,11 @@ public sealed class ClientExternalLoginCommandHandler(
             if (byLogin is not null)
             {
                 EnsureEligibleClient(byLogin);
-                return await tokenIssuanceService.IssueTokensAsync(byLogin, request.IpAddress, cancellationToken);
+                var tokens = await tokenIssuanceService.IssueTokensAsync(byLogin, request.IpAddress, cancellationToken);
+                logger.LogInformation(
+                    "Client external login succeeded via existing login for user {UserId} ({Email}) provider {Provider}",
+                    byLogin.Id, byLogin.Email, providerName);
+                return tokens;
             }
 
             var byEmail = await userAccountService.FindByEmailAsync(external.Email, cancellationToken);
@@ -84,7 +90,11 @@ public sealed class ClientExternalLoginCommandHandler(
                     byEmail = (await userAccountService.FindByIdAsync(byEmail.Id, cancellationToken))!;
                 }
 
-                return await tokenIssuanceService.IssueTokensAsync(byEmail, request.IpAddress, cancellationToken);
+                var tokens = await tokenIssuanceService.IssueTokensAsync(byEmail, request.IpAddress, cancellationToken);
+                logger.LogInformation(
+                    "Client external login linked to existing user {UserId} ({Email}) provider {Provider}",
+                    byEmail.Id, byEmail.Email, providerName);
+                return tokens;
             }
 
             return await CreateExternalClientAsync(external, request.IpAddress, cancellationToken);
@@ -128,7 +138,11 @@ public sealed class ClientExternalLoginCommandHandler(
                 throw new AuthenticationFailedException(addLogin.Error ?? MessageKeys.Auth.SocialLinkFailed);
             }
 
-            return await tokenIssuanceService.IssueTokensAsync(created, ipAddress, cancellationToken);
+            var tokens = await tokenIssuanceService.IssueTokensAsync(created, ipAddress, cancellationToken);
+            logger.LogInformation(
+                "Client external login created user {UserId} ({Email}) provider {Provider}",
+                created.Id, created.Email, external.Provider);
+            return tokens;
         }
         catch (Exception)
         {
@@ -136,9 +150,12 @@ public sealed class ClientExternalLoginCommandHandler(
             {
                 await userAccountService.DeleteByEmailAsync(external.Email, cancellationToken);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Best-effort rollback.
+                logger.LogWarning(
+                    ex,
+                    "Best-effort user delete failed during external login rollback for {Email} provider {Provider}",
+                    external.Email, external.Provider);
             }
 
             throw;

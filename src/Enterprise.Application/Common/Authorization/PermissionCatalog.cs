@@ -4,7 +4,10 @@ namespace Enterprise.Application.Common.Authorization;
 
 public sealed record PermissionItemDto(string Name, string Action, string? Description);
 
-public sealed record PermissionGroupDto(string Module, IReadOnlyList<PermissionItemDto> Permissions);
+public sealed record PermissionGroupDto(
+    string Module,
+    IReadOnlyList<PermissionItemDto> Permissions,
+    string ModuleLabel);
 
 public sealed record PermissionDefinition(
     string Name,
@@ -52,6 +55,17 @@ public static class Permissions
         public const string Delete = "Services.Delete";
     }
 
+    public static class Clients
+    {
+        public const string Read = "Clients.Read";
+        public const string Update = "Clients.Update";
+    }
+
+    public static class Orders
+    {
+        public const string Read = "Orders.Read";
+    }
+
     public static class ProviderRoles
     {
         public const string Read = "ProviderRoles.Read";
@@ -75,6 +89,20 @@ public static class Permissions
         public const string Update = "ProviderCategory.Update";
         public const string Delete = "ProviderCategory.Delete";
     }
+    public static class ProviderProduct
+    {
+        public const string Read = "ProviderProduct.Read";
+        public const string Create = "ProviderProduct.Create";
+        public const string Update = "ProviderProduct.Update";
+        public const string Delete = "ProviderProduct.Delete";
+    }
+
+    public static class ProviderOrder
+    {
+        public const string Read = "ProviderOrder.Read";
+        public const string Update = "ProviderOrder.Update";
+    }
+    
 }
 
 public static class PermissionCatalog
@@ -108,6 +136,11 @@ public static class PermissionCatalog
         new(Permissions.Services.Update, UserType.Admin, "Services", "Update", "Update marketplace services and translations"),
         new(Permissions.Services.Delete, UserType.Admin, "Services", "Delete", "Delete marketplace services"),
 
+        new(Permissions.Clients.Read, UserType.Admin, "Clients", "Read", "View marketplace clients"),
+        new(Permissions.Clients.Update, UserType.Admin, "Clients", "Update", "Activate or deactivate marketplace clients"),
+
+        new(Permissions.Orders.Read, UserType.Admin, "Orders", "Read", "View marketplace orders"),
+
         // Provider Portal - Provider Roles Module
         new(Permissions.ProviderRoles.Read, UserType.Provider, "ProviderRoles", "Read", "View store staff roles"),
         new(Permissions.ProviderRoles.Create, UserType.Provider, "ProviderRoles", "Create", "Create store staff roles"),
@@ -125,6 +158,15 @@ public static class PermissionCatalog
         new(Permissions.ProviderCategory.Create, UserType.Provider, "ProviderCategory", "Create", "Create store categories"),
         new(Permissions.ProviderCategory.Update, UserType.Provider, "ProviderCategory", "Update", "Update store categories"),
         new(Permissions.ProviderCategory.Delete, UserType.Provider, "ProviderCategory", "Delete", "Delete store categories"),
+        // Provider Portal - ProviderProduct Module
+        new(Permissions.ProviderProduct.Read, UserType.Provider, "ProviderProduct", "Read", "View store products"),
+        new(Permissions.ProviderProduct.Create, UserType.Provider, "ProviderProduct", "Create", "Create store products"),
+        new(Permissions.ProviderProduct.Update, UserType.Provider, "ProviderProduct", "Update", "Update store products"),
+        new(Permissions.ProviderProduct.Delete, UserType.Provider, "ProviderProduct", "Delete", "Delete store products"),
+
+        // Provider Portal - ProviderOrder Module
+        new(Permissions.ProviderOrder.Read, UserType.Provider, "ProviderOrder", "Read", "View store orders"),
+        new(Permissions.ProviderOrder.Update, UserType.Provider, "ProviderOrder", "Update", "Update store order status"),
     ];
 
     public static IReadOnlyList<PermissionDefinition> All => _allPermissions;

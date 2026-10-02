@@ -1,0 +1,13 @@
+{
+  "folders": [
+    {
+      "name": "Backend",
+      "path": "."
+    }
+  ],
+  "extensions": {
+    "recommendations": [
+      "jakubkozera.csharp-dev-tools"
+    ]
+  }
+}

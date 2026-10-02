@@ -16,6 +16,7 @@ public sealed class StaffManagerService(
     UserManager<ApplicationUser> userManager,
     RoleManager<ApplicationRole> roleManager,
     ApplicationDbContext context,
+    ICurrentCulture culture,
     IEmailSender emailSender,
     IOptions<DashboardUrlSettings> dashboardUrls,
     ILogger<StaffManagerService> logger) : IStaffManagerService
@@ -85,9 +86,19 @@ public sealed class StaffManagerService(
             .GroupBy(x => x.UserId)
             .ToDictionary(g => g.Key, g => g.First());
 
+        var translationsByRole = await LoadRoleTranslationsAsync(
+            rolesByUser.Select(x => x.RoleId).Distinct().ToList(),
+            cancellationToken);
+
         var items = users.Select(user =>
         {
             var r = roleByUserId.GetValueOrDefault(user.Id);
+            var roleName = r is null
+                ? string.Empty
+                : RoleDisplayNames.Resolve(
+                    translationsByRole.GetValueOrDefault(r.RoleId) ?? [],
+                    culture.LanguageCode,
+                    r.RoleName);
             return new StaffListItemDto(
                 user.Id,
                 user.FirstName,
@@ -95,7 +106,7 @@ public sealed class StaffManagerService(
                 user.Email ?? string.Empty,
                 user.PhoneNumber,
                 r?.RoleId ?? Guid.Empty,
-                r?.RoleName ?? string.Empty,
+                roleName,
                 user.UserType,
                 user.ProviderId,
                 user.IsActive,
@@ -136,6 +147,15 @@ public sealed class StaffManagerService(
             select new { RoleId = r.Id, RoleName = r.Name ?? string.Empty }
         ).FirstOrDefaultAsync(cancellationToken);
 
+        var translations = userRole is null
+            ? []
+            : await context.RoleTranslations.AsNoTracking()
+                .Where(t => t.RoleId == userRole.RoleId)
+                .ToListAsync(cancellationToken);
+        var roleName = userRole is null
+            ? string.Empty
+            : RoleDisplayNames.Resolve(translations, culture.LanguageCode, userRole.RoleName);
+
         var permissions = new List<string>();
         if (userRole != null)
         {
@@ -154,7 +174,7 @@ public sealed class StaffManagerService(
             user.Email ?? string.Empty,
             user.PhoneNumber,
             userRole?.RoleId ?? Guid.Empty,
-            userRole?.RoleName ?? string.Empty,
+            roleName,
             permissions,
             user.UserType,
             user.ProviderId,
@@ -315,6 +335,15 @@ public sealed class StaffManagerService(
             return new SetActiveResult(false, Error: errors.FirstOrDefault(), Errors: errors);
         }
 
+        if (!isActive)
+        {
+            await RefreshTokenSession.RevokeAllActiveAsync(
+                context,
+                staffId,
+                "Account deactivated.",
+                cancellationToken);
+        }
+
         return new SetActiveResult(true);
     }
 
@@ -415,5 +444,22 @@ public sealed class StaffManagerService(
         </body>
         </html>
         """;
+    }
+
+    private async Task<Dictionary<Guid, List<RoleTranslation>>> LoadRoleTranslationsAsync(
+        IReadOnlyCollection<Guid> roleIds,
+        CancellationToken cancellationToken)
+    {
+        if (roleIds.Count == 0)
+        {
+            return [];
+        }
+
+        var rows = await context.RoleTranslations
+            .AsNoTracking()
+            .Where(t => roleIds.Contains(t.RoleId))
+            .ToListAsync(cancellationToken);
+
+        return rows.GroupBy(t => t.RoleId).ToDictionary(g => g.Key, g => g.ToList());
     }
 }

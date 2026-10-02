@@ -2,6 +2,7 @@ using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Domain.Enums;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Admin.Commands.AdminForgotPassword;
 
@@ -9,7 +10,8 @@ public sealed class AdminForgotPasswordCommandHandler(
     IUserAccountService userAccountService,
     IOtpService otpService,
     IEmailSender emailSender,
-    IAppLocalizer localizer) : IRequestHandler<AdminForgotPasswordCommand>
+    IAppLocalizer localizer,
+    ILogger<AdminForgotPasswordCommandHandler> logger) : IRequestHandler<AdminForgotPasswordCommand>
 {
     public async Task Handle(AdminForgotPasswordCommand request, CancellationToken cancellationToken)
     {
@@ -34,12 +36,17 @@ public sealed class AdminForgotPasswordCommandHandler(
             {
                 await otpService.InvalidateAsync(request.Email, OtpPurpose.ResetPassword, cancellationToken);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Best-effort cleanup.
+                logger.LogWarning(
+                    ex,
+                    "Best-effort OTP invalidate failed after admin forgot-password email failure for {Email}",
+                    request.Email);
             }
 
             throw;
         }
+
+        logger.LogInformation("Admin forgot-password code sent for {Email}", request.Email);
     }
 }

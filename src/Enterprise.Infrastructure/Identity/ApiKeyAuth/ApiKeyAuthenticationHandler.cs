@@ -66,4 +66,28 @@ public sealed class ApiKeyAuthenticationHandler(
         var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), Scheme.Name);
         return AuthenticateResult.Success(ticket);
     }
+
+    protected override Task HandleChallengeAsync(AuthenticationProperties properties)
+    {
+        // Browser and API-key schemes are both on the same policy. The JWT handler already
+        // writes the 401 envelope; challenging this scheme afterwards throws
+        // "StatusCode cannot be set because the response has already started" and the
+        // connection never finishes, so the browser waits forever.
+        if (Response.HasStarted)
+        {
+            return Task.CompletedTask;
+        }
+
+        return base.HandleChallengeAsync(properties);
+    }
+
+    protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
+    {
+        if (Response.HasStarted)
+        {
+            return Task.CompletedTask;
+        }
+
+        return base.HandleForbiddenAsync(properties);
+    }
 }

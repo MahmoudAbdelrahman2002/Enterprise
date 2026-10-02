@@ -13,5 +13,11 @@ public interface IUnitOfWork
     IRefreshTokenRepository RefreshTokens { get; }
     IApiKeyRepository ApiKeys { get; }
     ICategoryRepository Categories { get; }
+    IProductRepository Products { get; }
+    ICartRepository Carts { get; }
+    IOrderRepository Orders { get; }
+    INotificationRepository Notifications { get; }
+    IDeviceTokenRepository DeviceTokens { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+    Task ExecuteInTransactionAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken = default);
 }

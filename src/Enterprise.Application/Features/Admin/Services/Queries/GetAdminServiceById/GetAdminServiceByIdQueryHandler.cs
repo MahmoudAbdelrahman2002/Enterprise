@@ -4,10 +4,14 @@ using Enterprise.Application.Features.Admin.Services.DTOs;
 using Enterprise.Domain.Entities;
 using Enterprise.Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Admin.Services.Queries.GetAdminServiceById;
 
-public sealed class GetAdminServiceByIdQueryHandler(IUnitOfWork unitOfWork, ICurrentCulture culture)
+public sealed class GetAdminServiceByIdQueryHandler(
+    IUnitOfWork unitOfWork,
+    ICurrentCulture culture,
+    ILogger<GetAdminServiceByIdQueryHandler> logger)
     : IRequestHandler<GetAdminServiceByIdQuery, MarketplaceServiceDto>
 {
     public async Task<MarketplaceServiceDto> Handle(
@@ -16,6 +20,7 @@ public sealed class GetAdminServiceByIdQueryHandler(IUnitOfWork unitOfWork, ICur
         var service = await unitOfWork.Services.GetByIdAsync(request.Id, cancellationToken)
             ?? throw NotFoundException.For(nameof(MarketplaceService), request.Id);
 
+        logger.LogInformation("Fetched marketplace service {ServiceId}", request.Id);
         return service.ToDto(culture.LanguageCode);
     }
 }

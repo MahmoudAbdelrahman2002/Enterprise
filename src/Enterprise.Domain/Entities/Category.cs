@@ -17,11 +17,12 @@ public sealed class Category : BaseAuditableEntity, ISoftDelete
         IsActive = isActive;
     }
 
-    public Guid ProviderId { get;  set; }
-    public Provider? Provider { get;  set; }
+    public Guid ProviderId { get; private set; }
+    public Provider? Provider { get; private set; }
 
-    public int DisplayOrder { get; set; }
-    public bool IsActive { get;  set; } = true;
+    public int DisplayOrder { get; private set; }
+    public bool IsActive { get; private set; } = true;
+    public string? ImageUrl { get; private set; }
 
     public IReadOnlyCollection<CategoryTranslation> Translations => _translations;
 
@@ -32,6 +33,9 @@ public sealed class Category : BaseAuditableEntity, ISoftDelete
     public void SetActive(bool isActive) => IsActive = isActive;
 
     public void UpdateDetails(int displayOrder) => DisplayOrder = displayOrder;
+
+    public void SetImageUrl(string? imageUrl) =>
+        ImageUrl = string.IsNullOrWhiteSpace(imageUrl) ? null : imageUrl.Trim();
 
     public CategoryTranslation? Resolve(string language)
     {

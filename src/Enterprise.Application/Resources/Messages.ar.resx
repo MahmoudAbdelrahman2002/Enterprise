@@ -97,9 +97,9 @@
   <data name="Auth.InvalidFacebookToken" xml:space="preserve"><value>رمز وصول Facebook غير صالح.</value></data>
   <data name="Auth.FacebookProfileFailed" xml:space="preserve"><value>تعذر تحميل ملف Facebook الشخصي.</value></data>
   <data name="Auth.UnsupportedProvider" xml:space="preserve"><value>موفر الحساب الاجتماعي غير مدعوم.</value></data>
-  <data name="Auth.RegistrationStarted" xml:space="preserve"><value>بدأت عملية التسجيل. أدخل رمز التحقق من بريدك الإلكتروني (أو developmentOtp في بيئة التطوير).</value></data>
-  <data name="Auth.OtpSentIfExists" xml:space="preserve"><value>إذا كان الحساب موجودًا، فقد تم إرسال رمز تحقق.</value></data>
-  <data name="Auth.AccountNotVerified" xml:space="preserve"><value>الحساب غير موثّق بعد. استخدم verify-registration مع رمز التحقق المُرسل.</value></data>
+  <data name="Auth.RegistrationStarted" xml:space="preserve"><value>أرسلنا رمزًا إلى بريدك الإلكتروني. أدخله لإكمال إنشاء حسابك.</value></data>
+  <data name="Auth.OtpSentIfExists" xml:space="preserve"><value>إذا كان هناك حساب لهذا البريد، فقد أرسلنا رمز تسجيل الدخول. تحقق من صندوق الوارد.</value></data>
+  <data name="Auth.AccountNotVerified" xml:space="preserve"><value>حسابك غير مفعّل بعد. أرسلنا رمز تفعيل إلى بريدك — أدخله لإكمال التسجيل قبل أن تتمكن من تسجيل الدخول.</value></data>
   <data name="Account.EmailExists" xml:space="preserve"><value>يوجد بالفعل حساب بهذا البريد الإلكتروني.</value></data>
   <data name="Account.UnableToCreate" xml:space="preserve"><value>تعذر إنشاء الحساب.</value></data>
   <data name="Account.UnableToChangeEmail" xml:space="preserve"><value>تعذر تغيير البريد الإلكتروني.</value></data>
@@ -109,14 +109,14 @@
   <data name="Profile.EmailChangeCodeSent" xml:space="preserve"><value>تم إرسال رمز التحقق إلى البريد الإلكتروني الجديد.</value></data>
   <data name="Profile.EmailChanged" xml:space="preserve"><value>تم تغيير البريد الإلكتروني بنجاح.</value></data>
   <data name="Entity.NotFound" xml:space="preserve"><value>الكيان "{0}" بالمفتاح ({1}) غير موجود.</value></data>
-  <data name="Email.VerificationSubject" xml:space="preserve"><value>رمز التحقق من Enterprise</value></data>
-  <data name="Email.VerificationBody" xml:space="preserve"><value>&lt;p dir="rtl"&gt;مرحبًا،&lt;/p&gt;&lt;p dir="rtl"&gt;رمز التحقق من Enterprise هو &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;&lt;p dir="rtl"&gt;ينتهي هذا الرمز خلال دقائق. إذا لم تطلب هذا البريد، يمكنك تجاهله.&lt;/p&gt;</value></data>
-  <data name="Email.SignInSubject" xml:space="preserve"><value>رمز تسجيل الدخول إلى Enterprise</value></data>
-  <data name="Email.SignInBody" xml:space="preserve"><value>&lt;p dir="rtl"&gt;مرحبًا،&lt;/p&gt;&lt;p dir="rtl"&gt;رمز تسجيل الدخول إلى Enterprise هو &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;&lt;p dir="rtl"&gt;ينتهي هذا الرمز خلال دقائق. إذا لم تطلب هذا البريد، يمكنك تجاهله.&lt;/p&gt;</value></data>
-  <data name="Email.ResetSubject" xml:space="preserve"><value>رمز إعادة تعيين كلمة المرور</value></data>
-  <data name="Email.ResetBody" xml:space="preserve"><value>&lt;p dir="rtl"&gt;رمز إعادة تعيين كلمة المرور هو &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;</value></data>
-  <data name="Email.ChangeEmailSubject" xml:space="preserve"><value>أكد بريدك الإلكتروني الجديد</value></data>
-  <data name="Email.ChangeEmailBody" xml:space="preserve"><value>&lt;p dir="rtl"&gt;رمز التحقق لتغيير البريد الإلكتروني هو &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;</value></data>
+  <data name="Email.VerificationSubject" xml:space="preserve"><value>فعّل حسابك على Subito</value></data>
+  <data name="Email.VerificationBody" xml:space="preserve"><value>&lt;p dir="rtl"&gt;مرحبًا،&lt;/p&gt;&lt;p dir="rtl"&gt;شكرًا لتسجيلك. استخدم هذا الرمز لـ &lt;strong&gt;تفعيل حسابك&lt;/strong&gt; وإكمال التسجيل:&lt;/p&gt;&lt;p dir="rtl" style="font-size:24px;letter-spacing:4px;"&gt;&lt;strong&gt;{0}&lt;/strong&gt;&lt;/p&gt;&lt;p dir="rtl"&gt;أدخل الرمز في شاشة تفعيل الحساب / تأكيد التسجيل. ينتهي خلال دقائق.&lt;/p&gt;&lt;p dir="rtl"&gt;هذا الرمز &lt;strong&gt;ليس&lt;/strong&gt; رمز تسجيل دخول. بعد تفعيل حسابك يمكنك طلب رمز دخول منفصل عند تسجيل الدخول.&lt;/p&gt;&lt;p dir="rtl"&gt;إذا لم تنشئ حسابًا، يمكنك تجاهل هذا البريد.&lt;/p&gt;</value></data>
+  <data name="Email.SignInSubject" xml:space="preserve"><value>رمز تسجيل الدخول إلى Subito</value></data>
+  <data name="Email.SignInBody" xml:space="preserve"><value>&lt;p dir="rtl"&gt;مرحبًا،&lt;/p&gt;&lt;p dir="rtl"&gt;استخدم هذا الرمز لـ &lt;strong&gt;تسجيل الدخول&lt;/strong&gt; إلى حسابك:&lt;/p&gt;&lt;p dir="rtl" style="font-size:24px;letter-spacing:4px;"&gt;&lt;strong&gt;{0}&lt;/strong&gt;&lt;/p&gt;&lt;p dir="rtl"&gt;أدخل الرمز في شاشة تسجيل الدخول. ينتهي خلال دقائق.&lt;/p&gt;&lt;p dir="rtl"&gt;إذا لم تحاول تسجيل الدخول، يمكنك تجاهل هذا البريد.&lt;/p&gt;</value></data>
+  <data name="Email.ResetSubject" xml:space="preserve"><value>إعادة تعيين كلمة مرور Subito</value></data>
+  <data name="Email.ResetBody" xml:space="preserve"><value>&lt;p dir="rtl"&gt;مرحبًا،&lt;/p&gt;&lt;p dir="rtl"&gt;استخدم هذا الرمز لـ &lt;strong&gt;إعادة تعيين كلمة المرور&lt;/strong&gt;:&lt;/p&gt;&lt;p dir="rtl" style="font-size:24px;letter-spacing:4px;"&gt;&lt;strong&gt;{0}&lt;/strong&gt;&lt;/p&gt;&lt;p dir="rtl"&gt;أدخل الرمز في شاشة إعادة التعيين. ينتهي خلال دقائق.&lt;/p&gt;&lt;p dir="rtl"&gt;إذا لم تطلب إعادة التعيين، يمكنك تجاهل هذا البريد.&lt;/p&gt;</value></data>
+  <data name="Email.ChangeEmailSubject" xml:space="preserve"><value>أكد بريدك الجديد على Subito</value></data>
+  <data name="Email.ChangeEmailBody" xml:space="preserve"><value>&lt;p dir="rtl"&gt;مرحبًا،&lt;/p&gt;&lt;p dir="rtl"&gt;استخدم هذا الرمز لـ &lt;strong&gt;تأكيد بريدك الإلكتروني الجديد&lt;/strong&gt;:&lt;/p&gt;&lt;p dir="rtl" style="font-size:24px;letter-spacing:4px;"&gt;&lt;strong&gt;{0}&lt;/strong&gt;&lt;/p&gt;&lt;p dir="rtl"&gt;أدخل الرمز في المكان الذي طلبت منه تغيير البريد. ينتهي خلال دقائق.&lt;/p&gt;&lt;p dir="rtl"&gt;إذا لم تطلب هذا التغيير، يمكنك تجاهل هذا البريد.&lt;/p&gt;</value></data>
   <data name="Service.ListRetrieved" xml:space="preserve"><value>تم استرجاع قائمة خدمات السوق بنجاح.</value></data>
   <data name="Service.Retrieved" xml:space="preserve"><value>تم استرجاع بيانات خدمة السوق بنجاح.</value></data>
   <data name="Service.Created" xml:space="preserve"><value>تم إنشاء خدمة السوق بنجاح.</value></data>
@@ -134,4 +134,102 @@
   <data name="Category.Deleted" xml:space="preserve"><value>تم حذف التصنيف بنجاح.</value></data>
   <data name="Category.Activated" xml:space="preserve"><value>تم تفعيل التصنيف بنجاح.</value></data>
   <data name="Category.Deactivated" xml:space="preserve"><value>تم تعطيل التصنيف بنجاح.</value></data>
+  <data name="Category.NotFound" xml:space="preserve"><value>التصنيف غير موجود.</value></data>
+  <data name="Category.UnableToDelete" xml:space="preserve"><value>تعذر حذف التصنيف.</value></data>
+  <data name="Category.HasLinkedProducts" xml:space="preserve"><value>هذا التصنيف يحتوي على {0} منتج/منتجات. لتأكيد الحذف أعد الطلب مع deleteRelatedProducts=true لحذف المنتجات المرتبطة أيضاً.</value></data>
+  <data name="Category.Inactive" xml:space="preserve"><value>لا يمكن إنشاء أو تحديث منتجات ضمن تصنيف غير نشط.</value></data>
+  <data name="Product.ListRetrieved" xml:space="preserve"><value>تم استرجاع المنتجات بنجاح.</value></data>
+  <data name="Product.Retrieved" xml:space="preserve"><value>تم استرجاع المنتج بنجاح.</value></data>
+  <data name="Product.Created" xml:space="preserve"><value>تم إنشاء المنتج بنجاح.</value></data>
+  <data name="Product.Updated" xml:space="preserve"><value>تم تحديث المنتج بنجاح.</value></data>
+  <data name="Product.Deleted" xml:space="preserve"><value>تم حذف المنتج بنجاح.</value></data>
+  <data name="Product.Activated" xml:space="preserve"><value>تم تفعيل المنتج بنجاح.</value></data>
+  <data name="Product.Deactivated" xml:space="preserve"><value>تم تعطيل المنتج بنجاح.</value></data>
+  <data name="Product.SkuExists" xml:space="preserve"><value>يوجد منتج بنفس رمز SKU مسبقاً.</value></data>
+  <data name="Product.NotFound" xml:space="preserve"><value>المنتج غير موجود.</value></data>
+  <data name="Cart.Retrieved" xml:space="preserve"><value>تم استرجاع السلة بنجاح.</value></data>
+  <data name="Cart.ListRetrieved" xml:space="preserve"><value>تم استرجاع السلال بنجاح.</value></data>
+  <data name="Cart.Created" xml:space="preserve"><value>تم إنشاء السلة بنجاح.</value></data>
+  <data name="Cart.Added" xml:space="preserve"><value>تمت إضافة المنتج إلى السلة بنجاح.</value></data>
+  <data name="Cart.Updated" xml:space="preserve"><value>تم تحديث السلة بنجاح.</value></data>
+  <data name="Cart.Deleted" xml:space="preserve"><value>تم حذف السلة بنجاح.</value></data>
+  <data name="Cart.ItemRemoved" xml:space="preserve"><value>تم حذف المنتج من السلة بنجاح.</value></data>
+  <data name="Cart.NotFound" xml:space="preserve"><value>السلة غير موجودة.</value></data>
+  <data name="Cart.UnableToDelete" xml:space="preserve"><value>تعذر حذف السلة.</value></data>
+  <data name="Cart.UnableToCreate" xml:space="preserve"><value>تعذر إنشاء السلة.</value></data>
+  <data name="Cart.UnableToUpdate" xml:space="preserve"><value>تعذر تحديث السلة.</value></data>
+  <data name="Cart.UnableToRetrieve" xml:space="preserve"><value>تعذر استرجاع السلة.</value></data>
+  <data name="Image.Uploaded" xml:space="preserve"><value>تم رفع الصورة بنجاح.</value></data>
+  <data name="Image.Removed" xml:space="preserve"><value>تم حذف الصورة بنجاح.</value></data>
+  <data name="Image.Required" xml:space="preserve"><value>ملف الصورة مطلوب.</value></data>
+  <data name="Image.InvalidType" xml:space="preserve"><value>يُسمح فقط بصور JPEG و PNG و WebP.</value></data>
+  <data name="Image.TooLarge" xml:space="preserve"><value>يجب ألا يتجاوز حجم الصورة 2 ميجابايت.</value></data>
+  <data name="Payment.Created" xml:space="preserve"><value>تم إنشاء جلسة الدفع بنجاح.</value></data>
+  <data name="Order.Retrieved" xml:space="preserve"><value>تم استرجاع الطلب بنجاح.</value></data>
+  <data name="Order.ListRetrieved" xml:space="preserve"><value>تم استرجاع الطلبات بنجاح.</value></data>
+  <data name="Order.Created" xml:space="preserve"><value>تم إنشاء الطلب بنجاح.</value></data>
+  <data name="Order.Updated" xml:space="preserve"><value>تم تحديث الطلب بنجاح.</value></data>
+  <data name="Order.NotFound" xml:space="preserve"><value>الطلب غير موجود.</value></data>
+  <data name="Order.UnableToCreate" xml:space="preserve"><value>تعذر إنشاء الطلب.</value></data>
+  <data name="Order.InvalidStatusTransition" xml:space="preserve"><value>تغيير حالة الطلب غير مسموح.</value></data>
+  <data name="Order.Cancelled" xml:space="preserve"><value>تم إلغاء الطلب بنجاح.</value></data>
+  <data name="ClientUser.ListRetrieved" xml:space="preserve"><value>تم استرجاع العملاء بنجاح.</value></data>
+  <data name="ClientUser.Retrieved" xml:space="preserve"><value>تم استرجاع العميل بنجاح.</value></data>
+  <data name="ClientUser.Activated" xml:space="preserve"><value>تم تفعيل العميل بنجاح.</value></data>
+  <data name="ClientUser.Deactivated" xml:space="preserve"><value>تم إيقاف العميل بنجاح.</value></data>
+  <data name="Notification.ListRetrieved" xml:space="preserve"><value>تم استرجاع الإشعارات بنجاح.</value></data>
+  <data name="Notification.CountRetrieved" xml:space="preserve"><value>تم استرجاع عدد الإشعارات غير المقروءة بنجاح.</value></data>
+  <data name="Notification.MarkedAsRead" xml:space="preserve"><value>تم تعليم الإشعار كمقروء.</value></data>
+  <data name="Notification.DeviceTokenRegistered" xml:space="preserve"><value>تم تسجيل رمز الجهاز بنجاح.</value></data>
+  <data name="Notification.DeviceTokenUnregistered" xml:space="preserve"><value>تم إلغاء تسجيل رمز الجهاز بنجاح.</value></data>
+  <data name="Permission.Module.Providers" xml:space="preserve"><value>مزودو السوق</value></data>
+  <data name="Permission.Module.Roles" xml:space="preserve"><value>أدوار الإدارة</value></data>
+  <data name="Permission.Module.ApiKeys" xml:space="preserve"><value>مفاتيح API</value></data>
+  <data name="Permission.Module.Admins" xml:space="preserve"><value>موظفو الإدارة</value></data>
+  <data name="Permission.Module.Services" xml:space="preserve"><value>خدمات السوق</value></data>
+  <data name="Permission.Module.Clients" xml:space="preserve"><value>العملاء</value></data>
+  <data name="Permission.Module.Orders" xml:space="preserve"><value>طلبات المنصة</value></data>
+  <data name="Permission.Module.ProviderRoles" xml:space="preserve"><value>أدوار المتجر</value></data>
+  <data name="Permission.Module.ProviderStaff" xml:space="preserve"><value>موظفو المتجر</value></data>
+  <data name="Permission.Module.ProviderCategory" xml:space="preserve"><value>التصنيفات</value></data>
+  <data name="Permission.Module.ProviderProduct" xml:space="preserve"><value>المنتجات</value></data>
+  <data name="Permission.Module.ProviderOrder" xml:space="preserve"><value>الطلبات</value></data>
+  <data name="Permission.Providers.Read" xml:space="preserve"><value>عرض مزودي السوق</value></data>
+  <data name="Permission.Providers.Create" xml:space="preserve"><value>إضافة مزودين جدد إلى السوق</value></data>
+  <data name="Permission.Providers.Update" xml:space="preserve"><value>تحديث بيانات المزود وحالة التفعيل</value></data>
+  <data name="Permission.Providers.Delete" xml:space="preserve"><value>حذف مزودي السوق</value></data>
+  <data name="Permission.Roles.Read" xml:space="preserve"><value>عرض الأدوار الإدارية والصلاحيات المعينة</value></data>
+  <data name="Permission.Roles.Create" xml:space="preserve"><value>إنشاء أدوار إدارية مع صلاحيات</value></data>
+  <data name="Permission.Roles.Update" xml:space="preserve"><value>تعديل الأدوار الإدارية وصلاحياتها</value></data>
+  <data name="Permission.Roles.Delete" xml:space="preserve"><value>حذف الأدوار الإدارية المخصصة</value></data>
+  <data name="Permission.ApiKeys.Create" xml:space="preserve"><value>إنشاء مفاتيح API للخدمات</value></data>
+  <data name="Permission.Admins.Read" xml:space="preserve"><value>عرض موظفي الإدارة</value></data>
+  <data name="Permission.Admins.Create" xml:space="preserve"><value>إنشاء موظفين إداريين جدد</value></data>
+  <data name="Permission.Admins.Update" xml:space="preserve"><value>تحديث موظفي الإدارة وحالتهم</value></data>
+  <data name="Permission.Admins.Delete" xml:space="preserve"><value>حذف موظفي الإدارة</value></data>
+  <data name="Permission.Services.Read" xml:space="preserve"><value>عرض خدمات السوق</value></data>
+  <data name="Permission.Services.Create" xml:space="preserve"><value>إنشاء خدمات سوق جديدة</value></data>
+  <data name="Permission.Services.Update" xml:space="preserve"><value>تحديث خدمات السوق وترجماتها</value></data>
+  <data name="Permission.Services.Delete" xml:space="preserve"><value>حذف خدمات السوق</value></data>
+  <data name="Permission.Clients.Read" xml:space="preserve"><value>عرض عملاء السوق</value></data>
+  <data name="Permission.Clients.Update" xml:space="preserve"><value>تفعيل عملاء السوق أو إيقافهم</value></data>
+  <data name="Permission.Orders.Read" xml:space="preserve"><value>عرض طلبات السوق</value></data>
+  <data name="Permission.ProviderRoles.Read" xml:space="preserve"><value>عرض أدوار موظفي المتجر</value></data>
+  <data name="Permission.ProviderRoles.Create" xml:space="preserve"><value>إنشاء أدوار موظفي المتجر</value></data>
+  <data name="Permission.ProviderRoles.Update" xml:space="preserve"><value>تعديل أدوار موظفي المتجر</value></data>
+  <data name="Permission.ProviderRoles.Delete" xml:space="preserve"><value>حذف أدوار موظفي المتجر</value></data>
+  <data name="Permission.ProviderStaff.Read" xml:space="preserve"><value>عرض موظفي المتجر</value></data>
+  <data name="Permission.ProviderStaff.Create" xml:space="preserve"><value>إنشاء موظفي المتجر</value></data>
+  <data name="Permission.ProviderStaff.Update" xml:space="preserve"><value>تحديث موظفي المتجر وحالتهم</value></data>
+  <data name="Permission.ProviderStaff.Delete" xml:space="preserve"><value>حذف موظفي المتجر</value></data>
+  <data name="Permission.ProviderCategory.Read" xml:space="preserve"><value>عرض تصنيفات المتجر</value></data>
+  <data name="Permission.ProviderCategory.Create" xml:space="preserve"><value>إنشاء تصنيفات المتجر</value></data>
+  <data name="Permission.ProviderCategory.Update" xml:space="preserve"><value>تحديث تصنيفات المتجر</value></data>
+  <data name="Permission.ProviderCategory.Delete" xml:space="preserve"><value>حذف تصنيفات المتجر</value></data>
+  <data name="Permission.ProviderProduct.Read" xml:space="preserve"><value>عرض منتجات المتجر</value></data>
+  <data name="Permission.ProviderProduct.Create" xml:space="preserve"><value>إنشاء منتجات المتجر</value></data>
+  <data name="Permission.ProviderProduct.Update" xml:space="preserve"><value>تحديث منتجات المتجر</value></data>
+  <data name="Permission.ProviderProduct.Delete" xml:space="preserve"><value>حذف منتجات المتجر</value></data>
+  <data name="Permission.ProviderOrder.Read" xml:space="preserve"><value>عرض طلبات المتجر</value></data>
+  <data name="Permission.ProviderOrder.Update" xml:space="preserve"><value>تحديث حالة طلبات المتجر</value></data>
 </root>

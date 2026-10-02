@@ -3,11 +3,13 @@ using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Domain.Enums;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Admin.Users.Commands.SetAdminUserActive;
 
 public sealed class SetAdminUserActiveCommandHandler(
-    IStaffManagerService staffManagerService)
+    IStaffManagerService staffManagerService,
+    ILogger<SetAdminUserActiveCommandHandler> logger)
     : IRequestHandler<SetAdminUserActiveCommand>
 {
     public async Task Handle(SetAdminUserActiveCommand request, CancellationToken cancellationToken)
@@ -28,5 +30,7 @@ public sealed class SetAdminUserActiveCommandHandler(
 
             throw new ConflictException(result.Error ?? MessageKeys.Error.Conflict, result.Errors);
         }
+
+        logger.LogInformation("Set admin user {UserId} active={IsActive}", request.Id, request.IsActive);
     }
 }

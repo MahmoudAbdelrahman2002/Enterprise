@@ -12,8 +12,9 @@ public sealed class CreateAdminRoleCommandValidator : AbstractValidator<CreateAd
     public CreateAdminRoleCommandValidator(IAppLocalizer localizer)
     {
         RuleFor(x => x.Name)
-            .Required(localizer)
-            .MaxLen(localizer, 100);
+            .NotNull()
+            .WithMessage(_ => localizer[MessageKeys.Validation.Required])
+            .SetValidator(new LocalizedTextValidator(localizer, 100, englishRequired: true));
 
         RuleFor(x => x.Permissions)
             .NotNull()

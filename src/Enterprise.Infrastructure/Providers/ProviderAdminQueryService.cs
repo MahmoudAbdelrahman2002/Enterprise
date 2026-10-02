@@ -61,6 +61,7 @@ public sealed class ProviderAdminQueryService(
                 x.provider.ServiceId,
                 serviceName,
                 x.user.IsActive,
+                x.provider.ImageUrl,
                 x.provider.CreatedAtUtc);
         }).ToList();
 
@@ -97,6 +98,7 @@ public sealed class ProviderAdminQueryService(
             serviceName,
             row.user.IsActive,
             row.user.EmailConfirmed,
+            row.provider.ImageUrl,
             row.provider.CreatedAtUtc,
             row.provider.LastModifiedAtUtc);
     }

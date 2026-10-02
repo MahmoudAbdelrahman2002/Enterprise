@@ -1,38 +1,29 @@
 using Enterprise.Application.Common.Exceptions;
 using Enterprise.Application.Common.Interfaces;
-using Enterprise.Application.Common.Localization;
 using Enterprise.Application.Features.Provider.Categories.DTOs;
+using Enterprise.Domain.Entities;
 using Enterprise.Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Provider.Categories.Queries.GetCategoryById;
 
-public class GetCategoryByIdQueryHandler(IUnitOfWork unitOfWork,ICurrentCulture currentCulture,ICurrentUserService currentUserService
-
-) : IRequestHandler<GetCategoryByIdQuery, CategoryDetailDto>
+public sealed class GetCategoryByIdQueryHandler(
+    IUnitOfWork unitOfWork,
+    ICurrentCulture currentCulture,
+    IProviderContext providerContext,
+    ILogger<GetCategoryByIdQueryHandler> logger)
+    : IRequestHandler<GetCategoryByIdQuery, CategoryDetailDto>
 {
     public async Task<CategoryDetailDto> Handle(GetCategoryByIdQuery request, CancellationToken cancellationToken)
     {
-        var providerId = await ResolveProviderIdAsync(cancellationToken);
+        var providerId = await providerContext.GetProviderIdAsync(cancellationToken);
         var currentLanguage = currentCulture.LanguageCode;
-        var category = await unitOfWork.Categories.GetByIdAsync(request.Id, cancellationToken);
-        if (category is null || category.ProviderId != providerId)
-        {
-            throw NotFoundException.For(nameof(Enterprise.Domain.Entities.Category), request.Id);
-        }
+
+        var category = await unitOfWork.Categories.GetByIdAndProviderIdAsync(request.Id, providerId, cancellationToken)
+            ?? throw NotFoundException.For(nameof(Category), request.Id);
+
+        logger.LogInformation("Fetched category {CategoryId} for provider {ProviderId}", category.Id, providerId);
         return category.ToDto(currentLanguage);
-    }
-      private async Task<Guid> ResolveProviderIdAsync(CancellationToken cancellationToken)
-    {
-        if (currentUserService.ProviderId.HasValue)
-        {
-            return currentUserService.ProviderId.Value;
-        }
-
-        var userId = currentUserService.UserId ?? throw new ForbiddenAccessException();
-        var provider = await unitOfWork.Providers.GetByUserIdAsync(userId, cancellationToken)
-            ?? throw NotFoundException.For(nameof(Enterprise.Domain.Entities.Provider), userId);
-
-        return provider.Id;
     }
 }

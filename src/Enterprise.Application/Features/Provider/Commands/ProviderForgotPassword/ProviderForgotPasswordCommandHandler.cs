@@ -2,6 +2,7 @@ using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Domain.Enums;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Provider.Commands.ProviderForgotPassword;
 
@@ -9,7 +10,8 @@ public sealed class ProviderForgotPasswordCommandHandler(
     IUserAccountService userAccountService,
     IOtpService otpService,
     IEmailSender emailSender,
-    IAppLocalizer localizer) : IRequestHandler<ProviderForgotPasswordCommand>
+    IAppLocalizer localizer,
+    ILogger<ProviderForgotPasswordCommandHandler> logger) : IRequestHandler<ProviderForgotPasswordCommand>
 {
     public async Task Handle(ProviderForgotPasswordCommand request, CancellationToken cancellationToken)
     {
@@ -34,12 +36,17 @@ public sealed class ProviderForgotPasswordCommandHandler(
             {
                 await otpService.InvalidateAsync(request.Email, OtpPurpose.ResetPassword, cancellationToken);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Best-effort cleanup.
+                logger.LogWarning(
+                    ex,
+                    "Best-effort OTP invalidate failed after provider forgot-password email failure for {Email}",
+                    request.Email);
             }
 
             throw;
         }
+
+        logger.LogInformation("Provider forgot-password code sent for {Email}", request.Email);
     }
 }

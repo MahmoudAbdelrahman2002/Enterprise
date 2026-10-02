@@ -3,12 +3,14 @@ using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Domain.Enums;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Provider.Commands.ProviderChangePassword;
 
 public sealed class ProviderChangePasswordCommandHandler(
     ICurrentUserService currentUserService,
-    IUserAccountService userAccountService) : IRequestHandler<ProviderChangePasswordCommand>
+    IUserAccountService userAccountService,
+    ILogger<ProviderChangePasswordCommandHandler> logger) : IRequestHandler<ProviderChangePasswordCommand>
 {
     public async Task Handle(ProviderChangePasswordCommand request, CancellationToken cancellationToken)
     {
@@ -23,5 +25,7 @@ public sealed class ProviderChangePasswordCommandHandler(
         {
             throw new AuthenticationFailedException(result.Error ?? MessageKeys.Auth.UnableToChangePassword);
         }
+
+        logger.LogInformation("Provider password changed for user {UserId}", userId);
     }
 }

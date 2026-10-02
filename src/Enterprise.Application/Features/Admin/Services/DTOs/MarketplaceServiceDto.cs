@@ -14,5 +14,6 @@ public sealed record MarketplaceServiceDto(
     string Name,
     string? Description,
     MarketplaceServiceTranslationsDto Translations,
+    string? ImageUrl,
     DateTime CreatedAtUtc,
     DateTime? LastModifiedAtUtc);

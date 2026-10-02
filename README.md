@@ -13,6 +13,7 @@ Dev admin: `admin@enterprise.local` / `Admin@12345!` (name: System Administrator
 
 Docs:
 
+- [`docs/DEVELOPER_WORKFLOW.md`](docs/DEVELOPER_WORKFLOW.md) — junior guide: request flow + Admin / Provider / Client views
 - [`docs/AUTH_FLOW.md`](docs/AUTH_FLOW.md) — endpoint reference
 - [`docs/AUTH_STEP_BY_STEP.md`](docs/AUTH_STEP_BY_STEP.md) — how to try it
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) / [`SECURITY.md`](SECURITY.md) — may still describe older custom auth in places
@@ -41,3 +42,13 @@ src/
 ## Next (not implemented yet)
 
 Roles module (`nameEn` / `nameAr`), permissions admin APIs, products auth cleanup.
+
+## Local image uploads
+
+Development uses Azure Blob Storage through Azurite. Start the local blob emulator before uploading service, provider, category, or product images:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start-local-storage.ps1
+```
+
+The script installs Azurite locally if needed and starts it in the background on port 10000. Uploaded files persist in `.build-check/azurite/data`; keep that directory to retain local images. Run the command again after restarting Windows. Node.js and npm are required. Production uses the configured Azure storage account.

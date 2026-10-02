@@ -97,9 +97,9 @@
   <data name="Auth.InvalidFacebookToken" xml:space="preserve"><value>Access token Facebook non valido.</value></data>
   <data name="Auth.FacebookProfileFailed" xml:space="preserve"><value>Impossibile caricare il profilo Facebook.</value></data>
   <data name="Auth.UnsupportedProvider" xml:space="preserve"><value>Provider social non supportato.</value></data>
-  <data name="Auth.RegistrationStarted" xml:space="preserve"><value>Registrazione avviata. Inserisci l'OTP ricevuto via email (o developmentOtp in Development).</value></data>
-  <data name="Auth.OtpSentIfExists" xml:space="preserve"><value>Se l'account esiste, è stato inviato un OTP.</value></data>
-  <data name="Auth.AccountNotVerified" xml:space="preserve"><value>L'account non è ancora verificato. Usa verify-registration con l'OTP inviato.</value></data>
+  <data name="Auth.RegistrationStarted" xml:space="preserve"><value>Abbiamo inviato un codice alla tua email. Inseriscilo per completare la creazione dell'account.</value></data>
+  <data name="Auth.OtpSentIfExists" xml:space="preserve"><value>Se esiste un account per questa email, abbiamo inviato un codice di accesso. Controlla la posta in arrivo.</value></data>
+  <data name="Auth.AccountNotVerified" xml:space="preserve"><value>Il tuo account non è ancora attivato. Abbiamo inviato un codice di attivazione alla tua email: inseriscilo per completare la registrazione prima di accedere.</value></data>
   <data name="Account.EmailExists" xml:space="preserve"><value>Esiste già un account con questa email.</value></data>
   <data name="Account.UnableToCreate" xml:space="preserve"><value>Impossibile creare l'account.</value></data>
   <data name="Account.UnableToChangeEmail" xml:space="preserve"><value>Impossibile modificare l'email.</value></data>
@@ -109,14 +109,14 @@
   <data name="Profile.EmailChangeCodeSent" xml:space="preserve"><value>Codice di verifica inviato alla nuova email.</value></data>
   <data name="Profile.EmailChanged" xml:space="preserve"><value>Email modificata con successo.</value></data>
   <data name="Entity.NotFound" xml:space="preserve"><value>L'entità "{0}" con chiave ({1}) non è stata trovata.</value></data>
-  <data name="Email.VerificationSubject" xml:space="preserve"><value>Il tuo codice di verifica Enterprise</value></data>
-  <data name="Email.VerificationBody" xml:space="preserve"><value>&lt;p&gt;Ciao,&lt;/p&gt;&lt;p&gt;Il tuo codice di verifica Enterprise è &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;&lt;p&gt;Questo codice scade tra pochi minuti. Se non hai richiesto questa email, puoi ignorarla.&lt;/p&gt;</value></data>
-  <data name="Email.SignInSubject" xml:space="preserve"><value>Il tuo codice di accesso Enterprise</value></data>
-  <data name="Email.SignInBody" xml:space="preserve"><value>&lt;p&gt;Ciao,&lt;/p&gt;&lt;p&gt;Il tuo codice di accesso Enterprise è &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;&lt;p&gt;Questo codice scade tra pochi minuti. Se non hai richiesto questa email, puoi ignorarla.&lt;/p&gt;</value></data>
-  <data name="Email.ResetSubject" xml:space="preserve"><value>Codice di reimpostazione password</value></data>
-  <data name="Email.ResetBody" xml:space="preserve"><value>&lt;p&gt;Il tuo codice di reimpostazione password è &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;</value></data>
-  <data name="Email.ChangeEmailSubject" xml:space="preserve"><value>Conferma la tua nuova email</value></data>
-  <data name="Email.ChangeEmailBody" xml:space="preserve"><value>&lt;p&gt;Il codice di verifica per il cambio email è &lt;strong&gt;{0}&lt;/strong&gt;.&lt;/p&gt;</value></data>
+  <data name="Email.VerificationSubject" xml:space="preserve"><value>Attiva il tuo account Subito</value></data>
+  <data name="Email.VerificationBody" xml:space="preserve"><value>&lt;p&gt;Ciao,&lt;/p&gt;&lt;p&gt;Grazie per la registrazione. Usa questo codice per &lt;strong&gt;attivare il tuo account&lt;/strong&gt; e completare la registrazione:&lt;/p&gt;&lt;p style="font-size:24px;letter-spacing:4px;"&gt;&lt;strong&gt;{0}&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Inserisci il codice nella schermata di attivazione / verifica registrazione. Scade tra pochi minuti.&lt;/p&gt;&lt;p&gt;Questo &lt;strong&gt;non&lt;/strong&gt; è un codice di accesso. Dopo l'attivazione potrai richiedere un codice di accesso separato al login.&lt;/p&gt;&lt;p&gt;Se non hai creato un account, puoi ignorare questa email.&lt;/p&gt;</value></data>
+  <data name="Email.SignInSubject" xml:space="preserve"><value>Il tuo codice di accesso Subito</value></data>
+  <data name="Email.SignInBody" xml:space="preserve"><value>&lt;p&gt;Ciao,&lt;/p&gt;&lt;p&gt;Usa questo codice per &lt;strong&gt;accedere&lt;/strong&gt; al tuo account:&lt;/p&gt;&lt;p style="font-size:24px;letter-spacing:4px;"&gt;&lt;strong&gt;{0}&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Inserisci il codice nella schermata di accesso. Scade tra pochi minuti.&lt;/p&gt;&lt;p&gt;Se non hai provato ad accedere, puoi ignorare questa email.&lt;/p&gt;</value></data>
+  <data name="Email.ResetSubject" xml:space="preserve"><value>Reimposta la password Subito</value></data>
+  <data name="Email.ResetBody" xml:space="preserve"><value>&lt;p&gt;Ciao,&lt;/p&gt;&lt;p&gt;Usa questo codice per &lt;strong&gt;reimpostare la password&lt;/strong&gt;:&lt;/p&gt;&lt;p style="font-size:24px;letter-spacing:4px;"&gt;&lt;strong&gt;{0}&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Inserisci il codice nella schermata di reimpostazione. Scade tra pochi minuti.&lt;/p&gt;&lt;p&gt;Se non hai richiesto la reimpostazione, puoi ignorare questa email.&lt;/p&gt;</value></data>
+  <data name="Email.ChangeEmailSubject" xml:space="preserve"><value>Conferma la nuova email Subito</value></data>
+  <data name="Email.ChangeEmailBody" xml:space="preserve"><value>&lt;p&gt;Ciao,&lt;/p&gt;&lt;p&gt;Usa questo codice per &lt;strong&gt;confermare il tuo nuovo indirizzo email&lt;/strong&gt;:&lt;/p&gt;&lt;p style="font-size:24px;letter-spacing:4px;"&gt;&lt;strong&gt;{0}&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Inserisci il codice dove hai richiesto il cambio email. Scade tra pochi minuti.&lt;/p&gt;&lt;p&gt;Se non hai richiesto questa modifica, puoi ignorare questa email.&lt;/p&gt;</value></data>
   <data name="Service.ListRetrieved" xml:space="preserve"><value>Servizi del marketplace recuperati con successo.</value></data>
   <data name="Service.Retrieved" xml:space="preserve"><value>Servizio del marketplace recuperato con successo.</value></data>
   <data name="Service.Created" xml:space="preserve"><value>Servizio del marketplace creato con successo.</value></data>
@@ -134,4 +134,102 @@
   <data name="Category.Deleted" xml:space="preserve"><value>Categoria eliminata con successo.</value></data>
   <data name="Category.Activated" xml:space="preserve"><value>Categoria attivata con successo.</value></data>
   <data name="Category.Deactivated" xml:space="preserve"><value>Categoria disattivata con successo.</value></data>
+  <data name="Category.NotFound" xml:space="preserve"><value>Categoria non trovata.</value></data>
+  <data name="Category.UnableToDelete" xml:space="preserve"><value>Impossibile eliminare la categoria.</value></data>
+  <data name="Category.HasLinkedProducts" xml:space="preserve"><value>Questa categoria ha {0} prodotto/i. Conferma l'eliminazione richiamando con deleteRelatedProducts=true per eliminare anche i prodotti correlati.</value></data>
+  <data name="Category.Inactive" xml:space="preserve"><value>Impossibile creare o aggiornare prodotti in una categoria non attiva.</value></data>
+  <data name="Product.ListRetrieved" xml:space="preserve"><value>Prodotti recuperati con successo.</value></data>
+  <data name="Product.Retrieved" xml:space="preserve"><value>Prodotto recuperato con successo.</value></data>
+  <data name="Product.Created" xml:space="preserve"><value>Prodotto creato con successo.</value></data>
+  <data name="Product.Updated" xml:space="preserve"><value>Prodotto aggiornato con successo.</value></data>
+  <data name="Product.Deleted" xml:space="preserve"><value>Prodotto eliminato con successo.</value></data>
+  <data name="Product.Activated" xml:space="preserve"><value>Prodotto attivato con successo.</value></data>
+  <data name="Product.Deactivated" xml:space="preserve"><value>Prodotto disattivato con successo.</value></data>
+  <data name="Product.SkuExists" xml:space="preserve"><value>Esiste già un prodotto con questo SKU.</value></data>
+  <data name="Product.NotFound" xml:space="preserve"><value>Prodotto non trovato.</value></data>
+  <data name="Cart.Retrieved" xml:space="preserve"><value>Carrello recuperato con successo.</value></data>
+  <data name="Cart.ListRetrieved" xml:space="preserve"><value>Carrelli recuperati con successo.</value></data>
+  <data name="Cart.Created" xml:space="preserve"><value>Carrello creato con successo.</value></data>
+  <data name="Cart.Added" xml:space="preserve"><value>Articolo aggiunto al carrello con successo.</value></data>
+  <data name="Cart.Updated" xml:space="preserve"><value>Carrello aggiornato con successo.</value></data>
+  <data name="Cart.Deleted" xml:space="preserve"><value>Carrello eliminato con successo.</value></data>
+  <data name="Cart.ItemRemoved" xml:space="preserve"><value>Articolo rimosso dal carrello con successo.</value></data>
+  <data name="Cart.NotFound" xml:space="preserve"><value>Carrello non trovato.</value></data>
+  <data name="Cart.UnableToDelete" xml:space="preserve"><value>Impossibile eliminare il carrello.</value></data>
+  <data name="Cart.UnableToCreate" xml:space="preserve"><value>Impossibile creare il carrello.</value></data>
+  <data name="Cart.UnableToUpdate" xml:space="preserve"><value>Impossibile aggiornare il carrello.</value></data>
+  <data name="Cart.UnableToRetrieve" xml:space="preserve"><value>Impossibile recuperare il carrello.</value></data>
+  <data name="Image.Uploaded" xml:space="preserve"><value>Immagine caricata con successo.</value></data>
+  <data name="Image.Removed" xml:space="preserve"><value>Immagine rimossa con successo.</value></data>
+  <data name="Image.Required" xml:space="preserve"><value>È richiesto un file immagine.</value></data>
+  <data name="Image.InvalidType" xml:space="preserve"><value>Sono consentite solo immagini JPEG, PNG e WebP.</value></data>
+  <data name="Image.TooLarge" xml:space="preserve"><value>L'immagine deve essere di 2 MB o inferiore.</value></data>
+  <data name="Payment.Created" xml:space="preserve"><value>Sessione di pagamento creata con successo.</value></data>
+  <data name="Order.Retrieved" xml:space="preserve"><value>Ordine recuperato con successo.</value></data>
+  <data name="Order.ListRetrieved" xml:space="preserve"><value>Ordini recuperati con successo.</value></data>
+  <data name="Order.Created" xml:space="preserve"><value>Ordine creato con successo.</value></data>
+  <data name="Order.Updated" xml:space="preserve"><value>Ordine aggiornato con successo.</value></data>
+  <data name="Order.NotFound" xml:space="preserve"><value>Ordine non trovato.</value></data>
+  <data name="Order.UnableToCreate" xml:space="preserve"><value>Impossibile creare l'ordine.</value></data>
+  <data name="Order.InvalidStatusTransition" xml:space="preserve"><value>Questa modifica dello stato dell'ordine non è consentita.</value></data>
+  <data name="Order.Cancelled" xml:space="preserve"><value>Ordine annullato con successo.</value></data>
+  <data name="ClientUser.ListRetrieved" xml:space="preserve"><value>Clienti recuperati con successo.</value></data>
+  <data name="ClientUser.Retrieved" xml:space="preserve"><value>Cliente recuperato con successo.</value></data>
+  <data name="ClientUser.Activated" xml:space="preserve"><value>Cliente attivato con successo.</value></data>
+  <data name="ClientUser.Deactivated" xml:space="preserve"><value>Cliente disattivato con successo.</value></data>
+  <data name="Notification.ListRetrieved" xml:space="preserve"><value>Notifiche recuperate con successo.</value></data>
+  <data name="Notification.CountRetrieved" xml:space="preserve"><value>Conteggio notifiche non lette recuperato con successo.</value></data>
+  <data name="Notification.MarkedAsRead" xml:space="preserve"><value>Notifica contrassegnata come letta.</value></data>
+  <data name="Notification.DeviceTokenRegistered" xml:space="preserve"><value>Token dispositivo registrato con successo.</value></data>
+  <data name="Notification.DeviceTokenUnregistered" xml:space="preserve"><value>Token dispositivo rimosso con successo.</value></data>
+  <data name="Permission.Module.Providers" xml:space="preserve"><value>Fornitori del marketplace</value></data>
+  <data name="Permission.Module.Roles" xml:space="preserve"><value>Ruoli amministrativi</value></data>
+  <data name="Permission.Module.ApiKeys" xml:space="preserve"><value>Chiavi API</value></data>
+  <data name="Permission.Module.Admins" xml:space="preserve"><value>Personale amministrativo</value></data>
+  <data name="Permission.Module.Services" xml:space="preserve"><value>Servizi del marketplace</value></data>
+  <data name="Permission.Module.Clients" xml:space="preserve"><value>Clienti</value></data>
+  <data name="Permission.Module.Orders" xml:space="preserve"><value>Ordini della piattaforma</value></data>
+  <data name="Permission.Module.ProviderRoles" xml:space="preserve"><value>Ruoli del negozio</value></data>
+  <data name="Permission.Module.ProviderStaff" xml:space="preserve"><value>Personale del negozio</value></data>
+  <data name="Permission.Module.ProviderCategory" xml:space="preserve"><value>Categorie</value></data>
+  <data name="Permission.Module.ProviderProduct" xml:space="preserve"><value>Prodotti</value></data>
+  <data name="Permission.Module.ProviderOrder" xml:space="preserve"><value>Ordini</value></data>
+  <data name="Permission.Providers.Read" xml:space="preserve"><value>Visualizzare i fornitori del marketplace</value></data>
+  <data name="Permission.Providers.Create" xml:space="preserve"><value>Aggiungere nuovi fornitori al marketplace</value></data>
+  <data name="Permission.Providers.Update" xml:space="preserve"><value>Aggiornare i dati del fornitore e lo stato attivo</value></data>
+  <data name="Permission.Providers.Delete" xml:space="preserve"><value>Rimuovere i fornitori del marketplace</value></data>
+  <data name="Permission.Roles.Read" xml:space="preserve"><value>Visualizzare i ruoli amministrativi e i permessi assegnati</value></data>
+  <data name="Permission.Roles.Create" xml:space="preserve"><value>Creare ruoli amministrativi con permessi</value></data>
+  <data name="Permission.Roles.Update" xml:space="preserve"><value>Modificare i ruoli amministrativi e i permessi</value></data>
+  <data name="Permission.Roles.Delete" xml:space="preserve"><value>Eliminare i ruoli amministrativi personalizzati</value></data>
+  <data name="Permission.ApiKeys.Create" xml:space="preserve"><value>Generare chiavi API di servizio</value></data>
+  <data name="Permission.Admins.Read" xml:space="preserve"><value>Visualizzare il personale amministrativo</value></data>
+  <data name="Permission.Admins.Create" xml:space="preserve"><value>Creare nuovo personale amministrativo</value></data>
+  <data name="Permission.Admins.Update" xml:space="preserve"><value>Aggiornare il personale amministrativo e lo stato</value></data>
+  <data name="Permission.Admins.Delete" xml:space="preserve"><value>Eliminare il personale amministrativo</value></data>
+  <data name="Permission.Services.Read" xml:space="preserve"><value>Visualizzare i servizi del marketplace</value></data>
+  <data name="Permission.Services.Create" xml:space="preserve"><value>Creare nuovi servizi del marketplace</value></data>
+  <data name="Permission.Services.Update" xml:space="preserve"><value>Aggiornare i servizi del marketplace e le traduzioni</value></data>
+  <data name="Permission.Services.Delete" xml:space="preserve"><value>Eliminare i servizi del marketplace</value></data>
+  <data name="Permission.Clients.Read" xml:space="preserve"><value>Visualizzare i clienti del marketplace</value></data>
+  <data name="Permission.Clients.Update" xml:space="preserve"><value>Attivare o disattivare i clienti del marketplace</value></data>
+  <data name="Permission.Orders.Read" xml:space="preserve"><value>Visualizzare gli ordini del marketplace</value></data>
+  <data name="Permission.ProviderRoles.Read" xml:space="preserve"><value>Visualizzare i ruoli del personale del negozio</value></data>
+  <data name="Permission.ProviderRoles.Create" xml:space="preserve"><value>Creare ruoli del personale del negozio</value></data>
+  <data name="Permission.ProviderRoles.Update" xml:space="preserve"><value>Modificare i ruoli del personale del negozio</value></data>
+  <data name="Permission.ProviderRoles.Delete" xml:space="preserve"><value>Eliminare i ruoli del personale del negozio</value></data>
+  <data name="Permission.ProviderStaff.Read" xml:space="preserve"><value>Visualizzare i membri del personale del negozio</value></data>
+  <data name="Permission.ProviderStaff.Create" xml:space="preserve"><value>Creare membri del personale del negozio</value></data>
+  <data name="Permission.ProviderStaff.Update" xml:space="preserve"><value>Aggiornare il personale del negozio e lo stato</value></data>
+  <data name="Permission.ProviderStaff.Delete" xml:space="preserve"><value>Eliminare i membri del personale del negozio</value></data>
+  <data name="Permission.ProviderCategory.Read" xml:space="preserve"><value>Visualizzare le categorie del negozio</value></data>
+  <data name="Permission.ProviderCategory.Create" xml:space="preserve"><value>Creare categorie del negozio</value></data>
+  <data name="Permission.ProviderCategory.Update" xml:space="preserve"><value>Aggiornare le categorie del negozio</value></data>
+  <data name="Permission.ProviderCategory.Delete" xml:space="preserve"><value>Eliminare le categorie del negozio</value></data>
+  <data name="Permission.ProviderProduct.Read" xml:space="preserve"><value>Visualizzare i prodotti del negozio</value></data>
+  <data name="Permission.ProviderProduct.Create" xml:space="preserve"><value>Creare prodotti del negozio</value></data>
+  <data name="Permission.ProviderProduct.Update" xml:space="preserve"><value>Aggiornare i prodotti del negozio</value></data>
+  <data name="Permission.ProviderProduct.Delete" xml:space="preserve"><value>Eliminare i prodotti del negozio</value></data>
+  <data name="Permission.ProviderOrder.Read" xml:space="preserve"><value>Visualizzare gli ordini del negozio</value></data>
+  <data name="Permission.ProviderOrder.Update" xml:space="preserve"><value>Aggiornare lo stato degli ordini del negozio</value></data>
 </root>

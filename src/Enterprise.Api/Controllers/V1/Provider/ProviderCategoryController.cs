@@ -4,12 +4,18 @@ using Enterprise.Api.Controllers;
 using Enterprise.Api.Models;
 using Enterprise.Application.Common.Authorization;
 using Enterprise.Application.Common.Localization;
+using Enterprise.Application.Common.Models;
 using Enterprise.Application.Features.Provider.Categories.Commands.CreateCategory;
-using Enterprise.Application.Features.Provider.Categories.Commands.DeleteCategoryCommand;
-using Enterprise.Application.Features.Provider.Categories.Commands.UpdateCategoryCommand;
+using Enterprise.Application.Features.Provider.Categories.Commands.DeleteCategory;
+using Enterprise.Application.Features.Provider.Categories.Commands.DeleteCategoryImage;
+using Enterprise.Application.Features.Provider.Categories.Commands.SetCategoryActive;
+using Enterprise.Application.Features.Provider.Categories.Commands.UpdateCategory;
+using Enterprise.Application.Features.Provider.Categories.Commands.UploadCategoryImage;
 using Enterprise.Application.Features.Provider.Categories.DTOs;
-using Enterprise.Application.Features.Provider.Categories.Queries.GetCategoriesListQuery;
+using Enterprise.Application.Features.Provider.Categories.Queries.GetCategoriesList;
+using Enterprise.Application.Features.Provider.Categories.Queries.GetCategoriesLookup;
 using Enterprise.Application.Features.Provider.Categories.Queries.GetCategoryById;
+using Enterprise.Api.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Enterprise.Api.Controllers.V1.Provider;
@@ -24,7 +30,6 @@ public sealed class ProviderCategoryController : ApiControllerBase
     [ProducesResponseType(typeof(ApiResponse<CategoryDetailDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-    [RequirePermission(Permissions.ProviderCategory.Create)]
     public async Task<ActionResult<ApiResponse<CategoryDetailDto>>> Create(
         [FromBody] CreateCategoryCommand command,
         CancellationToken cancellationToken)
@@ -32,7 +37,8 @@ public sealed class ProviderCategoryController : ApiControllerBase
         var result = await Mediator.Send(command, cancellationToken);
         return CreatedResponse(result, MessageKeys.Category.Created);
     }
-    [HttpGet("{id}")]
+
+    [HttpGet("{id:guid}")]
     [RequirePermission(Permissions.ProviderCategory.Read)]
     [ProducesResponseType(typeof(ApiResponse<CategoryDetailDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
@@ -42,41 +48,106 @@ public sealed class ProviderCategoryController : ApiControllerBase
         CancellationToken cancellationToken)
     {
         var result = await Mediator.Send(new GetCategoryByIdQuery(id), cancellationToken);
-
         return OkResponse(result, MessageKeys.Category.Retrieved);
     }
-    [HttpPut("{id}")]
+
+    [HttpGet]
+    [RequirePermission(Permissions.ProviderCategory.Read)]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<CategoryDetailDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<CategoryDetailDto>>>> GetList(
+        [FromQuery] bool? isActive,
+        CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new GetCategoriesListQuery(isActive), cancellationToken);
+        return OkResponse(result, MessageKeys.Category.ListRetrieved);
+    }
+
+    [HttpGet("lookup")]
+    [RequirePermission(Permissions.ProviderCategory.Read)]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<CategoryLookupDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<CategoryLookupDto>>>> Lookup(
+        CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new GetCategoriesLookupQuery(), cancellationToken);
+        return OkResponse(result, MessageKeys.Category.ListRetrieved);
+    }
+
+    [HttpPut("{id:guid}")]
     [RequirePermission(Permissions.ProviderCategory.Update)]
     [ProducesResponseType(typeof(ApiResponse<CategoryDetailDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<CategoryDetailDto>>> Update(
         [FromRoute] Guid id,
-        [FromBody] UpdateCategoryDto command,
+        [FromBody] UpdateCategoryRequest request,
         CancellationToken cancellationToken)
-    {   
-        var result = await Mediator.Send(new UpdateCategoryCommand(id, command), cancellationToken);
+    {
+        var command = new UpdateCategoryCommand(id, request.Name, request.Description, request.DisplayOrder);
+        var result = await Mediator.Send(command, cancellationToken);
         return OkResponse(result, MessageKeys.Category.Updated);
     }
-[HttpDelete("{id:guid}")]
-[RequirePermission(Permissions.ProviderCategory.Delete)]
-[ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-[ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-public async Task<ActionResult<ApiResponse<object?>>> Delete(
-    Guid id, CancellationToken cancellationToken)
-{
-    await Mediator.Send(new DeleteCategoryCommand(id), cancellationToken);
-    return EmptyResponse(MessageKeys.Category.Deleted);
+
+    [HttpPost("{id:guid}/set-active")]
+    [RequirePermission(Permissions.ProviderCategory.Update)]
+    [ProducesResponseType(typeof(ApiResponse<CategoryDetailDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<CategoryDetailDto>>> SetActive(
+        [FromRoute] Guid id,
+        [FromBody] SetCategoryActiveRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new SetCategoryActiveCommand(id, request.IsActive), cancellationToken);
+        var messageKey = request.IsActive ? MessageKeys.Category.Activated : MessageKeys.Category.Deactivated;
+        return OkResponse(result, messageKey);
+    }
+
+    [HttpDelete("{id:guid}")]
+    [RequirePermission(Permissions.ProviderCategory.Delete)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<ApiResponse<object?>>> Delete(
+        [FromRoute] Guid id,
+        [FromQuery] bool deleteRelatedProducts = false,
+        CancellationToken cancellationToken = default)
+    {
+        await Mediator.Send(new DeleteCategoryCommand(id, deleteRelatedProducts), cancellationToken);
+        return EmptyResponse(MessageKeys.Category.Deleted);
+    }
+
+    [HttpPost("{id:guid}/image")]
+    [RequirePermission(Permissions.ProviderCategory.Update)]
+    [RequestSizeLimit(3 * 1024 * 1024)]
+    [ProducesResponseType(typeof(ApiResponse<CategoryDetailDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<CategoryDetailDto>>> UploadImage(
+        [FromRoute] Guid id,
+        IFormFile file,
+        CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new UploadCategoryImageCommand(id, file.ToImageUploadFile()), cancellationToken);
+        return OkResponse(result, MessageKeys.Image.Uploaded);
+    }
+
+    [HttpDelete("{id:guid}/image")]
+    [RequirePermission(Permissions.ProviderCategory.Update)]
+    [ProducesResponseType(typeof(ApiResponse<CategoryDetailDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<CategoryDetailDto>>> DeleteImage(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new DeleteCategoryImageCommand(id), cancellationToken);
+        return OkResponse(result, MessageKeys.Image.Removed);
+    }
 }
-[HttpGet]
-[RequirePermission(Permissions.ProviderCategory.Read)]
-[ProducesResponseType(typeof(ApiResponse<IReadOnlyList<CategoryDetailDto>>), StatusCodes.Status200OK)]
-[ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
-[ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-public async Task<ActionResult<ApiResponse<IReadOnlyList<CategoryDetailDto>>>> GetList(
-    CancellationToken cancellationToken)
-{
-    var result = await Mediator.Send(new GetCategoriesListQuery(), cancellationToken);
-    return OkResponse(result, MessageKeys.Category.ListRetrieved);
-}
-}
+
+public sealed record UpdateCategoryRequest(
+    LocalizedText Name,
+    LocalizedText? Description = null,
+    int DisplayOrder = 0);
+
+public sealed record SetCategoryActiveRequest(bool IsActive);

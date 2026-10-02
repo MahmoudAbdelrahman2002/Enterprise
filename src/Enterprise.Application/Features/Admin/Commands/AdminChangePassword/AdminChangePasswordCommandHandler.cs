@@ -3,12 +3,14 @@ using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Domain.Enums;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Admin.Commands.AdminChangePassword;
 
 public sealed class AdminChangePasswordCommandHandler(
     ICurrentUserService currentUserService,
-    IUserAccountService userAccountService) : IRequestHandler<AdminChangePasswordCommand>
+    IUserAccountService userAccountService,
+    ILogger<AdminChangePasswordCommandHandler> logger) : IRequestHandler<AdminChangePasswordCommand>
 {
     public async Task Handle(AdminChangePasswordCommand request, CancellationToken cancellationToken)
     {
@@ -21,7 +23,10 @@ public sealed class AdminChangePasswordCommandHandler(
             userId, request.CurrentPassword, request.NewPassword, cancellationToken);
         if (!result.Succeeded)
         {
+            logger.LogWarning("Admin change password failed for {UserId}", userId);
             throw new AuthenticationFailedException(result.Error ?? MessageKeys.Auth.UnableToChangePassword);
         }
+
+        logger.LogInformation("Admin password changed for {UserId}", userId);
     }
 }

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using Enterprise.Application.Common.Auth;
 using Enterprise.Application.Common.Interfaces;
@@ -11,9 +12,11 @@ using Enterprise.Infrastructure.Identity;
 using Enterprise.Infrastructure.Identity.ApiKeyAuth;
 using Enterprise.Infrastructure.Identity.ApiKeyAuth.ExternalAuth;
 using Enterprise.Infrastructure.Localization;
-using Enterprise.Infrastructure.Providers;
+using Enterprise.Infrastructure.Storage;
+using Enterprise.Infrastructure.Notifications;
 using Enterprise.Infrastructure.Persistence;
 using Enterprise.Infrastructure.Persistence.Interceptors;
+using Enterprise.Infrastructure.Providers;
 using Hangfire;
 using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -44,14 +47,19 @@ public static class DependencyInjection
         services.AddSingleton<IAppLocalizer, AppLocalizer>();
         services.AddSingleton<ICurrentCulture, CurrentCulture>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IProviderContext, ProviderContext>();
+        services.AddScoped<IFileStorageService, AzureBlobFileStorageService>();
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IUserAccountService, UserAccountService>();
         services.AddScoped<IRoleManagerService, RoleManagerService>();
         services.AddScoped<IStaffManagerService, StaffManagerService>();
         services.AddScoped<IProviderAdminQueryService, ProviderAdminQueryService>();
+        services.AddScoped<IClientProviderQueryService, ClientProviderQueryService>();
         services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<IEmailSender, EmailSender>();
         services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
+        services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<FcmPushSender>();
 
         services.AddHttpClient(nameof(FacebookExternalAuthProvider), client =>
         {
@@ -68,6 +76,9 @@ public static class DependencyInjection
         services.Configure<SmtpSettings>(configuration.GetSection(SmtpSettings.SectionName));
         services.Configure<DashboardUrlSettings>(configuration.GetSection(DashboardUrlSettings.SectionName));
         services.Configure<ExternalAuthSettings>(configuration.GetSection(ExternalAuthSettings.SectionName));
+        services.Configure<AzureBlobStorageSettings>(configuration.GetSection(AzureBlobStorageSettings.SectionName));
+        services.Configure<StripeSettings>(configuration.GetSection(StripeSettings.SectionName));
+        services.Configure<FirebaseSettings>(configuration.GetSection(FirebaseSettings.SectionName));
 
         return services;
     }
@@ -144,6 +155,27 @@ public static class DependencyInjection
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
+                };
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = async context =>
+                    {
+                        var userManager = context.HttpContext.RequestServices
+                            .GetRequiredService<UserManager<ApplicationUser>>();
+                        var idValue = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier)
+                            ?? context.Principal?.FindFirstValue("sub");
+                        if (!Guid.TryParse(idValue, out var userId))
+                        {
+                            context.Fail("Invalid subject");
+                            return;
+                        }
+
+                        var user = await userManager.FindByIdAsync(userId.ToString());
+                        if (user is null || !user.IsActive)
+                        {
+                            context.Fail("Account is inactive");
+                        }
+                    }
                 };
             })
             .AddScheme<ApiKeyAuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(

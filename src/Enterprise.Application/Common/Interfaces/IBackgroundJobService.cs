@@ -10,6 +10,7 @@ namespace Enterprise.Application.Common.Interfaces;
 public interface IBackgroundJobService
 {
     string Enqueue<T>(Expression<Action<T>> methodCall);
+    string Enqueue<T>(Expression<Func<T, Task>> methodCall);
     string Schedule<T>(Expression<Action<T>> methodCall, TimeSpan delay);
     void AddOrUpdateRecurring<T>(string jobId, Expression<Action<T>> methodCall, string cronExpression);
 }

@@ -3,11 +3,13 @@ using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Domain.Enums;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Admin.Users.Commands.UpdateAdminUser;
 
 public sealed class UpdateAdminUserCommandHandler(
-    IStaffManagerService staffManagerService)
+    IStaffManagerService staffManagerService,
+    ILogger<UpdateAdminUserCommandHandler> logger)
     : IRequestHandler<UpdateAdminUserCommand, StaffDetailDto>
 {
     public async Task<StaffDetailDto> Handle(
@@ -40,6 +42,7 @@ public sealed class UpdateAdminUserCommandHandler(
             providerId: null,
             cancellationToken);
 
+        logger.LogInformation("Updated admin user {UserId}", request.Id);
         return updated!;
     }
 }

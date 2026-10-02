@@ -2,12 +2,14 @@ using Enterprise.Application.Common.Exceptions;
 using Enterprise.Application.Common.Interfaces;
 using Enterprise.Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Providers.Commands.DeleteProvider;
 
 public sealed class DeleteProviderCommandHandler(
     IUnitOfWork unitOfWork,
-    IUserAccountService userAccountService) : IRequestHandler<DeleteProviderCommand>
+    IUserAccountService userAccountService,
+    ILogger<DeleteProviderCommandHandler> logger) : IRequestHandler<DeleteProviderCommand>
 {
     public async Task Handle(DeleteProviderCommand request, CancellationToken cancellationToken)
     {
@@ -24,5 +26,7 @@ public sealed class DeleteProviderCommandHandler(
 
         unitOfWork.Providers.Remove(provider);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation("Deleted provider {ProviderId}", request.Id);
     }
 }

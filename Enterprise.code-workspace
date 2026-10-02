@@ -1,0 +1,13 @@
+{
+  "folders": [
+    {
+      "name": "Enterprise",
+      "path": "."
+    }
+  ],
+  "extensions": {
+    "recommendations": [
+      "jakubkozera.csharp-dev-tools"
+    ]
+  }
+}

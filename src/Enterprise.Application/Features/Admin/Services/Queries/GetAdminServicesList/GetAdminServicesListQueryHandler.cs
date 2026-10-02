@@ -4,10 +4,14 @@ using Enterprise.Application.Features.Admin.Services.DTOs;
 using Enterprise.Domain.Interfaces;
 using Enterprise.Domain.Specifications.Services;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Admin.Services.Queries.GetAdminServicesList;
 
-public sealed class GetAdminServicesListQueryHandler(IUnitOfWork unitOfWork, ICurrentCulture culture)
+public sealed class GetAdminServicesListQueryHandler(
+    IUnitOfWork unitOfWork,
+    ICurrentCulture culture,
+    ILogger<GetAdminServicesListQueryHandler> logger)
     : IRequestHandler<GetAdminServicesListQuery, PagedResult<MarketplaceServiceDto>>
 {
     public async Task<PagedResult<MarketplaceServiceDto>> Handle(
@@ -24,6 +28,7 @@ public sealed class GetAdminServicesListQueryHandler(IUnitOfWork unitOfWork, ICu
 
         var items = services.Select(s => s.ToDto(language)).ToList();
 
+        logger.LogInformation("Listed {Count} marketplace services", totalCount);
         return new PagedResult<MarketplaceServiceDto>(items, totalCount, request.PageNumber, request.PageSize);
     }
 }

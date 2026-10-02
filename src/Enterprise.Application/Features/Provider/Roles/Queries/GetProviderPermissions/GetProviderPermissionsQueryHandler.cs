@@ -1,22 +1,24 @@
 using Enterprise.Application.Common.Authorization;
+using Enterprise.Application.Common.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Provider.Roles.Queries.GetProviderPermissions;
 
-public sealed class GetProviderPermissionsQueryHandler
+public sealed class GetProviderPermissionsQueryHandler(
+    IAppLocalizer localizer,
+    ILogger<GetProviderPermissionsQueryHandler> logger)
     : IRequestHandler<GetProviderPermissionsQuery, IReadOnlyList<PermissionGroupDto>>
 {
     public Task<IReadOnlyList<PermissionGroupDto>> Handle(
         GetProviderPermissionsQuery request, CancellationToken cancellationToken)
     {
-        var providerPermissions = PermissionCatalog.ProviderPermissions;
-        var grouped = providerPermissions
-            .GroupBy(p => p.Module)
-            .Select(g => new PermissionGroupDto(
-                g.Key,
-                g.Select(p => new PermissionItemDto(p.Name, p.Action, p.Description)).ToList()))
-            .ToList();
+        var grouped = PermissionLocalizer.Group(PermissionCatalog.ProviderPermissions, localizer);
 
-        return Task.FromResult<IReadOnlyList<PermissionGroupDto>>(grouped);
+        logger.LogInformation(
+            "Listed {Count} permission groups ({PermissionCount} permissions)",
+            grouped.Count,
+            PermissionCatalog.ProviderPermissions.Count);
+        return Task.FromResult(grouped);
     }
 }

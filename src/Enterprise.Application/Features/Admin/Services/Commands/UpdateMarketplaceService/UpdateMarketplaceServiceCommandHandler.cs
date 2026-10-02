@@ -5,12 +5,14 @@ using Enterprise.Application.Features.Admin.Services.DTOs;
 using Enterprise.Domain.Entities;
 using Enterprise.Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Admin.Services.Commands.UpdateMarketplaceService;
 
 public sealed class UpdateMarketplaceServiceCommandHandler(
     IUnitOfWork unitOfWork,
-    ICurrentCulture culture) : IRequestHandler<UpdateMarketplaceServiceCommand, MarketplaceServiceDto>
+    ICurrentCulture culture,
+    ILogger<UpdateMarketplaceServiceCommandHandler> logger) : IRequestHandler<UpdateMarketplaceServiceCommand, MarketplaceServiceDto>
 {
     public async Task<MarketplaceServiceDto> Handle(
         UpdateMarketplaceServiceCommand request, CancellationToken cancellationToken)
@@ -28,6 +30,7 @@ public sealed class UpdateMarketplaceServiceCommandHandler(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
+        logger.LogInformation("Updated marketplace service {ServiceId}", request.Id);
         return service.ToDto(culture.LanguageCode);
     }
 }

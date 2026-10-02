@@ -3,10 +3,14 @@ using Enterprise.Application.Features.Admin.Services.DTOs;
 using Enterprise.Domain.Interfaces;
 using Enterprise.Domain.Specifications.Services;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Admin.Services.Queries.GetServicesLookup;
 
-public sealed class GetServicesLookupQueryHandler(IUnitOfWork unitOfWork, ICurrentCulture culture)
+public sealed class GetServicesLookupQueryHandler(
+    IUnitOfWork unitOfWork,
+    ICurrentCulture culture,
+    ILogger<GetServicesLookupQueryHandler> logger)
     : IRequestHandler<GetServicesLookupQuery, IReadOnlyList<MarketplaceServiceLookupDto>>
 {
     public async Task<IReadOnlyList<MarketplaceServiceLookupDto>> Handle(
@@ -16,6 +20,8 @@ public sealed class GetServicesLookupQueryHandler(IUnitOfWork unitOfWork, ICurre
         var spec = MarketplaceServiceFilterSpecification.ForLookup(language);
         var services = await unitOfWork.Services.ListAsync(spec, cancellationToken);
 
-        return services.Select(s => s.ToLookupDto(language)).ToList();
+        var result = services.Select(s => s.ToLookupDto(language)).ToList();
+        logger.LogInformation("Listed {Count} marketplace service lookups", result.Count);
+        return result;
     }
 }

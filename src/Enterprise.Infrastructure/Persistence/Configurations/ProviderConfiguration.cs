@@ -13,6 +13,7 @@ public sealed class ProviderConfiguration : IEntityTypeConfiguration<Provider>
 
         builder.Property(p => p.CompanyName).IsRequired().HasMaxLength(200);
         builder.Property(p => p.PhoneNumber).HasMaxLength(40);
+        builder.Property(p => p.ImageUrl).HasMaxLength(2048);
 
         builder.HasIndex(p => p.UserId).IsUnique().HasFilter("[IsDeleted] = 0");
         builder.HasIndex(p => p.CompanyName);

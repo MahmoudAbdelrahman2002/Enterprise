@@ -192,6 +192,88 @@ public static class MessageKeys
         public const string Deactivated = "Category.Deactivated";
         public const string NotFound = "Category.NotFound";
         public const string UnableToDelete = "Category.UnableToDelete";
-        
+        public const string HasLinkedProducts = "Category.HasLinkedProducts";
+        public const string Inactive = "Category.Inactive";
+    }
+
+    public static class Product
+    {
+        public const string ListRetrieved = "Product.ListRetrieved";
+        public const string Retrieved = "Product.Retrieved";
+        public const string Created = "Product.Created";
+        public const string Updated = "Product.Updated";
+        public const string Deleted = "Product.Deleted";
+        public const string Activated = "Product.Activated";
+        public const string Deactivated = "Product.Deactivated";
+        public const string SkuExists = "Product.SkuExists";
+        public const string NotFound = "Product.NotFound";
+    }
+
+    public static class Image
+    {
+        public const string Uploaded = "Image.Uploaded";
+        public const string Removed = "Image.Removed";
+        public const string Required = "Image.Required";
+        public const string InvalidType = "Image.InvalidType";
+        public const string TooLarge = "Image.TooLarge";
+    }
+
+    public static class Services
+    {
+        public const string ListRetrieved = "Services.ListRetrieved";
+        public const string Retrieved = "Services.Retrieved";
+        public const string Created = "Services.Created";
+        public const string Updated = "Services.Updated";
+        public const string Deleted = "Services.Deleted";
+    }
+    public static class Cart
+    {
+        public const string Retrieved = "Cart.Retrieved";
+        public const string ListRetrieved = "Cart.ListRetrieved";
+        public const string Created = "Cart.Created";
+        public const string Added = "Cart.Added";
+        public const string Updated = "Cart.Updated";
+        public const string Deleted = "Cart.Deleted";
+        public const string ItemRemoved = "Cart.ItemRemoved";
+        public const string NotFound = "Cart.NotFound";
+        public const string UnableToDelete = "Cart.UnableToDelete";
+        public const string UnableToCreate = "Cart.UnableToCreate";
+        public const string UnableToUpdate = "Cart.UnableToUpdate";
+        public const string UnableToRetrieve = "Cart.UnableToRetrieve";
+    }
+    public static class Order
+    {
+        public const string Retrieved = "Order.Retrieved";
+        public const string ListRetrieved = "Order.ListRetrieved";
+        public const string Created = "Order.Created";
+        public const string Updated = "Order.Updated";
+        public const string NotFound = "Order.NotFound";
+        public const string UnableToCreate = "Order.UnableToCreate";
+        public const string InvalidStatusTransition = "Order.InvalidStatusTransition";
+        public const string Cancelled = "Order.Cancelled";
+    }
+
+    public static class ClientUser
+    {
+        public const string ListRetrieved = "ClientUser.ListRetrieved";
+        public const string Retrieved = "ClientUser.Retrieved";
+        public const string Activated = "ClientUser.Activated";
+        public const string Deactivated = "ClientUser.Deactivated";
+    }
+
+    public static class Payment
+    {
+        public const string Created = "Payment.Created";
+        public const string NotFound = "Payment.NotFound";
+        public const string UnableToCreate = "Payment.UnableToCreate";
+    }
+
+    public static class Notification
+    {
+        public const string ListRetrieved = "Notification.ListRetrieved";
+        public const string CountRetrieved = "Notification.CountRetrieved";
+        public const string MarkedAsRead = "Notification.MarkedAsRead";
+        public const string DeviceTokenRegistered = "Notification.DeviceTokenRegistered";
+        public const string DeviceTokenUnregistered = "Notification.DeviceTokenUnregistered";
     }
 }

@@ -4,13 +4,15 @@ using Enterprise.Application.Common.Auth;
 using Enterprise.Application.Common.Exceptions;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Application.Common.Settings;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Enterprise.Infrastructure.Identity.ApiKeyAuth.ExternalAuth;
 
 public sealed class FacebookExternalAuthProvider(
     IHttpClientFactory httpClientFactory,
-    IOptions<ExternalAuthSettings> options) : IExternalAuthProvider
+    IOptions<ExternalAuthSettings> options,
+    ILogger<FacebookExternalAuthProvider> logger) : IExternalAuthProvider
 {
     public string ProviderName => ExternalAuthProviders.Facebook;
 
@@ -23,6 +25,7 @@ public sealed class FacebookExternalAuthProvider(
             || settings.AppId.StartsWith("YOUR_", StringComparison.OrdinalIgnoreCase)
             || settings.AppSecret.StartsWith("YOUR_", StringComparison.OrdinalIgnoreCase))
         {
+            logger.LogWarning("Facebook external auth validation failed: provider not configured");
             throw new AuthenticationFailedException(MessageKeys.Auth.FacebookNotConfigured);
         }
 
@@ -34,6 +37,9 @@ public sealed class FacebookExternalAuthProvider(
         using var debugResponse = await client.GetAsync(debugUrl, cancellationToken);
         if (!debugResponse.IsSuccessStatusCode)
         {
+            logger.LogWarning(
+                "Facebook external auth validation failed: debug_token HTTP {StatusCode}",
+                (int)debugResponse.StatusCode);
             throw new AuthenticationFailedException(MessageKeys.Auth.InvalidFacebookToken);
         }
 
@@ -44,6 +50,7 @@ public sealed class FacebookExternalAuthProvider(
             || !data.IsValid
             || !string.Equals(data.AppId, settings.AppId, StringComparison.Ordinal))
         {
+            logger.LogWarning("Facebook external auth validation failed: token debug data invalid");
             throw new AuthenticationFailedException(MessageKeys.Auth.InvalidFacebookToken);
         }
 
@@ -52,6 +59,9 @@ public sealed class FacebookExternalAuthProvider(
         using var meResponse = await client.GetAsync(meUrl, cancellationToken);
         if (!meResponse.IsSuccessStatusCode)
         {
+            logger.LogWarning(
+                "Facebook external auth validation failed: me HTTP {StatusCode}",
+                (int)meResponse.StatusCode);
             throw new AuthenticationFailedException(MessageKeys.Auth.FacebookProfileFailed);
         }
 
@@ -59,11 +69,15 @@ public sealed class FacebookExternalAuthProvider(
             cancellationToken: cancellationToken);
         if (me is null || string.IsNullOrWhiteSpace(me.Id))
         {
+            logger.LogWarning("Facebook external auth validation failed: profile id missing");
             throw new AuthenticationFailedException(MessageKeys.Auth.FacebookProfileFailed);
         }
 
         if (string.IsNullOrWhiteSpace(me.Email))
         {
+            logger.LogWarning(
+                "Facebook external auth validation failed: email missing for facebook user {FacebookUserId}",
+                me.Id);
             throw new AuthenticationFailedException(
                 MessageKeys.Auth.SocialEmailRequired);
         }

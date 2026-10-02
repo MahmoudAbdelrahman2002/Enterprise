@@ -27,7 +27,7 @@ buzzwords.
 Two schemes are registered and accepted interchangeably on the default authorization policy:
 
 - **JWT Bearer** (`Microsoft.AspNetCore.Authentication.JwtBearer`) — short-lived access tokens
-  (`Jwt:AccessTokenExpirationMinutes`, default 15 minutes) signed with HMAC-SHA256 using a secret
+  (`Jwt:AccessTokenExpirationMinutes`, default 60 minutes) signed with HMAC-SHA256 using a secret
   key from configuration (`Jwt:Secret`). Validation enforces issuer, audience, lifetime, and
   signing key — nothing is accepted with `ValidateIssuer`/`ValidateAudience`/`ValidateLifetime`
   turned off.

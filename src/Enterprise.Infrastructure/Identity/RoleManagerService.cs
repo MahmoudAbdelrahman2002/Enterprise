@@ -12,7 +12,8 @@ namespace Enterprise.Infrastructure.Identity;
 
 public sealed class RoleManagerService(
     RoleManager<ApplicationRole> roleManager,
-    ApplicationDbContext context) : IRoleManagerService
+    ApplicationDbContext context,
+    ICurrentCulture culture) : IRoleManagerService
 {
     public async Task<PagedResult<RoleListItemDto>> GetRolesAsync(
         UserType portal,
@@ -21,6 +22,7 @@ public sealed class RoleManagerService(
         string? searchTerm = null,
         CancellationToken cancellationToken = default)
     {
+       
         var query = context.Roles.AsNoTracking().Where(r => r.RoleType == portal);
 
         if (portal == UserType.Provider)
@@ -35,7 +37,9 @@ public sealed class RoleManagerService(
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
             var trimmedSearch = searchTerm.Trim();
-            query = query.Where(r => r.Name != null && r.Name.Contains(trimmedSearch));
+            query = query.Where(r =>
+                (r.Name != null && r.Name.Contains(trimmedSearch)) ||
+                context.RoleTranslations.Any(t => t.RoleId == r.Id && t.Name.Contains(trimmedSearch)));
         }
 
         var totalItems = await query.CountAsync(cancellationToken);
@@ -64,9 +68,14 @@ public sealed class RoleManagerService(
             .GroupBy(ur => ur.RoleId)
             .ToDictionaryAsync(g => g.Key, g => g.Count(), cancellationToken);
 
+        var translationsByRole = await LoadTranslationsAsync(roleIds, cancellationToken);
+
         var items = roles.Select(role => new RoleListItemDto(
             role.Id,
-            role.Name ?? string.Empty,
+            RoleDisplayNames.Resolve(
+                translationsByRole.GetValueOrDefault(role.Id) ?? [],
+                culture.LanguageCode,
+                role.Name ?? string.Empty),
             role.RoleType,
             role.ProviderId,
             role.IsSystem,
@@ -110,9 +119,16 @@ public sealed class RoleManagerService(
             .AsNoTracking()
             .CountAsync(ur => ur.RoleId == role.Id, cancellationToken);
 
+        var translations = await context.RoleTranslations
+            .AsNoTracking()
+            .Where(t => t.RoleId == role.Id)
+            .ToListAsync(cancellationToken);
+        var fallback = role.Name ?? string.Empty;
+
         return new RoleDetailDto(
             role.Id,
-            role.Name ?? string.Empty,
+            RoleDisplayNames.Resolve(translations, culture.LanguageCode, fallback),
+            RoleDisplayNames.ToLocalizedText(translations, fallback),
             role.RoleType,
             role.ProviderId,
             role.IsSystem,
@@ -122,7 +138,7 @@ public sealed class RoleManagerService(
     }
 
     public async Task<CreateRoleResult> CreateRoleAsync(
-        string name,
+        LocalizedText name,
         UserType portal,
         Guid? providerId,
         IEnumerable<string> permissions,
@@ -138,7 +154,7 @@ public sealed class RoleManagerService(
             }
         }
 
-        var trimmedName = name.Trim();
+        var trimmedName = name.En.Trim();
         var nameQuery = context.Roles.Where(r => r.RoleType == portal && r.Name == trimmedName);
         if (portal == UserType.Provider)
         {
@@ -172,12 +188,14 @@ public sealed class RoleManagerService(
             await roleManager.AddClaimAsync(role, new Claim("permission", permission));
         }
 
+        await ReplaceTranslationsAsync(role.Id, name, cancellationToken);
+
         return new CreateRoleResult(true, RoleId: role.Id);
     }
 
     public async Task<UpdateRoleResult> UpdateRoleAsync(
         Guid roleId,
-        string name,
+        LocalizedText name,
         UserType portal,
         Guid? providerId,
         IEnumerable<string> permissions,
@@ -203,7 +221,7 @@ public sealed class RoleManagerService(
             }
         }
 
-        var trimmedName = name.Trim();
+        var trimmedName = name.En.Trim();
         if (!string.Equals(role.Name, trimmedName, StringComparison.OrdinalIgnoreCase))
         {
             var nameQuery = context.Roles.Where(r => r.Id != roleId && r.RoleType == portal && r.Name == trimmedName);
@@ -230,6 +248,8 @@ public sealed class RoleManagerService(
                 return new UpdateRoleResult(false, Error: errors.FirstOrDefault(), Errors: errors);
             }
         }
+
+        await ReplaceTranslationsAsync(role.Id, name, cancellationToken);
 
         var existingClaims = await roleManager.GetClaimsAsync(role);
         var existingPermissions = existingClaims
@@ -283,5 +303,62 @@ public sealed class RoleManagerService(
         }
 
         return new DeleteRoleResult(true);
+    }
+
+    private async Task<Dictionary<Guid, List<RoleTranslation>>> LoadTranslationsAsync(
+        IReadOnlyCollection<Guid> roleIds,
+        CancellationToken cancellationToken)
+    {
+        if (roleIds.Count == 0)
+        {
+            return [];
+        }
+
+        var rows = await context.RoleTranslations
+            .AsNoTracking()
+            .Where(t => roleIds.Contains(t.RoleId))
+            .ToListAsync(cancellationToken);
+
+        return rows.GroupBy(t => t.RoleId).ToDictionary(g => g.Key, g => g.ToList());
+    }
+
+    private async Task ReplaceTranslationsAsync(Guid roleId, LocalizedText name, CancellationToken cancellationToken)
+    {
+        var existing = await context.RoleTranslations
+            .Where(t => t.RoleId == roleId)
+            .ToListAsync(cancellationToken);
+
+        var desired = new List<(string Language, string Value)>();
+        LocalizedContentHelper.Apply(
+            (language, value, _) => desired.Add((language, value.Trim())),
+            name,
+            description: null);
+
+        var desiredCodes = desired.Select(d => d.Language).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var stale in existing.Where(t => !desiredCodes.Contains(t.LanguageCode)).ToList())
+        {
+            context.RoleTranslations.Remove(stale);
+        }
+
+        foreach (var (language, value) in desired)
+        {
+            var row = existing.FirstOrDefault(t =>
+                string.Equals(t.LanguageCode, language, StringComparison.OrdinalIgnoreCase));
+            if (row is null)
+            {
+                context.RoleTranslations.Add(new RoleTranslation
+                {
+                    RoleId = roleId,
+                    LanguageCode = language,
+                    Name = value
+                });
+            }
+            else
+            {
+                row.Name = value;
+            }
+        }
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

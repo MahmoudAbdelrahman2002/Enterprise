@@ -8,6 +8,7 @@ using Enterprise.Application.Features.Auth.Common;
 using Enterprise.Domain.Enums;
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Enterprise.Application.Features.Client.Auth;
@@ -37,7 +38,8 @@ public sealed class ClientRegisterCommandHandler(
     IEmailSender emailSender,
     IAppLocalizer localizer,
     IOptions<SmtpSettings> smtpOptions,
-    IOptions<OtpSettings> otpOptions) : IRequestHandler<ClientRegisterCommand, OtpSentDto>
+    IOptions<OtpSettings> otpOptions,
+    ILogger<ClientRegisterCommandHandler> logger) : IRequestHandler<ClientRegisterCommand, OtpSentDto>
 {
     public async Task<OtpSentDto> Handle(ClientRegisterCommand request, CancellationToken cancellationToken)
     {
@@ -63,6 +65,7 @@ public sealed class ClientRegisterCommandHandler(
                 localizer[MessageKeys.Email.VerificationBody, code],
                 cancellationToken);
 
+            logger.LogInformation("Client registration OTP issued for {Email}", request.Email);
             return BuildOtpResponse(localizer[MessageKeys.Auth.RegistrationStarted], code);
         }
         catch (OperationCanceledException)
@@ -83,18 +86,18 @@ public sealed class ClientRegisterCommandHandler(
         {
             await otpService.InvalidateAsync(email, OtpPurpose.Register, cancellationToken);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Best-effort; still attempt user delete.
+            logger.LogWarning(ex, "Best-effort OTP invalidate failed during registration rollback for {Email}", email);
         }
 
         try
         {
             await userAccountService.DeleteByEmailAsync(email, cancellationToken);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Best-effort rollback; original failure is rethrown by the caller.
+            logger.LogWarning(ex, "Best-effort user delete failed during registration rollback for {Email}", email);
         }
     }
 
@@ -122,7 +125,9 @@ public sealed class ClientVerifyRegistrationCommandValidator : AbstractValidator
 public sealed class ClientVerifyRegistrationCommandHandler(
     IUserAccountService userAccountService,
     IOtpService otpService,
-    ITokenIssuanceService tokenIssuanceService) : IRequestHandler<ClientVerifyRegistrationCommand, AuthResponseDto>
+    ITokenIssuanceService tokenIssuanceService,
+    ILogger<ClientVerifyRegistrationCommandHandler> logger)
+    : IRequestHandler<ClientVerifyRegistrationCommand, AuthResponseDto>
 {
     public async Task<AuthResponseDto> Handle(ClientVerifyRegistrationCommand request, CancellationToken cancellationToken)
     {
@@ -144,7 +149,11 @@ public sealed class ClientVerifyRegistrationCommandHandler(
         await userAccountService.ConfirmEmailAsync(user.Id, cancellationToken);
         user = (await userAccountService.FindByIdAsync(user.Id, cancellationToken))!;
 
-        return await tokenIssuanceService.IssueTokensAsync(user, request.IpAddress, cancellationToken);
+        var tokens = await tokenIssuanceService.IssueTokensAsync(user, request.IpAddress, cancellationToken);
+        logger.LogInformation(
+            "Client registration verified for user {UserId} ({Email})",
+            user.Id, user.Email);
+        return tokens;
     }
 }
 
@@ -164,7 +173,8 @@ public sealed class ClientLoginCommandHandler(
     IEmailSender emailSender,
     IAppLocalizer localizer,
     IOptions<SmtpSettings> smtpOptions,
-    IOptions<OtpSettings> otpOptions) : IRequestHandler<ClientLoginCommand, OtpSentDto>
+    IOptions<OtpSettings> otpOptions,
+    ILogger<ClientLoginCommandHandler> logger) : IRequestHandler<ClientLoginCommand, OtpSentDto>
 {
     public async Task<OtpSentDto> Handle(ClientLoginCommand request, CancellationToken cancellationToken)
     {
@@ -172,6 +182,7 @@ public sealed class ClientLoginCommandHandler(
 
         if (user is null || user.UserType != UserType.Client || !user.IsActive)
         {
+            logger.LogInformation("Client login OTP requested for non-eligible email {Email}", request.Email);
             return new OtpSentDto(localizer[MessageKeys.Auth.OtpSentIfExists]);
         }
 
@@ -218,14 +229,15 @@ public sealed class ClientLoginCommandHandler(
             {
                 await otpService.InvalidateAsync(email, purpose, cancellationToken);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Best-effort cleanup.
+                logger.LogWarning(ex, "Best-effort OTP invalidate failed after login email failure for {Email}", email);
             }
 
             throw;
         }
 
+        logger.LogInformation("Client {Purpose} OTP issued for {Email}", purpose, email);
         return BuildOtpResponse(successMessage, code);
     }
 
@@ -253,7 +265,9 @@ public sealed class ClientVerifyLoginCommandValidator : AbstractValidator<Client
 public sealed class ClientVerifyLoginCommandHandler(
     IUserAccountService userAccountService,
     IOtpService otpService,
-    ITokenIssuanceService tokenIssuanceService) : IRequestHandler<ClientVerifyLoginCommand, AuthResponseDto>
+    ITokenIssuanceService tokenIssuanceService,
+    ILogger<ClientVerifyLoginCommandHandler> logger)
+    : IRequestHandler<ClientVerifyLoginCommand, AuthResponseDto>
 {
     public async Task<AuthResponseDto> Handle(ClientVerifyLoginCommand request, CancellationToken cancellationToken)
     {
@@ -270,6 +284,8 @@ public sealed class ClientVerifyLoginCommandHandler(
             throw new AuthenticationFailedException();
         }
 
-        return await tokenIssuanceService.IssueTokensAsync(user, request.IpAddress, cancellationToken);
+        var tokens = await tokenIssuanceService.IssueTokensAsync(user, request.IpAddress, cancellationToken);
+        logger.LogInformation("Client login verified for user {UserId} ({Email})", user.Id, user.Email);
+        return tokens;
     }
 }

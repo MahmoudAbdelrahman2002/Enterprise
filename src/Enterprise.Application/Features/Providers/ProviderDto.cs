@@ -14,6 +14,7 @@ public sealed record ProviderDto(
     string? ServiceName,
     bool IsActive,
     bool EmailConfirmed,
+    string? ImageUrl,
     DateTime CreatedAtUtc,
     DateTime? LastModifiedAtUtc);
 
@@ -32,6 +33,7 @@ public static class ProviderDtoMapping
             detail.ServiceName,
             detail.IsActive,
             detail.EmailConfirmed,
+            detail.ImageUrl,
             detail.CreatedAtUtc,
             detail.LastModifiedAtUtc);
 
@@ -48,6 +50,7 @@ public static class ProviderDtoMapping
             item.ServiceName,
             item.IsActive,
             EmailConfirmed: true,
+            item.ImageUrl,
             item.CreatedAtUtc,
             LastModifiedAtUtc: null);
 }

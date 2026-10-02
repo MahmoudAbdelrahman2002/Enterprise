@@ -24,12 +24,16 @@ public sealed class MarketplaceService : BaseAuditableEntity, ISoftDelete
     public string Code { get; private set; } = null!;
     public bool IsActive { get; private set; } = true;
     public int DisplayOrder { get; private set; }
+    public string? ImageUrl { get; private set; }
 
     public IReadOnlyCollection<MarketplaceServiceTranslation> Translations => _translations;
 
     public bool IsDeleted { get; set; }
     public DateTime? DeletedAtUtc { get; set; }
     public string? DeletedBy { get; set; }
+
+    public void SetImageUrl(string? imageUrl) =>
+        ImageUrl = string.IsNullOrWhiteSpace(imageUrl) ? null : imageUrl.Trim();
 
     public MarketplaceServiceTranslation? Resolve(string language)
     {

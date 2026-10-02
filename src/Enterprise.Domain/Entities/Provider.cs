@@ -23,6 +23,7 @@ public sealed class Provider : BaseAuditableEntity, ISoftDelete
     public Guid UserId { get; private set; }
     public string CompanyName { get; private set; } = null!;
     public string? PhoneNumber { get; private set; }
+    public string? ImageUrl { get; private set; }
 
     public Guid? ServiceId { get; private set; }
     public MarketplaceService? Service { get; private set; }
@@ -30,6 +31,9 @@ public sealed class Provider : BaseAuditableEntity, ISoftDelete
     public bool IsDeleted { get; set; }
     public DateTime? DeletedAtUtc { get; set; }
     public string? DeletedBy { get; set; }
+
+    public void SetImageUrl(string? imageUrl) =>
+        ImageUrl = string.IsNullOrWhiteSpace(imageUrl) ? null : imageUrl.Trim();
 
     public void UpdateDetails(string companyName, string? phoneNumber, Guid? serviceId = null)
     {

@@ -15,7 +15,7 @@ namespace Enterprise.Api.Controllers.V1.Provider;
 public sealed class ProviderPermissionsController : ApiControllerBase
 {
     [HttpGet]
-    [RequirePermission("ProviderRoles.Read")]
+    [RequirePermission(Permissions.ProviderRoles.Read)]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<PermissionGroupDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<PermissionGroupDto>>>> GetPermissions(
         CancellationToken cancellationToken) =>

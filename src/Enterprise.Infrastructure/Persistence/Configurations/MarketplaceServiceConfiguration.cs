@@ -14,6 +14,7 @@ public sealed class MarketplaceServiceConfiguration : IEntityTypeConfiguration<M
         builder.Property(s => s.Code).IsRequired().HasMaxLength(100);
         builder.Property(s => s.DisplayOrder).HasDefaultValue(0);
         builder.Property(s => s.IsActive).HasDefaultValue(true);
+        builder.Property(s => s.ImageUrl).HasMaxLength(2048);
 
         builder.HasIndex(s => s.Code).IsUnique().HasFilter("[IsDeleted] = 0");
         builder.HasIndex(s => s.DisplayOrder);

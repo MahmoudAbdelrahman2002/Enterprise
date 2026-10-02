@@ -2,30 +2,25 @@ using Enterprise.Domain.Common;
 
 namespace Enterprise.Domain.Entities;
 
-public class ProductTranslation
+public sealed class ProductTranslation
 {
-    public ProductTranslation()
+    private ProductTranslation()
     {
+    }
 
-    }
-    
-     public ProductTranslation(string languageCode, string name, string? description = null)
-       : this(Guid.Empty, languageCode, name, description)
-    {
-    }
     public ProductTranslation(Guid productId, string languageCode, string name, string? description = null)
     {
         ProductId = productId;
         LanguageCode = SupportedLanguages.Normalize(languageCode);
-        Name = name;
-        Description = description;
+        Update(name, description);
     }
-    public Guid ProductId { get; set; }
+
+    public Guid ProductId { get; private set; }
     public string LanguageCode { get; private set; } = null!;
     public string Name { get; private set; } = null!;
     public string? Description { get; private set; }
 
-    public void Update(string name, string? description)
+    public void Update(string name, string? description = null)
     {
         Name = name;
         Description = description;

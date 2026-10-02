@@ -2,6 +2,7 @@ using Asp.Versioning;
 using Enterprise.Api.Authorization;
 using Enterprise.Api.Controllers;
 using Enterprise.Api.Models;
+using Enterprise.Application.Common.Authorization;
 using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Application.Common.Models;
@@ -21,14 +22,14 @@ namespace Enterprise.Api.Controllers.V1.Provider;
 public sealed class ProviderStaffController : ApiControllerBase
 {
     [HttpGet]
-    [RequirePermission("ProviderStaff.Read")]
+    [RequirePermission(Permissions.ProviderStaff.Read)]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<StaffListItemDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<PagedResult<StaffListItemDto>>>> GetList(
         [FromQuery] GetProviderStaffListQuery query, CancellationToken cancellationToken) =>
         OkResponse(await Mediator.Send(query, cancellationToken), MessageKeys.ProviderStaff.ListRetrieved);
 
     [HttpGet("{id:guid}")]
-    [RequirePermission("ProviderStaff.Read")]
+    [RequirePermission(Permissions.ProviderStaff.Read)]
     [ProducesResponseType(typeof(ApiResponse<StaffDetailDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<StaffDetailDto>>> GetById(
@@ -36,7 +37,7 @@ public sealed class ProviderStaffController : ApiControllerBase
         OkResponse(await Mediator.Send(new GetProviderStaffByIdQuery(id), cancellationToken), MessageKeys.ProviderStaff.Retrieved);
 
     [HttpPost]
-    [RequirePermission("ProviderStaff.Create")]
+    [RequirePermission(Permissions.ProviderStaff.Create)]
     [ProducesResponseType(typeof(ApiResponse<StaffDetailDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<ApiResponse<StaffDetailDto>>> Create(
@@ -57,7 +58,7 @@ public sealed class ProviderStaffController : ApiControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    [RequirePermission("ProviderStaff.Update")]
+    [RequirePermission(Permissions.ProviderStaff.Update)]
     [ProducesResponseType(typeof(ApiResponse<StaffDetailDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]
@@ -71,7 +72,7 @@ public sealed class ProviderStaffController : ApiControllerBase
     }
 
     [HttpPost("{id:guid}/set-active")]
-    [RequirePermission("ProviderStaff.Update")]
+    [RequirePermission(Permissions.ProviderStaff.Update)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]
@@ -83,7 +84,7 @@ public sealed class ProviderStaffController : ApiControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [RequirePermission("ProviderStaff.Delete")]
+    [RequirePermission(Permissions.ProviderStaff.Delete)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]

@@ -6,6 +6,7 @@ using Enterprise.Application.Features.Auth;
 using Enterprise.Domain.Enums;
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Profiles;
 
@@ -13,7 +14,8 @@ public sealed record GetProfileQuery : IRequest<ProfileDto>;
 
 public sealed class GetProfileQueryHandler(
     ICurrentUserService currentUserService,
-    IUserAccountService userAccountService) : IRequestHandler<GetProfileQuery, ProfileDto>
+    IUserAccountService userAccountService,
+    ILogger<GetProfileQueryHandler> logger) : IRequestHandler<GetProfileQuery, ProfileDto>
 {
     public async Task<ProfileDto> Handle(GetProfileQuery request, CancellationToken cancellationToken)
     {
@@ -21,6 +23,7 @@ public sealed class GetProfileQueryHandler(
         var user = await userAccountService.FindByIdAsync(userId, cancellationToken)
             ?? throw NotFoundException.For("User", userId);
 
+        logger.LogInformation("Fetched profile for user {UserId} with email {Email}", user.Id, user.Email);
         return new ProfileDto(
             user.Id, user.Email, user.FirstName, user.LastName, user.UserType.ToString(), user.EmailConfirmed);
     }
@@ -39,13 +42,15 @@ public sealed class UpdateProfileCommandValidator : AbstractValidator<UpdateProf
 
 public sealed class UpdateProfileCommandHandler(
     ICurrentUserService currentUserService,
-    IUserAccountService userAccountService) : IRequestHandler<UpdateProfileCommand, ProfileDto>
+    IUserAccountService userAccountService,
+    ILogger<UpdateProfileCommandHandler> logger) : IRequestHandler<UpdateProfileCommand, ProfileDto>
 {
     public async Task<ProfileDto> Handle(UpdateProfileCommand request, CancellationToken cancellationToken)
     {
         var userId = currentUserService.UserId ?? throw new AuthenticationFailedException();
         await userAccountService.UpdateProfileAsync(userId, request.FirstName, request.LastName, cancellationToken);
         var user = (await userAccountService.FindByIdAsync(userId, cancellationToken))!;
+        logger.LogInformation("Updated profile for user {UserId} with email {Email}", user.Id, user.Email);
         return new ProfileDto(
             user.Id, user.Email, user.FirstName, user.LastName, user.UserType.ToString(), user.EmailConfirmed);
     }
@@ -66,7 +71,8 @@ public sealed class RequestChangeEmailCommandHandler(
     IUserAccountService userAccountService,
     IOtpService otpService,
     IEmailSender emailSender,
-    IAppLocalizer localizer) : IRequestHandler<RequestChangeEmailCommand>
+    IAppLocalizer localizer,
+    ILogger<RequestChangeEmailCommandHandler> logger) : IRequestHandler<RequestChangeEmailCommand>
 {
     public async Task Handle(RequestChangeEmailCommand request, CancellationToken cancellationToken)
     {
@@ -95,13 +101,21 @@ public sealed class RequestChangeEmailCommandHandler(
             {
                 await otpService.InvalidateAsync(request.NewEmail, OtpPurpose.ChangeEmail, cancellationToken);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Best-effort cleanup.
+                logger.LogWarning(
+                    ex,
+                    "Best-effort OTP invalidate failed after change-email send failure for {NewEmail}",
+                    request.NewEmail);
             }
 
             throw;
         }
+
+        logger.LogInformation(
+            "Change-email code sent for user {UserId} to {NewEmail}",
+            userId,
+            request.NewEmail);
     }
 }
 
@@ -119,7 +133,8 @@ public sealed class ConfirmChangeEmailCommandValidator : AbstractValidator<Confi
 public sealed class ConfirmChangeEmailCommandHandler(
     ICurrentUserService currentUserService,
     IUserAccountService userAccountService,
-    IOtpService otpService) : IRequestHandler<ConfirmChangeEmailCommand, ProfileDto>
+    IOtpService otpService,
+    ILogger<ConfirmChangeEmailCommandHandler> logger) : IRequestHandler<ConfirmChangeEmailCommand, ProfileDto>
 {
     public async Task<ProfileDto> Handle(ConfirmChangeEmailCommand request, CancellationToken cancellationToken)
     {
@@ -139,6 +154,7 @@ public sealed class ConfirmChangeEmailCommandHandler(
         }
 
         var user = (await userAccountService.FindByIdAsync(userId, cancellationToken))!;
+        logger.LogInformation("Email changed for user {UserId} to {Email}", user.Id, user.Email);
         return new ProfileDto(
             user.Id, user.Email, user.FirstName, user.LastName, user.UserType.ToString(), user.EmailConfirmed);
     }

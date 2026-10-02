@@ -3,11 +3,13 @@ using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Domain.Enums;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enterprise.Application.Features.Admin.Users.Commands.CreateAdminUser;
 
 public sealed class CreateAdminUserCommandHandler(
-    IStaffManagerService staffManagerService)
+    IStaffManagerService staffManagerService,
+    ILogger<CreateAdminUserCommandHandler> logger)
     : IRequestHandler<CreateAdminUserCommand, StaffDetailDto>
 {
     public async Task<StaffDetailDto> Handle(
@@ -36,6 +38,7 @@ public sealed class CreateAdminUserCommandHandler(
             providerId: null,
             cancellationToken);
 
+        logger.LogInformation("Created admin user {UserId} for {Email}", result.StaffId.Value, request.Email);
         return created!;
     }
 }

@@ -2,6 +2,7 @@ using Asp.Versioning;
 using Enterprise.Api.Authorization;
 using Enterprise.Api.Controllers;
 using Enterprise.Api.Models;
+using Enterprise.Application.Common.Authorization;
 using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Application.Common.Models;
@@ -20,14 +21,14 @@ namespace Enterprise.Api.Controllers.V1.Provider;
 public sealed class ProviderRolesController : ApiControllerBase
 {
     [HttpGet]
-    [RequirePermission("ProviderRoles.Read")]
+    [RequirePermission(Permissions.ProviderRoles.Read)]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<RoleListItemDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<PagedResult<RoleListItemDto>>>> GetList(
         [FromQuery] GetProviderRolesListQuery query, CancellationToken cancellationToken) =>
         OkResponse(await Mediator.Send(query, cancellationToken), MessageKeys.Role.ListRetrieved);
 
     [HttpGet("{id:guid}")]
-    [RequirePermission("ProviderRoles.Read")]
+    [RequirePermission(Permissions.ProviderRoles.Read)]
     [ProducesResponseType(typeof(ApiResponse<RoleDetailDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<RoleDetailDto>>> GetById(
@@ -35,7 +36,7 @@ public sealed class ProviderRolesController : ApiControllerBase
         OkResponse(await Mediator.Send(new GetProviderRoleByIdQuery(id), cancellationToken), MessageKeys.Role.Retrieved);
 
     [HttpPost]
-    [RequirePermission("ProviderRoles.Create")]
+    [RequirePermission(Permissions.ProviderRoles.Create)]
     [ProducesResponseType(typeof(ApiResponse<RoleDetailDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<ApiResponse<RoleDetailDto>>> Create(
@@ -48,7 +49,7 @@ public sealed class ProviderRolesController : ApiControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    [RequirePermission("ProviderRoles.Update")]
+    [RequirePermission(Permissions.ProviderRoles.Update)]
     [ProducesResponseType(typeof(ApiResponse<RoleDetailDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]
@@ -61,7 +62,7 @@ public sealed class ProviderRolesController : ApiControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [RequirePermission("ProviderRoles.Delete")]
+    [RequirePermission(Permissions.ProviderRoles.Delete)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]
@@ -73,4 +74,4 @@ public sealed class ProviderRolesController : ApiControllerBase
     }
 }
 
-public sealed record UpdateProviderRoleRequest(string Name, IReadOnlyList<string> Permissions);
+public sealed record UpdateProviderRoleRequest(LocalizedText Name, IReadOnlyList<string> Permissions);

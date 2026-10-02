@@ -4,6 +4,7 @@ using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Application.Common.Models;
 using Enterprise.Domain.Enums;
+using Enterprise.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,7 +12,8 @@ namespace Enterprise.Infrastructure.Identity;
 
 public sealed class UserAccountService(
     UserManager<ApplicationUser> userManager,
-    RoleManager<ApplicationRole> roleManager) : IUserAccountService
+    RoleManager<ApplicationRole> roleManager,
+    ApplicationDbContext context) : IUserAccountService
 {
     public const string ClientRoleName = "Client";
     public const string AdminRoleName = "Admin";
@@ -144,7 +146,7 @@ public sealed class UserAccountService(
             UserType = UserType.Provider,
             EmailConfirmed = true,
             IsActive = true,
-            IsSystem = true
+            IsSystem = false
         };
 
         var result = await userManager.CreateAsync(user, password);
@@ -166,8 +168,27 @@ public sealed class UserAccountService(
     public async Task SetActiveAsync(Guid userId, bool isActive, CancellationToken cancellationToken = default)
     {
         var user = await RequireUserAsync(userId);
+        if (user.IsActive == isActive)
+        {
+            return;
+        }
+
         user.IsActive = isActive;
-        await userManager.UpdateAsync(user);
+        var result = await userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            throw new InvalidOperationException(
+                $"Failed to set account active={isActive} for '{userId}': {string.Join(", ", result.Errors.Select(e => e.Description))}");
+        }
+
+        if (!isActive)
+        {
+            await RefreshTokenSession.RevokeAllActiveAsync(
+                context,
+                userId,
+                "Account deactivated.",
+                cancellationToken);
+        }
     }
 
     public async Task ConfirmEmailAsync(Guid userId, CancellationToken cancellationToken = default)
@@ -259,6 +280,47 @@ public sealed class UserAccountService(
         {
             throw new ForbiddenAccessException();
         }
+    }
+
+    public async Task<IReadOnlyList<Guid>> GetActiveUserIdsByTypeAsync(
+        UserType userType,
+        CancellationToken cancellationToken = default)
+    {
+        return await userManager.Users
+            .Where(u => u.UserType == userType && u.IsActive)
+            .Select(u => u.Id)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Guid>> GetActiveProviderRecipientIdsAsync(
+        Guid providerId,
+        CancellationToken cancellationToken = default)
+    {
+        var staffIds = await userManager.Users
+            .Where(u => u.UserType == UserType.Provider && u.IsActive && u.ProviderId == providerId)
+            .Select(u => u.Id)
+            .ToListAsync(cancellationToken);
+
+        var ownerId = await context.Providers
+            .AsNoTracking()
+            .Where(p => p.Id == providerId)
+            .Select(p => (Guid?)p.UserId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (ownerId is null || staffIds.Contains(ownerId.Value))
+        {
+            return staffIds;
+        }
+
+        var ownerIsActive = await userManager.Users
+            .AnyAsync(u => u.Id == ownerId.Value && u.IsActive && u.UserType == UserType.Provider, cancellationToken);
+
+        if (ownerIsActive)
+        {
+            staffIds.Add(ownerId.Value);
+        }
+
+        return staffIds;
     }
 
     public async Task DeleteByEmailAsync(string email, CancellationToken cancellationToken = default)

@@ -68,6 +68,21 @@ public interface IUserAccountService
     Task EnsureUserTypeAsync(Guid userId, UserType expectedType, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Returns Ids of active users for a portal type (e.g. all active admins for notification fan-out).
+    /// </summary>
+    Task<IReadOnlyList<Guid>> GetActiveUserIdsByTypeAsync(
+        UserType userType,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Active provider-portal users for a store: staff whose <c>ProviderId</c> matches,
+    /// plus the store owner (<c>Provider.UserId</c>) when that account is active.
+    /// </summary>
+    Task<IReadOnlyList<Guid>> GetActiveProviderRecipientIdsAsync(
+        Guid providerId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Hard-deletes the user and related Identity rows. Used to roll back a failed registration
     /// when the account was created but the verification email could not be sent.
     /// </summary>
