@@ -19,8 +19,9 @@ public sealed class UpdateProductCommandHandler(
     {
         var providerId = await providerContext.GetProviderIdAsync(cancellationToken);
 
-        var category = await unitOfWork.Categories.GetByIdAndProviderIdAsync(request.CategoryId, providerId, cancellationToken)
-            ?? throw NotFoundException.For(nameof(Category), request.CategoryId);
+        var categoryId = request.Product.CategoryId ?? request.CategoryId;
+        var category = await unitOfWork.Categories.GetByIdAndProviderIdAsync(categoryId, providerId, cancellationToken)
+            ?? throw NotFoundException.For(nameof(Category), categoryId);
 
         if (!category.IsActive)
         {
@@ -46,12 +47,13 @@ public sealed class UpdateProductCommandHandler(
         product.UpdateDetails(request.Product.Sku, request.Product.Price);
         product.SetStatus(request.Product.Status);
         product.ApplyLocalizedContent(request.Product.Name, request.Product.Description);
+        product.MoveToCategory(category.Id);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
         logger.LogInformation(
             "Updated product {ProductId} in category {CategoryId} for provider {ProviderId}",
             product.Id,
-            request.CategoryId,
+            categoryId,
             providerId);
         return product.ToDto(currentCulture.LanguageCode);
     }

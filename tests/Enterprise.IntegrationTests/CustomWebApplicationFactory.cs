@@ -16,8 +16,13 @@ namespace Enterprise.IntegrationTests;
 public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     private readonly SqliteConnection _connection = new("DataSource=:memory:");
+    private readonly Action<IServiceCollection>? _configureServices;
 
-    public CustomWebApplicationFactory() => _connection.Open();
+    public CustomWebApplicationFactory(Action<IServiceCollection>? configureServices = null)
+    {
+        _configureServices = configureServices;
+        _connection.Open();
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -44,6 +49,7 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
             services.RemoveAll<IEmailSender>();
             services.AddSingleton<IEmailSender, CapturingEmailSender>();
+            _configureServices?.Invoke(services);
         });
     }
 

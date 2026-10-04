@@ -1,4 +1,5 @@
 using Enterprise.Domain.Specifications;
+using Enterprise.Domain.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace Enterprise.Infrastructure.Persistence.Specifications;
@@ -33,6 +34,11 @@ public static class SpecificationEvaluator<T> where T : class
 
         if (specification.IsPagingEnabled)
         {
+            // Duplicate display orders, names or SKUs must not shuffle records between pages.
+            if (typeof(BaseEntity).IsAssignableFrom(typeof(T)))
+                query = specification.OrderBy is not null || specification.OrderByDescending is not null
+                    ? ((IOrderedQueryable<T>)query).ThenBy(entity => EF.Property<Guid>(entity, "Id"))
+                    : query.OrderBy(entity => EF.Property<Guid>(entity, "Id"));
             query = query.Skip(specification.Skip).Take(specification.Take);
         }
 

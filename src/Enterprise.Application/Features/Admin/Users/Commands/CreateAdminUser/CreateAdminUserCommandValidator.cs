@@ -9,10 +9,11 @@ public sealed class CreateAdminUserCommandValidator : AbstractValidator<CreateAd
 {
     public CreateAdminUserCommandValidator(IAppLocalizer localizer)
     {
-        RuleFor(x => x.FirstName).Required(localizer).MaxLen(localizer, 50);
-        RuleFor(x => x.LastName).Required(localizer).MaxLen(localizer, 50);
-        RuleFor(x => x.Email).RequiredEmail(localizer).MaxLen(localizer, 256);
+        RuleFor(x => x.FirstName).PersonName(localizer, ValidationPolicy.NameMax);
+        RuleFor(x => x.LastName).PersonName(localizer, ValidationPolicy.NameMax);
+        RuleFor(x => x.Email).RequiredEmail(localizer);
         RuleFor(x => x.Password).StrongPassword(localizer);
+        RuleFor(x => x.PhoneNumber).Phone(localizer);
         RuleFor(x => x.RoleId)
             .NotEmpty().WithMessage(_ => localizer[MessageKeys.Validation.Required]);
     }

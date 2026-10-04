@@ -7,8 +7,8 @@ import { ApiService, Query } from './api.service';
 export class OrdersService {
   private readonly api = inject(ApiService);
 
-  listClient(query: Query): Observable<OrderListItemDto[] | PagedResult<OrderListItemDto>> {
-    return this.api.get('/client/orders', query);
+  listClient(query: Query): Observable<PagedResult<OrderListItemDto>> {
+    return this.api.get('/client/orders/paged', query);
   }
 
   getClient(id: string): Observable<OrderDetailDto> {
@@ -21,10 +21,6 @@ export class OrdersService {
 
   confirmSession(sessionId: string): Observable<OrderDetailDto> {
     return this.api.post(`/client/orders/confirm-session/${sessionId}`);
-  }
-
-  cancelClient(id: string): Observable<unknown> {
-    return this.api.post(`/client/orders/${id}/cancel`);
   }
 
   listProvider(query: Query): Observable<PagedResult<OrderListItemDto>> {

@@ -1,35 +1,40 @@
+import { FieldValidationDirective } from '../../../shared/directives/field-validation.directive';
+import { fieldRules } from '../../../shared/forms/field-validators';
+import { PasswordToggleDirective } from '../../../shared/directives/password-toggle.directive';
 import { I18nService } from '../../../core/services/i18n.service';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { firstErrorKey, strongPassword } from '../../../shared/forms/form-errors';
+import { applyServerError, firstErrorKey, strongPassword } from '../../../shared/forms/form-errors';
 import { LogoComponent } from '../../../shared/components/logo/logo.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { OtpRecoveryComponent } from '../../../shared/components/otp-recovery/otp-recovery.component';
+import { OtpRecoveryState } from '../../../shared/forms/otp-recovery';
 
 @Component({
   selector: 'app-provider-forgot',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, LogoComponent, TranslatePipe],
+  imports: [OtpRecoveryComponent, FieldValidationDirective, PasswordToggleDirective, ReactiveFormsModule, RouterLink, LogoComponent, TranslatePipe],
   template: `
     <div class="auth-shell"><div class="card auth-card stack">
       <app-logo /><h1 class="page-title">{{ 'auth.forgot' | t }}</h1>
       @if (!sent()) {
         <form [formGroup]="emailForm" (ngSubmit)="send()">
-          <div class="field"><label for="provider-forgot-email">{{ 'auth.email' | t }}</label><input id="provider-forgot-email" type="email" formControlName="email" autocomplete="email" />
-            @if (emailError(); as key) { <small class="field-error">{{ key | t }}</small> }</div>
-          <button class="btn btn-primary" type="submit" [disabled]="busy()">{{ 'auth.sendOtp' | t }}</button>
+        @if (emailForm.errors?.['server']) { <p class="field-error" role="alert">{{ emailForm.errors?.['server'] }}</p> }
+          <div class="field"><label for="provider-forgot-email">{{ 'auth.email' | t }}</label><input id="provider-forgot-email" type="email" [readOnly]="busy()" appFieldValidation formControlName="email" autocomplete="email" /></div>
+          <button class="btn btn-primary" type="submit" [disabled]="busy() || recovery.seconds() > 0">{{ 'auth.sendOtp' | t }} @if (recovery.seconds() > 0) { ({{ recovery.seconds() }} {{ 'auth.secondsShort' | t }}) }</button>
         </form>
       } @else {
         <form [formGroup]="resetForm" (ngSubmit)="reset()">
+        @if (resetForm.errors?.['server']) { <p class="field-error" role="alert">{{ resetForm.errors?.['server'] }}</p> }
           @if (devOtp()) { <p class="badge">{{ 'auth.devOtp' | t }}: {{ devOtp() }}</p> }
-          <div class="field"><label for="provider-forgot-otp">{{ 'auth.otp' | t }}</label><input id="provider-forgot-otp" formControlName="otp" inputmode="numeric" autocomplete="one-time-code" />
-            @if (otpError(); as key) { <small class="field-error">{{ key | t }}</small> }</div>
-          <div class="field"><label for="provider-forgot-newPassword">{{ 'auth.newPassword' | t }}</label><input id="provider-forgot-newPassword" type="password" formControlName="newPassword" autocomplete="new-password" />
-            @if (passwordError(); as key) { <small class="field-error">{{ key | t }}</small> }</div>
+          <div class="field"><label for="provider-forgot-otp">{{ 'auth.otp' | t }}</label><input id="provider-forgot-otp" appFieldValidation formControlName="otp" inputmode="numeric" autocomplete="one-time-code" /></div>
+          <div class="field"><label for="provider-forgot-newPassword">{{ 'auth.newPassword' | t }}</label><input id="provider-forgot-newPassword" type="password" appPasswordToggle appFieldValidation formControlName="newPassword" autocomplete="new-password" /></div>
           <button class="btn btn-primary" type="submit" [disabled]="busy()">{{ 'auth.reset' | t }}</button>
         </form>
+        <app-otp-recovery [email]="emailForm.controls.email.value" [busy]="busy()" [seconds]="recovery.seconds()" (resend)="send()" (changeEmail)="changeEmail()" />
       }
       <a routerLink="/provider/login">{{ 'nav.login' | t }}</a>
     </div></div>
@@ -40,30 +45,46 @@ export class ProviderForgotComponent {
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly fb = inject(FormBuilder);
-  readonly emailForm = this.fb.nonNullable.group({ email: ['', [Validators.required, Validators.email]] });
+  readonly emailForm = this.fb.nonNullable.group({ email: ['', fieldRules.email] });
   readonly resetForm = this.fb.nonNullable.group({
-    otp: ['', Validators.required],
-    newPassword: ['', [Validators.required, strongPassword]],
+    otp: ['', fieldRules.otp],
+    newPassword: ['', fieldRules.password],
   });
   readonly sent = signal(false);
   readonly busy = signal(false);
   readonly devOtp = signal<string | null>(null);
+  readonly recovery = new OtpRecoveryState();
+
+  changeEmail(): void {
+    if (this.busy()) return;
+    this.sent.set(false); this.devOtp.set(null);
+    this.resetForm.controls.otp.reset(); this.resetForm.setErrors(null); this.emailForm.setErrors(null);
+    this.recovery.focus('#provider-forgot-email');
+  }
 
   emailError(): string | null { return firstErrorKey(this.emailForm.controls.email); }
   otpError(): string | null { return firstErrorKey(this.resetForm.controls.otp); }
   passwordError(): string | null { return firstErrorKey(this.resetForm.controls.newPassword); }
 
   send(): void {
+    if (this.busy() || this.recovery.seconds() > 0) return;
+    this.emailForm.setErrors(null);
     this.emailForm.markAllAsTouched();
     if (this.emailForm.invalid) return;
     this.busy.set(true);
     this.auth.forgotPassword('provider', { email: this.emailForm.controls.email.value }).subscribe({
-      next: (r) => { this.sent.set(true); this.devOtp.set(r.developmentOtp ?? null); this.toast.success(r.message || this.i18n.t('auth.otpSent')); this.busy.set(false); },
-      error: () => this.busy.set(false),
+      next: (r) => {
+        this.recovery.start(); this.resetForm.controls.otp.reset(); this.resetForm.setErrors(null);
+        this.sent.set(true); this.devOtp.set(r.developmentOtp ?? null);
+        this.toast.success(r.message || this.i18n.t('auth.otpSent')); this.busy.set(false);
+        this.recovery.focus('#provider-forgot-otp');
+      },
+      error: (err) => { this.recovery.onError(err); applyServerError(this.sent() ? this.resetForm : this.emailForm, err); this.busy.set(false); },
     });
   }
 
   reset(): void {
+    if (this.busy()) return;
     this.resetForm.markAllAsTouched();
     if (this.resetForm.invalid) return;
     this.busy.set(true);
@@ -73,7 +94,7 @@ export class ProviderForgotComponent {
       newPassword: this.resetForm.controls.newPassword.value,
     }).subscribe({
       next: () => { this.toast.success(this.i18n.t('auth.passwordUpdated')); this.busy.set(false); },
-      error: () => this.busy.set(false),
+      error: (err) => { applyServerError(this.resetForm, err); this.busy.set(false); },
     });
   }
 }

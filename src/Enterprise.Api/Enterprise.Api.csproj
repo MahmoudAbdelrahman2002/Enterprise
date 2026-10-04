@@ -5,12 +5,19 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>enterprise-api-dev-secrets</UserSecretsId>
-    <!-- Serilog writes under ContentRoot/logs. Keep those files out of the project so
+    <!-- Serilog writes under ContentRoot/log. Keep those files out of the project so
          C# Dev Tools and the language server do not reload on every log write. -->
-    <DefaultItemExcludes>$(DefaultItemExcludes);logs/**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);log/**;logs/**</DefaultItemExcludes>
   </PropertyGroup>
 
+  <Target Name="CreateLogDirectory" BeforeTargets="PrepareForBuild">
+    <MakeDir Directories="$(MSBuildProjectDirectory)/log" />
+  </Target>
+
   <ItemGroup>
+    <Content Remove="log/**" />
+    <None Remove="log/**" />
+    <EmbeddedResource Remove="log/**" />
     <Content Remove="logs/**" />
     <None Remove="logs/**" />
     <EmbeddedResource Remove="logs/**" />

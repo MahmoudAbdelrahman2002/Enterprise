@@ -18,3 +18,9 @@ export function readPage<T>(data: unknown): { items: T[]; totalPages: number; to
   const totalCount = Number(record['totalCount'] ?? record['TotalCount'] ?? items.length);
   return { items, totalPages, totalCount: Number.isFinite(totalCount) ? totalCount : items.length };
 }
+
+/** Recover from a deletion between the server's count and page queries as well as an invalid last page. */
+export function resolvePage(page: number, result: { items: unknown[]; totalPages: number }): number {
+  if (page <= result.totalPages && (page === 1 || result.items.length > 0)) return page;
+  return Math.max(1, Math.min(result.totalPages, result.items.length > 0 ? page : page - 1));
+}

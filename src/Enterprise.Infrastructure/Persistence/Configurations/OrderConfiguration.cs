@@ -13,6 +13,8 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
 
         builder.Property(o => o.TotalAmount).HasPrecision(18, 2);
         builder.Property(o => o.Status).HasConversion<int>().IsRequired();
+        builder.Property(o => o.PreviousStatus).HasMaxLength(32);
+        builder.Ignore(o => o.IsHistorical);
         builder.Property(o => o.Notes).HasMaxLength(1000);
         builder.Property(o => o.OrderDateUtc).IsRequired();
         builder.Property(o => o.StripeCheckoutSessionId).HasMaxLength(255);

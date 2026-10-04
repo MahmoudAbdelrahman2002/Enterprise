@@ -18,10 +18,10 @@ public sealed class UploadCategoryImageCommandValidator : AbstractValidator<Uplo
         RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.File).NotNull().WithMessage(_ => localizer[MessageKeys.Image.Required]);
         RuleFor(x => x.File)
-            .Custom((file, context) =>
+            .CustomAsync(async (file, context, cancellationToken) =>
             {
                 if (file is null) return;
-                var error = ImageUploadRules.Validate(file.ContentType, file.Length);
+                var error = await ImageUploadRules.ValidateContentAsync(file, cancellationToken);
                 if (error is not null)
                 {
                     context.AddFailure(localizer[error]);

@@ -1,5 +1,18 @@
 # تدفق الدفع بـ Stripe (ادفع أولاً → ثم أنشئ الأوردر)
 
+## Current implementation — 4 October 2026
+
+`ICheckoutGateway` uses an explicitly configured Stripe client. Missing checkout configuration or rejected creation returns a localized HTTP 503 and retains the basket. Development inherits the configured test secret instead of overriding it with an empty value. Identical basket/redirect/locale parameters generate the same idempotency key. Stripe line-item product metadata includes the internal product ID.
+
+Fulfillment accepts a paid session through a verified signed completed/async-success webhook or authenticated client confirmation that retrieves the session from Stripe and checks ownership. It retrieves all session line items with expanded products, checks their quantities, metadata, unit prices and total, and writes immutable order snapshots. It consumes paid quantities in the same transaction, preserves later basket additions and deletes only an empty basket. The checkout-session unique key prevents duplicate orders and repeated provider notifications.
+
+Current development does not configure a webhook signing secret. Set the genuine target endpoint signing secret through environment configuration/user secrets for autonomous delivery. Authenticated return confirmation provides the existing fallback. Never invent a signing secret or treat a simulated webhook as a real paid purchase.
+
+Validation: offline signed-webhook lifecycle tests and a separately selected real Stripe test-mode API checkout test passed; the real test session was expired without submitting payment. Production payments and external webhook delivery still require environment validation.
+
+References: [Stripe idempotent requests](https://docs.stripe.com/api/idempotent_requests), [Checkout line items](https://docs.stripe.com/api/checkout/sessions/line_items), [Checkout fulfillment](https://docs.stripe.com/checkout/fulfillment).
+
+
 المستند ده بيشرح **بالتفصيل** إزاي تـhandle الدفع في المشروع:
 السلة موجودة → إنشاء جلسة Stripe → العميل يدفع → Webhook → إنشاء `Order` → مسح السلة.
 
@@ -70,11 +83,11 @@ Stripe يبعت Webhook: checkout.session.completed
 
 ```csharp
 StripeConfiguration.ApiKey = configuration["Stripe:SecretKey"];
-services.AddScoped<IPaymentService, StripePaymentService>();
+services.AddScoped<ICheckoutGateway, StripePaymentService>();
 ```
 
 6. Clean Architecture:
-   - Application: `IPaymentService` + Commands
+   - Application: `ICheckoutGateway` + Commands
    - Infrastructure: `StripePaymentService`
    - Api: Controllers (checkout + webhook)
 
@@ -141,7 +154,7 @@ redirect → url
    - Stripe يحتاج المبلغ بالوحدة الصغرى:
      - `14.00` → `1400` (cents)
 
-5. **Create Stripe Session عبر IPaymentService**
+5. **Create Stripe Session عبر ICheckoutGateway**
    - `Mode = payment`
    - `LineItems = ...`
    - `SuccessUrl / CancelUrl`
@@ -245,20 +258,13 @@ stripe listen --forward-to https://localhost:<port>/api/v1/webhooks/stripe
 - `PaymentStatus = Paid`
 - `PaidAtUtc`
 
-### 7.2 Load cart مرة ثانية
+### 7.2 Read the paid session and basket identity
 
-- جيب السلة بـ `userId + providerId` (أو `cartId`)
-- لو السلة فاضية/مش موجودة:
-  - لو Order اتعمل قبل كده → OK (تكرار)
-  - لو لأ → سجّل خطأ للمراجعة
+Validate cart/user/provider metadata. A remaining basket must match that identity. A basket removed during payment does not erase the paid purchase.
 
-### 7.3 Validate products تاني
+### 7.3 Read immutable paid line items
 
-حتى بعد الدفع، قبل النسخ:
-
-- المنتج موجود وغير محذوف
-- Active (أو قرار بيزنس: تسمح لو اتدفع؟)
-- تابع لنفس المزود
+Fetch all Stripe session line items with `data.price.product` expanded. Validate the internal product metadata, quantities, prices and summed total. Create the order from those paid values rather than re-reading mutable catalogue prices or basket quantities.
 
 ### 7.4 Create Order (لقطة / Snapshot)
 
@@ -266,7 +272,7 @@ stripe listen --forward-to https://localhost:<port>/api/v1/webhooks/stripe
 Order
   UserId
   ProviderId
-  Status = Pending              // جاهز للمزود
+  Status = New              // جاهز للمزود
   PaymentStatus = Paid
   TotalAmount
   StripeCheckoutSessionId
@@ -282,10 +288,9 @@ OrderItem (لكل سطر سلة)
 
 **مفيش FK بين Order و ShoppingCart.**
 
-### 7.5 Clear / Delete cart
+### 7.5 Consume paid basket quantities
 
-- `Carts.Remove(cart)` أو امسح الـ Items ثم السلة
-- يفضّل في **نفس SaveChanges / Transaction** مع إنشاء الأوردر
+Subtract only the quantities represented by the paid session. Preserve extra quantities/products added during checkout and delete the basket only when it is empty. This runs in the same database transaction as order persistence.
 
 ### 7.6 بعد النجاح
 
@@ -331,9 +336,9 @@ GET /api/v1/client/orders/by-session/{sessionId}
 | Layer | ماذا تضع |
 |-------|----------|
 | Domain | `Order`, `OrderItem`, `PaymentStatus` |
-| Application | `IPaymentService`, `CreateCheckoutSessionCommand`, `CompletePaidCheckoutCommand` |
+| Application | `ICheckoutGateway`, `CreateCheckoutSessionCommand`, `CompletePaidCheckoutCommand` |
 | Infrastructure | `StripePaymentService`, EF configs, migration |
-| Api | `ClientPaymentsController`, `StripeWebhookController` |
+| Api | `ClientPaymentsController`, `StripeWebhooksController` |
 
 `CreateOrderCommand` = منطق تحويل السلة → أوردر  
 ويُستدعى من **CompletePaidCheckout** بعد الدفع، مش من الكلاينت مباشرة.
@@ -362,7 +367,7 @@ GET /api/v1/client/orders/by-session/{sessionId}
 4. Client يدفع بنجاح  
 5. Webhook `checkout.session.completed`  
 6. Backend ينشئ:
-   - Order (`Pending`, `Paid`, Total 28.00)
+   - Order (`New`, `Paid`, Total 28.00)
    - OrderItem (Pepperoni, 14.00, qty 2)
 7. السلة تتمسح  
 8. Provider يشوف الطلب ويغيّر الحالة: Accepted → Preparing → Ready → Completed  
@@ -372,7 +377,7 @@ GET /api/v1/client/orders/by-session/{sessionId}
 ## 13. Checklist تنفيذ
 
 - [ ] Stripe settings + ApiKey في DI
-- [ ] `IPaymentService` + `StripePaymentService`
+- [ ] `ICheckoutGateway` + `StripePaymentService`
 - [ ] `POST checkout-session` من السلة (من غير Order)
 - [ ] حقول الدفع على Order (`StripeCheckoutSessionId`, `PaymentStatus`, ...)
 - [ ] Webhook + التحقق من التوقيع
@@ -387,5 +392,5 @@ GET /api/v1/client/orders/by-session/{sessionId}
 ## مستندات مرتبطة
 
 - بيزنس الأوردر: [`ORDER_BUSINESS_FLOW.md`](ORDER_BUSINESS_FLOW.md)
-- سلة العميل: `ClientCartController`
+- سلة العميل: `ClientCartsController`
 - المعمارية: [`DEVELOPER_WORKFLOW.md`](DEVELOPER_WORKFLOW.md)

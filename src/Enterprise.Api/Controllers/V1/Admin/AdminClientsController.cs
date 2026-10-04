@@ -52,4 +52,4 @@ public sealed class AdminClientsController : ApiControllerBase
     }
 }
 
-public sealed record SetAdminClientActiveRequest(bool IsActive);
+public sealed record SetAdminClientActiveRequest([property: System.Text.Json.Serialization.JsonRequired] bool IsActive);

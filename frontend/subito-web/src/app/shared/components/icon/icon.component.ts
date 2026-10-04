@@ -1,6 +1,10 @@
 import { Component, Input } from '@angular/core';
 
 export const ICON_PATHS = {
+  eye: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Zm13 0a3 3 0 1 1-6 0 3 3 0 0 1 6 0',
+  eyeOff: 'M3 3l18 18M10 5a13 13 0 0 1 12 7s-1 2-3 4M6 6c-3 2-4 6-4 6s3.5 7 10 7c2 0 4-.6 5-1.5M10 10a3 3 0 0 0 4 4',
+  edit: 'M15 5l4 4M4 20l4-1 12-12a3 3 0 0 0-4-4L4 15v5Z',
+  retry: 'M20 7v5h-5M20 12a8 8 0 1 0-2 5',
   basket: 'M3 9h18l-2 11H5L3 9ZM7 9l3-6m7 6-3-6M9 13v3m6-3v3',
   trash: 'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7',
   plus: 'M12 5v14M5 12h14', minus: 'M5 12h14',

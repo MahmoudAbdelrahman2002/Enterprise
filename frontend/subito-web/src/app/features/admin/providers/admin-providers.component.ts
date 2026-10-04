@@ -1,7 +1,12 @@
+import { PageRequest } from '../../../core/utils/page-request';
+import { FieldValidationDirective } from '../../../shared/directives/field-validation.directive';
+import { fieldRules } from '../../../shared/forms/field-validators';
+import { ActiveToggleComponent } from '../../../shared/components/active-toggle/active-toggle.component';
+import { PasswordToggleDirective } from '../../../shared/directives/password-toggle.directive';
 import { I18nService } from '../../../core/services/i18n.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { finalize } from 'rxjs';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -12,7 +17,7 @@ import { ProvidersService } from '../../../core/services/providers.service';
 import { CatalogService } from '../../../core/services/catalog.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { TokenStoreService } from '../../../core/services/token-store.service';
-import { readList, readPage } from '../../../core/utils/read-list';
+import { readList, readPage, resolvePage } from '../../../core/utils/read-list';
 import { applyServerError, firstErrorKey, strongPassword } from '../../../shared/forms/form-errors';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
@@ -22,76 +27,65 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 @Component({
   selector: 'app-admin-providers',
   standalone: true,
-  imports: [IconComponent, ReactiveFormsModule, RouterLink, EmptyStateComponent, PaginationComponent, SearchFieldComponent, TranslatePipe],
+  imports: [FieldValidationDirective, ActiveToggleComponent, PasswordToggleDirective, IconComponent, ReactiveFormsModule, RouterLink, EmptyStateComponent, PaginationComponent, SearchFieldComponent, TranslatePipe],
   template: `
     <div class="toolbar">
       <h1 class="page-title">{{ 'nav.providers' | t }}</h1>
       <div class="row">
-        <app-search-field [control]="search" placeholderKey="search.providers" />
-        @if (canCreate) { <button class="btn btn-primary" type="button" (click)="showForm.set(true)">{{ 'actions.create' | t }}</button> }
+        @if (!showForm()) { <app-search-field [control]="search" placeholderKey="search.providers" /> }
+        @if (canCreate && !showForm()) { <button class="btn btn-primary icon-action" type="button" (click)="showForm.set(true)" [attr.aria-label]="'actions.create' | t" [title]="'actions.create' | t"><app-icon name="plus" />{{ 'actions.create' | t }}</button> }
       </div>
     </div>
+    <p class="muted">{{ 'ui.providerTerminology' | t }}</p>
     @if (showForm()) {
       <form class="card stack" [formGroup]="form" (ngSubmit)="create()">
-        <div class="field"><label for="admin-providers-email">{{ 'auth.email' | t }}</label><input id="admin-providers-email" type="email" formControlName="email" autocomplete="email" />
-          @if (error('email'); as key) { <small class="field-error">{{ key | t }}</small> }</div>
-        <div class="field"><label for="admin-providers-password">{{ 'auth.password' | t }}</label><input id="admin-providers-password" type="password" formControlName="password" autocomplete="current-password" />
-          @if (error('password'); as key) { <small class="field-error">{{ key | t }}</small> }</div>
-        <div class="field"><label for="admin-providers-firstName">{{ 'auth.firstName' | t }}</label><input id="admin-providers-firstName" formControlName="firstName" />
-          @if (error('firstName'); as key) { <small class="field-error">{{ key | t }}</small> }</div>
-        <div class="field"><label for="admin-providers-lastName">{{ 'auth.lastName' | t }}</label><input id="admin-providers-lastName" formControlName="lastName" />
-          @if (error('lastName'); as key) { <small class="field-error">{{ key | t }}</small> }</div>
-        <div class="field"><label for="admin-providers-companyName">{{ 'ui.company' | t }}</label><input id="admin-providers-companyName" formControlName="companyName" />
-          @if (error('companyName'); as key) { <small class="field-error">{{ key | t }}</small> }</div>
-        <div class="field"><label for="admin-providers-phoneNumber">{{ 'ui.phone' | t }}</label><input id="admin-providers-phoneNumber" formControlName="phoneNumber" /></div>
-        <div class="field"><label for="admin-providers-serviceId">{{ 'ui.service' | t }}</label><select id="admin-providers-serviceId" formControlName="serviceId">
+        <div class="field"><label for="admin-providers-email">{{ 'auth.email' | t }}</label><input id="admin-providers-email" type="email" appFieldValidation formControlName="email" autocomplete="email" /></div>
+        <div class="field"><label for="admin-providers-password">{{ 'auth.password' | t }}</label><input id="admin-providers-password" type="password" appPasswordToggle appFieldValidation formControlName="password" autocomplete="current-password" /></div>
+        <div class="field"><label for="admin-providers-firstName">{{ 'auth.firstName' | t }}</label><input id="admin-providers-firstName" appFieldValidation formControlName="firstName" /></div>
+        <div class="field"><label for="admin-providers-lastName">{{ 'auth.lastName' | t }}</label><input id="admin-providers-lastName" appFieldValidation formControlName="lastName" /></div>
+        <div class="field"><label for="admin-providers-companyName">{{ 'ui.companyName' | t }}</label><input id="admin-providers-companyName" appFieldValidation formControlName="companyName" /></div>
+        <div class="field"><label for="admin-providers-phoneNumber">{{ 'ui.phone' | t }}</label><input id="admin-providers-phoneNumber" appFieldValidation formControlName="phoneNumber" /></div>
+        @if (canReadServices) {
+        <div class="field"><label for="admin-providers-serviceId">{{ 'ui.service' | t }}</label><select id="admin-providers-serviceId" appFieldValidation formControlName="serviceId">
             <option value="">—</option>
             @for (s of services(); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
           </select>
         </div>
+        }
         @if (form.errors?.['server']) { <p class="field-error">{{ form.errors?.['server'] }}</p> }
         <div class="row">
-          <button class="btn btn-primary" type="submit" [disabled]="busy()">{{ 'actions.save' | t }}</button>
-          <button class="btn btn-ghost" type="button" (click)="showForm.set(false)">{{ 'actions.cancel' | t }}</button>
+          <button class="btn btn-primary icon-action" type="submit" [disabled]="busy()" [attr.aria-label]="'actions.save' | t" [title]="'actions.save' | t"><app-icon name="check" />{{ 'actions.save' | t }}</button>
+          <button class="btn btn-ghost icon-action" type="button" (click)="showForm.set(false)" [attr.aria-label]="'actions.cancel' | t" [title]="'actions.cancel' | t"><app-icon name="close" />{{ 'actions.cancel' | t }}</button>
         </div>
       </form>
     }
+    @if (!showForm()) {
     @if (loading()) { <p class="muted">{{ 'loading' | t }}</p> }
-    @else if (failed()) { <div class="card stack error-state" role="alert"><p>{{ 'errors.generic' | t }}</p><button class="btn btn-ghost" type="button" (click)="load(1)">{{ 'actions.retry' | t }}</button></div> } @else if (!items().length) { <app-empty-state /> } @else {
+    @else if (failed()) { <div class="card stack error-state" role="alert"><p>{{ 'errors.generic' | t }}</p><button class="btn btn-ghost icon-action" type="button" (click)="load(1)" [attr.aria-label]="'actions.retry' | t" [title]="'actions.retry' | t"><app-icon name="retry" /></button></div> } @else if (!items().length) { <app-empty-state /> } @else {
       <div class="table-wrap card"><table class="data">
-        <thead><tr><th>{{ 'ui.company' | t }}</th><th>{{ 'auth.email' | t }}</th><th>{{ 'ui.service' | t }}</th><th>{{ 'ui.active' | t }}</th><th></th></tr></thead>
+        <thead><tr><th>{{ 'ui.companyName' | t }}</th><th>{{ 'auth.email' | t }}</th><th>{{ 'ui.service' | t }}</th><th>{{ 'ui.active' | t }}</th><th></th></tr></thead>
         <tbody>
           @for (p of items(); track p.id) {
             <tr>
-              <td>{{ p.companyName }}</td><td>{{ p.email }}</td><td>{{ p.serviceName }}</td>
-              <td>
-                <span class="badge" [class.badge-success]="asBool(p.isActive)" [class.badge-danger]="!asBool(p.isActive)">
+              <td><div class="provider-identity">@if (p.imageUrl) { <img class="thumb" [src]="p.imageUrl" [alt]="p.companyName" loading="lazy" /> } @else { <span class="thumb media-fallback">{{ p.companyName.slice(0, 1) }}</span> }<span>{{ p.companyName }}</span></div></td><td>{{ p.email }}</td><td>{{ p.serviceName }}</td>
+              <td>@if (canUpdate) { <app-active-toggle [targetName]="p.companyName" confirmationKey="confirm.deactivateProvider" [active]="asBool(p.isActive)" [disabled]="busy() || togglingId() !== null" (changed)="toggle(p)" /> } @else { <span class="badge" [class.badge-success]="asBool(p.isActive)" [class.badge-danger]="!asBool(p.isActive)">
                   {{ asBool(p.isActive) ? ('status.active'|t) : ('status.inactive'|t) }}
-                </span>
-              </td>
+                </span> }</td>
               <td class="row">
-                <a [routerLink]="['/admin/providers', p.id]">{{ 'actions.view' | t }}</a>
-                @if (canUpdate) {
-                  <button
-                    class="btn btn-ghost"
-                    type="button"
-                    [disabled]="togglingId() === p.id"
-                    (click)="toggle(p)"
-                  >
-                    {{ asBool(p.isActive) ? ('actions.deactivate'|t) : ('actions.activate'|t) }}
-                  </button>
-                }
-                @if (canDelete) { <button class="btn btn-danger" type="button" [disabled]="busy()" (click)="remove(p.id)"><app-icon name="trash" />{{ 'actions.delete' | t }}</button> }
+                <a [routerLink]="['/admin/providers', p.id]" [attr.aria-label]="'actions.view' | t" [title]="'actions.view' | t" class="btn btn-ghost icon-action"><app-icon name="eye" /></a>
+                @if (canDelete) { <button class="btn btn-danger icon-action" type="button" [disabled]="busy()" (click)="remove(p.id)" [attr.aria-label]="'actions.delete' | t" [title]="'actions.delete' | t"><app-icon name="trash" /></button> }
               </td>
             </tr>
           }
         </tbody>
       </table></div>
-      <app-pagination [page]="page" [totalPages]="totalPages" [totalCount]="totalCount" (change)="load($event)" />
     }
+    }
+    @if (!showForm()) { <app-pagination [page]="page" [totalPages]="totalPages" [totalCount]="totalCount" [disabled]="loading() || busy()" (change)="load($event)" /> }
   `,
 })
 export class AdminProvidersComponent implements OnInit {
+  private readonly pageRequest = new PageRequest(inject(DestroyRef));
   private readonly i18n = inject(I18nService);
   private readonly providers = inject(ProvidersService);
   private readonly catalog = inject(CatalogService);
@@ -105,29 +99,33 @@ export class AdminProvidersComponent implements OnInit {
   readonly failed = signal(false);
   readonly busy = signal(false);
   readonly togglingId = signal<string | null>(null);
-  readonly search = new FormControl('', { nonNullable: true });
+  readonly search = new FormControl('', { nonNullable: true, validators: fieldRules.search });
   page = 1; totalPages = 1; totalCount = 0;
   readonly form = inject(FormBuilder).nonNullable.group({
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, strongPassword]],
-    firstName: ['', Validators.required],
-    lastName: ['', Validators.required],
-    companyName: ['', Validators.required],
-    phoneNumber: [''],
-    serviceId: [''],
+    email: ['', fieldRules.email],
+    password: ['', fieldRules.password],
+    firstName: ['', fieldRules.name],
+    lastName: ['', fieldRules.name],
+    companyName: ['', fieldRules.company],
+    phoneNumber: ['', fieldRules.phone],
+    serviceId: ['', fieldRules.optionalId],
   });
   canCreate = this.tokens.hasPermission('admin', 'Providers.Create');
   canUpdate = this.tokens.hasPermission('admin', 'Providers.Update');
   canDelete = this.tokens.hasPermission('admin', 'Providers.Delete');
+  readonly canReadServices = this.tokens.hasPermission('admin', 'Services.Read');
 
   constructor() {
-    this.search.valueChanges.pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed()).subscribe(() => this.load(1));
+    this.search.valueChanges.pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed()).subscribe(() => { if (this.search.valid) this.load(1); });
   }
 
   ngOnInit(): void {
-    this.catalog.lookupAdminServices().subscribe({
-      next: (s) => this.services.set(readList<MarketplaceServiceLookupDto>(s)),
-    });
+    if (this.canCreate && this.canReadServices) {
+      this.catalog.lookupAdminServices().subscribe({
+        next: (s) => this.services.set(readList<MarketplaceServiceLookupDto>(s)),
+        error: () => this.services.set([]),
+      });
+    }
     this.load(1);
   }
 
@@ -138,9 +136,11 @@ export class AdminProvidersComponent implements OnInit {
   load(page: number): void {
     this.page = page;
     this.loading.set(true); this.failed.set(false);
-    this.providers.list({ pageNumber: page, pageSize: 20, searchTerm: this.search.value || null }).subscribe({
+    this.pageRequest.run(this.providers.list({ pageNumber: page, pageSize: 20, searchTerm: this.search.value || null }), {
       next: (r) => {
         const pageData = readPage<ProviderAdminDto>(r);
+        const targetPage = resolvePage(page, pageData);
+        if (page !== targetPage) { this.load(targetPage); return; }
         this.items.set(pageData.items.map((p) => this.normalizeProvider(p)));
         this.totalPages = pageData.totalPages;
         this.totalCount = pageData.totalCount;

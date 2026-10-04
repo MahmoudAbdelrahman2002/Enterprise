@@ -61,7 +61,8 @@ public interface IStaffManagerService
         string? searchTerm = null,
         Guid? roleId = null,
         bool? isActive = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        bool descending = false);
 
     Task<StaffDetailDto?> GetStaffByIdAsync(
         Guid staffId,

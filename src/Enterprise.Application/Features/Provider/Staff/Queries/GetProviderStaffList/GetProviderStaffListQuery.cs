@@ -7,6 +7,8 @@ namespace Enterprise.Application.Features.Provider.Staff.Queries.GetProviderStaf
 public sealed record GetProviderStaffListQuery : PaginationParams, IRequest<PagedResult<StaffListItemDto>>
 {
     public string? SearchTerm { get; init; }
+    public bool Descending { get; init; }
+
     public Guid? RoleId { get; init; }
     public bool? IsActive { get; init; }
 }

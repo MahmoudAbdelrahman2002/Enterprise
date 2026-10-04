@@ -8,6 +8,7 @@ namespace Enterprise.IntegrationTests;
 [TestFixture]
 public abstract class TestFixtureBase
 {
+    protected virtual void ConfigureTestServices(Microsoft.Extensions.DependencyInjection.IServiceCollection services) { }
     protected static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     protected CustomWebApplicationFactory Factory { get; private set; } = null!;
@@ -16,7 +17,7 @@ public abstract class TestFixtureBase
     [OneTimeSetUp]
     public void BaseOneTimeSetUp()
     {
-        Factory = new CustomWebApplicationFactory();
+        Factory = new CustomWebApplicationFactory(ConfigureTestServices);
         Client = Factory.CreateClient();
         CapturingEmailSender.CapturedOtps.Clear();
     }
@@ -29,7 +30,7 @@ public abstract class TestFixtureBase
     }
 
     protected static string UniqueEmail([System.Runtime.CompilerServices.CallerMemberName] string? prefix = null) =>
-        $"{prefix?.ToLowerInvariant() ?? "user"}-{Guid.NewGuid():N}@example.com";
+        $"{(prefix?.ToLowerInvariant() ?? "user")[..Math.Min(24, (prefix ?? "user").Length)]}-{Guid.NewGuid():N}@example.com";
 
     protected static string UniqueSku([System.Runtime.CompilerServices.CallerMemberName] string? prefix = null) =>
         $"SKU-{prefix}-{Guid.NewGuid():N}"[..Math.Min(40, $"SKU-{prefix}-{Guid.NewGuid():N}".Length)];

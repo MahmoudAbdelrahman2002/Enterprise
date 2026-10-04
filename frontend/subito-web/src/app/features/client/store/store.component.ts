@@ -1,10 +1,11 @@
+import { fieldRules } from '../../../shared/forms/field-validators';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { Subscription, debounceTime, distinctUntilChanged } from 'rxjs';
 import {
   ClientCategoryDto,
   ClientProductDto,
@@ -15,16 +16,23 @@ import { CatalogService } from '../../../core/services/catalog.service';
 import { I18nService } from '../../../core/services/i18n.service';
 import { TokenStoreService } from '../../../core/services/token-store.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { readList } from '../../../core/utils/read-list';
+import { readPage, resolvePage } from '../../../core/utils/read-list';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { SearchFieldComponent } from '../../../shared/components/search-field/search-field.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { BasketQuantityComponent } from '../../../shared/components/basket-quantity/basket-quantity.component';
 
 @Component({
   selector: 'app-store',
   standalone: true,
-  imports: [IconComponent, MoneyPipe, RouterLink, ReactiveFormsModule, TranslatePipe, EmptyStateComponent, SearchFieldComponent],
+  imports: [BasketQuantityComponent, PaginationComponent, IconComponent, MoneyPipe, RouterLink, ReactiveFormsModule, TranslatePipe, EmptyStateComponent, SearchFieldComponent],
   template: `
+    @if (unavailable()) {
+      <app-empty-state messageKey="store.unavailable" icon="store"><a class="btn btn-primary" routerLink="/">{{ 'home.browseStores' | t }}</a></app-empty-state>
+    } @else if (failed()) {
+      <div class="card stack error-state" role="alert"><p>{{ 'store.loadFailed' | t }}</p><button class="btn btn-ghost" type="button" (click)="reloadCatalog()">{{ 'actions.retry' | t }}</button><a routerLink="/">{{ 'home.browseStores' | t }}</a></div>
+    } @else {
     @if (store()) {
       <section class="store-hero card">
         <div class="store-hero-main">
@@ -57,7 +65,11 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
           {{ c.name }}
         </button>
       }
+      @if (selectedCategory() && !selectedCategoryOnPage()) {
+        <button class="chip active" type="button" aria-pressed="true" (click)="selectCategory(null)">{{ selectedCategory()!.name }} · {{ 'actions.clear' | t }}</button>
+      }
     </div>
+    <app-pagination [page]="categoryPage" [totalPages]="categoryTotalPages" [totalCount]="categoryTotalCount" [disabled]="categoriesLoading()" labelKey="pagination.categories" (change)="loadCategories($event)" />
 
     @if (loading()) {
       <div class="grid-cards" style="margin-top:1rem">
@@ -90,6 +102,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
             }
             <div class="product-foot">
               <span class="price">{{ p.price | money }}</span>
+              <app-basket-quantity [providerId]="providerId" [productId]="p.id" />
               <button class="btn btn-primary" type="button" [disabled]="addingId() !== null" (click)="add(p)">
                 <app-icon name="basket" />{{ addingId() === p.id ? ('loading' | t) : ('actions.addToCart' | t) }}
               </button>
@@ -97,6 +110,8 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
           </article>
         }
       </div>
+    }
+    <app-pagination [page]="page" [totalPages]="totalPages" [totalCount]="totalCount" [disabled]="loading()" labelKey="pagination.products" (change)="loadProducts($event)" />
     }
   `,
   styles: [
@@ -189,6 +204,15 @@ export class StoreComponent {
   private readonly tokens = inject(TokenStoreService);
   private readonly toast = inject(ToastService);
   private readonly i18n = inject(I18nService);
+  private readonly destroyRef = inject(DestroyRef);
+  private catalogLoad?: Subscription;
+  private productLoad?: Subscription;
+  private categoryLoad?: Subscription;
+  page = 1; totalPages = 1; totalCount = 0;
+  categoryPage = 1; categoryTotalPages = 1; categoryTotalCount = 0;
+  readonly categoriesLoading = signal(false);
+  readonly selectedCategory = signal<ClientCategoryDto | null>(null);
+  selectedCategoryOnPage(): boolean { return this.categories().some(category => category.id === this.categoryId); }
   providerId = '';
   categoryId: string | null = null;
   readonly store = signal<ClientProviderListItemDto | null>(null);
@@ -196,49 +220,85 @@ export class StoreComponent {
   readonly products = signal<ClientProductDto[]>([]);
   readonly loading = signal(true);
   readonly failed = signal(false);
+  readonly unavailable = signal(false);
   readonly addingId = signal<string | null>(null);
-  readonly search = new FormControl('', { nonNullable: true });
+  readonly search = new FormControl('', { nonNullable: true, validators: fieldRules.search });
 
   constructor() {
     this.providerId = this.route.snapshot.paramMap.get('providerId') || '';
-    this.search.valueChanges.pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed()).subscribe(() => this.loadProducts());
+    this.search.valueChanges.pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed()).subscribe(() => { if (this.search.valid) this.loadProducts(1); });
     effect(() => {
       this.i18n.lang();
-      this.reloadCatalog();
+      untracked(() => { this.page = 1; this.categoryPage = 1; this.reloadCatalog(); });
     });
   }
 
   selectCategory(id: string | null): void {
     this.categoryId = id;
-    this.loadProducts();
+    this.selectedCategory.set(this.categories().find(category => category.id === id) ?? null);
+    this.loadProducts(1);
   }
 
-  private reloadCatalog(): void {
+  reloadCatalog(): void {
     if (!this.providerId) return;
-    this.catalog.getClientProvider(this.providerId).subscribe({
-      next: (s) => this.store.set(s),
+    this.catalogLoad?.unsubscribe(); this.productLoad?.unsubscribe(); this.categoryLoad?.unsubscribe();
+    this.loading.set(true); this.failed.set(false); this.unavailable.set(false); this.store.set(null);
+    this.catalogLoad = this.catalog.getClientProvider(this.providerId, { silent: true }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: store => {
+        this.store.set(store);
+        this.loadCategories(this.categoryPage);
+        if (!this.failed() && !this.unavailable()) this.loadProducts(this.page);
+      },
+      error: error => this.showLoadError(error),
     });
-    this.catalog.listStoreCategories(this.providerId).subscribe({
-      next: (c) => this.categories.set(readList<ClientCategoryDto>(c)),
-    });
-    this.loadProducts();
   }
 
-  loadProducts(): void {
-    if (!this.providerId) return;
+  private showLoadError(error: { statusCode?: number }): void {
+    this.productLoad?.unsubscribe(); this.categoryLoad?.unsubscribe();
+    const unavailable = [400, 404, 410].includes(error?.statusCode ?? 0);
+    this.unavailable.set(unavailable); this.failed.set(!unavailable); this.loading.set(false); this.categoriesLoading.set(false);
+    if (unavailable) { this.store.set(null); this.products.set([]); this.categories.set([]); }
+  }
+
+  loadCategories(page: number): void {
+    if (!this.providerId || !this.store() || this.unavailable()) return;
+    this.categoryLoad?.unsubscribe(); this.categoriesLoading.set(true); this.categoryPage = page;
+    this.categoryLoad = this.catalog.listStoreCategories(this.providerId, 12, { silent: true }, page)
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: response => {
+          const result = readPage<ClientCategoryDto>(response);
+          const targetPage = resolvePage(page, result);
+        if (page !== targetPage) { this.loadCategories(targetPage); return; }
+          this.categories.set(result.items); this.categoryTotalPages = result.totalPages; this.categoryTotalCount = result.totalCount;
+          const selected = result.items.find(category => category.id === this.categoryId);
+          if (selected) this.selectedCategory.set(selected);
+          this.categoriesLoading.set(false);
+        },
+        error: error => this.showLoadError(error),
+      });
+  }
+
+  loadProducts(page = this.page): void {
+    if (!this.providerId || !this.store() || this.unavailable()) return;
+    this.productLoad?.unsubscribe();
+    this.page = page;
     this.loading.set(true); this.failed.set(false);
-    this.catalog
+    this.productLoad = this.catalog
       .listStoreProducts(this.providerId, {
         categoryId: this.categoryId,
         searchTerm: this.search.value || null,
-        pageSize: 100,
-      })
+        pageNumber: page, pageSize: 12,
+      }, { silent: true })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (p) => {
-          this.products.set(readList<ClientProductDto>(p));
+          const result = readPage<ClientProductDto>(p);
+          const targetPage = resolvePage(page, result);
+        if (page !== targetPage) { this.loadProducts(targetPage); return; }
+          this.products.set(result.items); this.totalPages = result.totalPages; this.totalCount = result.totalCount;
           this.loading.set(false);
         },
-        error: () => { this.failed.set(true); this.loading.set(false); },
+        error: error => this.showLoadError(error),
       });
   }
 

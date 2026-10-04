@@ -1,4 +1,4 @@
-import { IconComponent } from '../icon/icon.component';
+import { IconComponent, IconName } from '../icon/icon.component';
 import { Component, Input } from '@angular/core';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 
@@ -8,11 +8,13 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
   imports: [IconComponent, TranslatePipe],
   template: `
     <div class="card" style="text-align: center; padding: 2rem">
-      <app-icon name="search" /><p class="muted">{{ messageKey | t: fallback }}</p>
+      <app-icon [name]="icon" /><p class="muted">{{ messageKey | t: fallback }}</p>
+      <ng-content></ng-content>
     </div>
   `,
 })
 export class EmptyStateComponent {
   @Input() messageKey = 'empty.generic';
   @Input() fallback = 'Nothing here yet';
+  @Input() icon: IconName = 'grid';
 }

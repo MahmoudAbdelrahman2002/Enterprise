@@ -9,6 +9,7 @@ public sealed class ApiResponse<T>
     public int StatusCode { get; init; }
     public string Message { get; init; } = string.Empty;
     public IReadOnlyList<string> Errors { get; init; } = [];
+    public IReadOnlyDictionary<string, string[]>? FieldErrors { get; init; }
     public T? Data { get; init; }
     public string? TraceId { get; init; }
 
@@ -31,7 +32,8 @@ public sealed class ApiResponse<T>
         int statusCode,
         string message,
         IEnumerable<string>? errors = null,
-        string? traceId = null)
+        string? traceId = null,
+        IReadOnlyDictionary<string, string[]>? fieldErrors = null)
     {
         var list = errors?.Where(e => !string.IsNullOrWhiteSpace(e)).Distinct().ToList()
                    ?? [];
@@ -46,6 +48,7 @@ public sealed class ApiResponse<T>
             StatusCode = statusCode,
             Message = message,
             Errors = list,
+            FieldErrors = fieldErrors,
             Data = default,
             TraceId = traceId
         };

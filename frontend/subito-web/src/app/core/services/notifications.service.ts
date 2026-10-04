@@ -2,14 +2,14 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { NotificationDto, PagedResult, UnreadNotificationCountDto } from '../models/domain.models';
 import { Portal } from '../models/api.models';
-import { ApiService } from './api.service';
+import { ApiService, Query } from './api.service';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationsService {
   private readonly api = inject(ApiService);
 
-  list(portal: Portal): Observable<PagedResult<NotificationDto> | NotificationDto[]> {
-    return this.api.get(`/${portal}/notifications`);
+  list(portal: Portal, query: Query = {}): Observable<PagedResult<NotificationDto>> {
+    return this.api.get(`/${portal}/notifications/paged`, query);
   }
 
   markRead(portal: Portal, id: string): Observable<unknown> {

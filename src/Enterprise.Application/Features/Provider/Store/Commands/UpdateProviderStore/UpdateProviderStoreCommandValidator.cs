@@ -9,10 +9,7 @@ public sealed class UpdateProviderStoreCommandValidator : AbstractValidator<Upda
 {
     public UpdateProviderStoreCommandValidator(IAppLocalizer localizer)
     {
-        RuleFor(x => x.CompanyName).Required(localizer).MaxLen(localizer, 200);
-        RuleFor(x => x.PhoneNumber!)
-            .MaximumLength(40)
-            .WithMessage(_ => localizer[MessageKeys.Validation.MaxLength, 40])
-            .When(x => !string.IsNullOrWhiteSpace(x.PhoneNumber));
+        RuleFor(x => x.CompanyName).Required(localizer).MaxLen(localizer, ValidationPolicy.CompanyMax);
+        RuleFor(x => x.PhoneNumber).Phone(localizer);
     }
 }

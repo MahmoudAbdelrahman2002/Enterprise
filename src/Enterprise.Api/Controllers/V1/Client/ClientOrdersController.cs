@@ -1,8 +1,9 @@
 using Asp.Versioning;
+using Enterprise.Application.Common.Models;
+using Enterprise.Application.Features.Client.Orders.Queries.GetClientOrdersPage;
 using Enterprise.Api.Authorization;
 using Enterprise.Api.Models;
 using Enterprise.Application.Common.Localization;
-using Enterprise.Application.Features.Client.Orders.Commands.CancelClientOrder;
 using Enterprise.Application.Features.Client.Orders.Queries.GetClientOrderById;
 using Enterprise.Application.Features.Client.Orders.Queries.GetClientOrderBySession;
 using Enterprise.Application.Features.Client.Orders.Queries.GetClientOrders;
@@ -19,6 +20,11 @@ namespace Enterprise.Api.Controllers.V1.Client;
 [RequireClient]
 public sealed class ClientOrdersController : ApiControllerBase
 {
+    [HttpGet("orders/paged")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<OrderListItemDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<PagedResult<OrderListItemDto>>>> GetPage([FromQuery] GetClientOrdersPageQuery query, CancellationToken cancellationToken = default) =>
+        OkResponse(await Mediator.Send(query, cancellationToken), MessageKeys.Order.ListRetrieved);
+
     [HttpGet("orders")]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<OrderListItemDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<OrderListItemDto>>>> GetAll(
@@ -62,18 +68,6 @@ public sealed class ClientOrdersController : ApiControllerBase
     {
         var result = await Mediator.Send(new ConfirmClientCheckoutCommand(sessionId), cancellationToken);
         return OkResponse(result, MessageKeys.Order.Retrieved);
-    }
-
-    [HttpPost("orders/{orderId:guid}/cancel")]
-    [ProducesResponseType(typeof(ApiResponse<OrderDetailDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<ApiResponse<OrderDetailDto>>> Cancel(
-        [FromRoute] Guid orderId,
-        CancellationToken cancellationToken = default)
-    {
-        var result = await Mediator.Send(new CancelClientOrderCommand(orderId), cancellationToken);
-        return OkResponse(result, MessageKeys.Order.Cancelled);
     }
 
     [HttpGet("orders/{orderId:guid}")]

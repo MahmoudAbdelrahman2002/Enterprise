@@ -149,4 +149,4 @@ public sealed record UpdateProviderRequest(
     string? PhoneNumber,
     Guid? ServiceId = null);
 
-public sealed record SetProviderActiveRequest(bool IsActive);
+public sealed record SetProviderActiveRequest([property: System.Text.Json.Serialization.JsonRequired] bool IsActive);

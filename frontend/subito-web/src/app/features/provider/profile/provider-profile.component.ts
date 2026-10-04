@@ -1,34 +1,36 @@
+import { FieldValidationDirective } from '../../../shared/directives/field-validation.directive';
+import { fieldRules, differentPasswords } from '../../../shared/forms/field-validators';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { PasswordToggleDirective } from '../../../shared/directives/password-toggle.directive';
 import { I18nService } from '../../../core/services/i18n.service';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProfileDto } from '../../../core/models/api.models';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { firstErrorKey, strongPassword } from '../../../shared/forms/form-errors';
+import { applyServerError, firstErrorKey, strongPassword } from '../../../shared/forms/form-errors';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-provider-profile',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [FieldValidationDirective, IconComponent, PasswordToggleDirective, ReactiveFormsModule, TranslatePipe],
   template: `
     <h1 class="page-title">{{ 'nav.profile' | t }}</h1>
     @if (profile()) {
       <form class="card stack" [formGroup]="form" (ngSubmit)="save()">
-        <div class="field"><label for="provider-profile-firstName">{{ 'auth.firstName' | t }}</label><input id="provider-profile-firstName" formControlName="firstName" />
-          @if (nameError('firstName'); as key) { <small class="field-error">{{ key | t }}</small> }</div>
-        <div class="field"><label for="provider-profile-lastName">{{ 'auth.lastName' | t }}</label><input id="provider-profile-lastName" formControlName="lastName" />
-          @if (nameError('lastName'); as key) { <small class="field-error">{{ key | t }}</small> }</div>
+        @if (form.errors?.['server']) { <p class="field-error" role="alert">{{ form.errors?.['server'] }}</p> }
+        <div class="field"><label for="provider-profile-firstName">{{ 'auth.firstName' | t }}</label><input id="provider-profile-firstName" appFieldValidation formControlName="firstName" /></div>
+        <div class="field"><label for="provider-profile-lastName">{{ 'auth.lastName' | t }}</label><input id="provider-profile-lastName" appFieldValidation formControlName="lastName" /></div>
         <div class="field"><label for="provider-profile-profile-email">{{ 'auth.email' | t }}</label><input id="provider-profile-profile-email" [value]="profile()!.email" disabled /></div>
-        <button class="btn btn-primary" type="submit" [disabled]="busy()">{{ 'actions.save' | t }}</button>
+        <button class="btn btn-primary icon-action" type="submit" [disabled]="busy()" [attr.aria-label]="'actions.save' | t" [title]="'actions.save' | t"><app-icon name="check" />{{ 'actions.save' | t }}</button>
       </form>
       <form class="card stack" style="margin-top:1rem" [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+        @if (passwordForm.errors?.['server']) { <p class="field-error" role="alert">{{ passwordForm.errors?.['server'] }}</p> }
         <h3>{{ 'auth.password' | t }}</h3>
-        <div class="field"><label for="provider-profile-currentPassword">{{ 'auth.currentPassword' | t }}</label><input id="provider-profile-currentPassword" type="password" formControlName="currentPassword" />
-          @if (currentError(); as key) { <small class="field-error">{{ key | t }}</small> }</div>
-        <div class="field"><label for="provider-profile-newPassword">{{ 'auth.newPassword' | t }}</label><input id="provider-profile-newPassword" type="password" formControlName="newPassword" autocomplete="new-password" />
-          @if (newError(); as key) { <small class="field-error">{{ key | t }}</small> }</div>
-        <button class="btn btn-secondary" type="submit" [disabled]="busy()">{{ 'actions.save' | t }}</button>
+        <div class="field"><label for="provider-profile-currentPassword">{{ 'auth.currentPassword' | t }}</label><input id="provider-profile-currentPassword" type="password" appPasswordToggle appFieldValidation formControlName="currentPassword" /></div>
+        <div class="field"><label for="provider-profile-newPassword">{{ 'auth.newPassword' | t }}</label><input id="provider-profile-newPassword" type="password" appPasswordToggle appFieldValidation formControlName="newPassword" autocomplete="new-password" /></div>
+        <button class="btn btn-secondary icon-action" type="submit" [disabled]="busy()" [attr.aria-label]="'actions.save' | t" [title]="'actions.save' | t"><app-icon name="check" />{{ 'actions.save' | t }}</button>
       </form>
     }
   `,
@@ -41,13 +43,13 @@ export class ProviderProfileComponent implements OnInit {
   readonly profile = signal<ProfileDto | null>(null);
   readonly busy = signal(false);
   readonly form = this.fb.nonNullable.group({
-    firstName: ['', Validators.required],
-    lastName: ['', Validators.required],
+    firstName: ['', fieldRules.name],
+    lastName: ['', fieldRules.name],
   });
   readonly passwordForm = this.fb.nonNullable.group({
-    currentPassword: ['', Validators.required],
-    newPassword: ['', [Validators.required, strongPassword]],
-  });
+    currentPassword: ['', fieldRules.existingPassword],
+    newPassword: ['', fieldRules.password],
+  }, { validators: differentPasswords });
 
   ngOnInit(): void {
     this.auth.getProfile('provider').subscribe({
@@ -65,7 +67,7 @@ export class ProviderProfileComponent implements OnInit {
     this.busy.set(true);
     this.auth.updateProfile('provider', this.form.getRawValue()).subscribe({
       next: (p) => { this.profile.set(p); this.toast.success(this.i18n.t('ui.saved')); this.busy.set(false); },
-      error: () => this.busy.set(false),
+      error: (err) => { applyServerError(this.form, err); this.busy.set(false); },
     });
   }
 
@@ -75,7 +77,7 @@ export class ProviderProfileComponent implements OnInit {
     this.busy.set(true);
     this.auth.changePassword('provider', this.passwordForm.getRawValue()).subscribe({
       next: () => { this.toast.success(this.i18n.t('auth.passwordUpdated')); this.passwordForm.reset(); this.busy.set(false); },
-      error: () => this.busy.set(false),
+      error: (err) => { applyServerError(this.passwordForm, err); this.busy.set(false); },
     });
   }
 }

@@ -20,7 +20,8 @@ public sealed class RoleManagerService(
         Guid? providerId,
         PaginationParams pagination,
         string? searchTerm = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        bool descending = false, bool? isSystem = null)
     {
        
         var query = context.Roles.AsNoTracking().Where(r => r.RoleType == portal);
@@ -34,6 +35,8 @@ public sealed class RoleManagerService(
             query = query.Where(r => r.ProviderId == null);
         }
 
+        if (isSystem.HasValue) query = query.Where(role => role.IsSystem == isSystem.Value);
+
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
             var trimmedSearch = searchTerm.Trim();
@@ -44,9 +47,11 @@ public sealed class RoleManagerService(
 
         var totalItems = await query.CountAsync(cancellationToken);
 
-        var roles = await query
-            .OrderByDescending(r => r.IsSystem)
-            .ThenBy(r => r.Name)
+        var language = culture.LanguageCode;
+        var ordered = descending
+            ? query.OrderByDescending(r => context.RoleTranslations.Where(t => t.RoleId == r.Id && t.LanguageCode == language).Select(t => t.Name).FirstOrDefault() ?? r.Name).ThenBy(r => r.Id)
+            : query.OrderBy(r => context.RoleTranslations.Where(t => t.RoleId == r.Id && t.LanguageCode == language).Select(t => t.Name).FirstOrDefault() ?? r.Name).ThenBy(r => r.Id);
+        var roles = await ordered
             .Skip((pagination.PageNumber - 1) * pagination.PageSize)
             .Take(pagination.PageSize)
             .ToListAsync(cancellationToken);

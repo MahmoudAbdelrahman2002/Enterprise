@@ -12,10 +12,10 @@ public sealed class CreateCategoryCommandValidator : AbstractValidator<CreateCat
         RuleFor(x => x.Name)
             .NotNull()
             .WithMessage(_ => localizer[MessageKeys.Validation.Required])
-            .SetValidator(new LocalizedTextValidator(localizer, 200, englishRequired: true));
+            .SetValidator(new LocalizedTextValidator(localizer, ValidationPolicy.TitleMax, englishRequired: true));
 
         RuleFor(x => x.Description!)
-            .SetValidator(new LocalizedTextValidator(localizer, 2000, englishRequired: false))
+            .SetValidator(new LocalizedTextValidator(localizer, ValidationPolicy.DescriptionMax, englishRequired: false))
             .When(x => x.Description is not null);
 
         RuleFor(x => x.DisplayOrder)

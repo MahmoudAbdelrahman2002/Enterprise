@@ -10,6 +10,7 @@ public sealed class OrderListItemDto
     public DateTime OrderDateUtc { get; init; }
     public decimal TotalAmount { get; init; }
     public OrderStatus Status { get; init; }
+    public bool IsHistorical { get; init; }
 }
 
 public sealed class OrderItemDto
@@ -30,6 +31,7 @@ public sealed class OrderDetailDto
     public DateTime OrderDateUtc { get; init; }
     public decimal TotalAmount { get; init; }
     public OrderStatus Status { get; init; }
+    public bool IsHistorical { get; init; }
     public string? Notes { get; init; }
     public string? StripeCheckoutSessionId { get; init; }
     public IReadOnlyList<OrderItemDto> Items { get; init; } = [];

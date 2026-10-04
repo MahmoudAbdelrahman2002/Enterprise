@@ -82,6 +82,12 @@ public static class Permissions
         public const string Delete = "ProviderStaff.Delete";
     }
 
+    public static class ProviderStore
+    {
+        public const string Read = "ProviderStore.Read";
+        public const string Update = "ProviderStore.Update";
+    }
+
     public static class ProviderCategory
     {
         public const string Read = "ProviderCategory.Read";
@@ -138,9 +144,6 @@ public static class PermissionCatalog
 
         new(Permissions.Clients.Read, UserType.Admin, "Clients", "Read", "View marketplace clients"),
         new(Permissions.Clients.Update, UserType.Admin, "Clients", "Update", "Activate or deactivate marketplace clients"),
-
-        new(Permissions.Orders.Read, UserType.Admin, "Orders", "Read", "View marketplace orders"),
-
         // Provider Portal - Provider Roles Module
         new(Permissions.ProviderRoles.Read, UserType.Provider, "ProviderRoles", "Read", "View store staff roles"),
         new(Permissions.ProviderRoles.Create, UserType.Provider, "ProviderRoles", "Create", "Create store staff roles"),
@@ -152,6 +155,10 @@ public static class PermissionCatalog
         new(Permissions.ProviderStaff.Create, UserType.Provider, "ProviderStaff", "Create", "Create store staff members"),
         new(Permissions.ProviderStaff.Update, UserType.Provider, "ProviderStaff", "Update", "Update store staff and status"),
         new(Permissions.ProviderStaff.Delete, UserType.Provider, "ProviderStaff", "Delete", "Delete store staff members"),
+
+        // Provider Portal - ProviderStore Module
+        new(Permissions.ProviderStore.Read, UserType.Provider, "ProviderStore", "Read", "View store identity"),
+        new(Permissions.ProviderStore.Update, UserType.Provider, "ProviderStore", "Update", "Update store company, phone and image"),
 
         // Provider Portal - ProviderCategory Module
         new(Permissions.ProviderCategory.Read, UserType.Provider, "ProviderCategory", "Read", "View store categories"),

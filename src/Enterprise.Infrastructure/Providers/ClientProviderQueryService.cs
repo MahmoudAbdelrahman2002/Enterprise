@@ -10,6 +10,13 @@ public sealed class ClientProviderQueryService(
     ApplicationDbContext context,
     ICurrentCulture culture) : IClientProviderQueryService
 {
+    public async Task<IReadOnlyList<Guid>> GetActiveServiceIdsAsync(CancellationToken cancellationToken = default) =>
+        await ActiveProviders()
+            .Where(provider => provider.ServiceId.HasValue)
+            .Select(provider => provider.ServiceId!.Value)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
     public async Task<PagedResult<ClientProviderListItemDto>> GetPagedByServiceIdAsync(
         Guid serviceId,
         string? searchTerm,
@@ -33,6 +40,7 @@ public sealed class ClientProviderQueryService(
 
         var rawRows = await query
             .OrderBy(provider => provider.CompanyName)
+            .ThenBy(provider => provider.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);

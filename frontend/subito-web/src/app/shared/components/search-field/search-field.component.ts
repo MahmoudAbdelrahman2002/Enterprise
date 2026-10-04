@@ -1,3 +1,4 @@
+import { FieldValidationDirective } from '../../directives/field-validation.directive';
 import { TooltipDirective } from '../../directives/tooltip.directive';
 import { IconComponent } from '../icon/icon.component';
 import { Component, Input, signal } from '@angular/core';
@@ -7,7 +8,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 @Component({
   selector: 'app-search-field',
   standalone: true,
-  imports: [TooltipDirective, IconComponent, ReactiveFormsModule, TranslatePipe],
+  imports: [FieldValidationDirective, TooltipDirective, IconComponent, ReactiveFormsModule, TranslatePipe],
   template: `
     <label class="search-field" [class.is-focused]="focused()" [class.has-value]="!!control.value">
       <span class="search-field__icon" aria-hidden="true">
@@ -15,6 +16,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
       </span>
       <input
         type="search"
+        appFieldValidation
         [formControl]="control"
         [placeholder]="placeholderKey | t"
         [attr.aria-label]="placeholderKey | t"

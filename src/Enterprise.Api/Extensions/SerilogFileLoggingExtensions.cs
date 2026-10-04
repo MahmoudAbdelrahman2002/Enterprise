@@ -5,12 +5,12 @@ namespace Enterprise.Api.Extensions;
 public static class SerilogFileLoggingExtensions
 {
     /// <summary>
-    /// Azure App Service Kudu: site/wwwroot/logs (ContentRoot).
-    /// Local: {ContentRoot}/logs.
+    /// Azure App Service Kudu: site/wwwroot/log (ContentRoot).
+    /// Local: {ContentRoot}/log.
     /// </summary>
     public static string ResolveFileLogDirectory(string contentRootPath)
     {
-        return Path.Combine(contentRootPath, "logs");
+        return Path.Combine(contentRootPath, "log");
     }
 
     public static LoggerConfiguration WriteToRollingLogFile(
@@ -24,7 +24,7 @@ public static class SerilogFileLoggingExtensions
             rollingInterval: RollingInterval.Day,
             retainedFileCountLimit: 14,
             shared: true,
-            restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information,
+            restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Warning,
             outputTemplate:
                 "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{CorrelationId}] {Message:lj}{NewLine}{Exception}");
     }

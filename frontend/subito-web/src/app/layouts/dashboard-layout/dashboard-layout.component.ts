@@ -1,7 +1,7 @@
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { UpperCasePipe } from '@angular/common';
-import { Component, Input, inject, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, Input, ViewChild, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Portal } from '../../core/models/api.models';
 import { AuthService } from '../../core/services/auth.service';
@@ -22,10 +22,13 @@ export interface NavItem {
   imports: [TooltipDirective, IconComponent, RouterLink, RouterLinkActive, LogoComponent, TranslatePipe, UpperCasePipe],
   template: `
     <div class="dash" [class.collapsed]="collapsed()">
-      <aside class="sidebar" [class.open]="drawerOpen()">
+      <aside #sidebar id="dashboard-navigation" class="sidebar" [class.open]="drawerOpen()"
+        [inert]="mobile() && !drawerOpen()" [attr.role]="drawerOpen() ? 'dialog' : null"
+        [attr.aria-modal]="drawerOpen() ? 'true' : null" [attr.aria-label]="title"
+        (click)="onDrawerClick($event)">
         <div class="side-head">
           <app-logo [link]="homeLink" [height]="34" [light]="true" [markOnly]="collapsed()" />
-          <button class="icon-btn hide-desktop" type="button" (click)="drawerOpen.set(false)" appTooltip [attr.aria-label]="'ui.closeMenu' | t"><app-icon name="close" /></button>
+          <button #closeButton class="icon-btn hide-desktop" type="button" (click)="closeDrawer()" appTooltip [attr.aria-label]="'ui.closeMenu' | t"><app-icon name="close" /></button>
         </div>
         <nav class="side-nav">
           @for (item of visibleItems(); track item.link) {
@@ -33,7 +36,6 @@ export interface NavItem {
               [routerLink]="item.link"
               routerLinkActive="active"
               [routerLinkActiveOptions]="item.link === homeLink ? homeActiveOptions : defaultActiveOptions"
-              (click)="drawerOpen.set(false)"
             >
               <app-icon [name]="navIcon(item.labelKey)" /><span>{{ item.labelKey | t }}</span>
             </a>
@@ -50,9 +52,9 @@ export interface NavItem {
           <button class="logout-btn" type="button" (click)="auth.logout(portal)">{{ 'nav.logout' | t }}</button>
         </div>
       </aside>
-      <div class="main">
+      <div #main class="main" [inert]="drawerOpen()">
         <header class="top">
-          <button class="btn btn-ghost menu-toggle" type="button" (click)="toggleNav()" [attr.aria-expanded]="drawerOpen() || !collapsed()" appTooltip [attr.aria-label]="'ui.openMenu' | t"><app-icon name="menu" /></button>
+          <button #menuToggle class="btn btn-ghost menu-toggle" type="button" (click)="toggleNav()" aria-controls="dashboard-navigation" [attr.aria-expanded]="mobile() ? drawerOpen() : !collapsed()" appTooltip [attr.aria-label]="'ui.openMenu' | t"><app-icon name="menu" /></button>
           <div class="top-title">
             <strong>{{ title }}</strong>
             <span class="muted hide-sm">{{ userLabel }}</span>
@@ -63,7 +65,7 @@ export interface NavItem {
         </div>
       </div>
       @if (drawerOpen()) {
-        <div class="backdrop" (click)="drawerOpen.set(false)"></div>
+        <div class="backdrop" (click)="closeDrawer()"></div>
       }
     </div>
   `,
@@ -270,6 +272,11 @@ export class DashboardLayoutComponent {
   readonly langs: Lang[] = ['en', 'ar', 'it'];
   readonly collapsed = signal(false);
   readonly drawerOpen = signal(false);
+  readonly mobile = signal(window.matchMedia('(max-width: 960px)').matches);
+  @ViewChild('sidebar', { static: true }) private sidebar!: ElementRef<HTMLElement>;
+  @ViewChild('main', { static: true }) private main!: ElementRef<HTMLElement>;
+  @ViewChild('menuToggle', { static: true }) private menuToggle!: ElementRef<HTMLButtonElement>;
+  @ViewChild('closeButton', { static: true }) private closeButton!: ElementRef<HTMLButtonElement>;
   /** Stable refs — new objects each CD cycle break routerLinkActive. */
   readonly homeActiveOptions = { exact: true } as const;
   readonly defaultActiveOptions = { exact: false } as const;
@@ -293,10 +300,62 @@ export class DashboardLayoutComponent {
   }
 
   toggleNav(): void {
-    if (window.innerWidth <= 960) {
-      this.drawerOpen.update((v) => !v);
+    if (this.mobile()) {
+      if (this.drawerOpen()) {
+        this.closeDrawer();
+      } else {
+        this.drawerOpen.set(true);
+        // Update inert synchronously so focus can move before Angular renders.
+        this.sidebar.nativeElement.inert = false;
+        this.closeButton.nativeElement.focus();
+        this.main.nativeElement.inert = true;
+      }
     } else {
       this.collapsed.update((v) => !v);
+    }
+  }
+
+  closeDrawer(): void {
+    if (!this.drawerOpen()) return;
+    this.drawerOpen.set(false);
+    this.main.nativeElement.inert = false;
+    this.menuToggle.nativeElement.focus();
+    this.sidebar.nativeElement.inert = this.mobile();
+  }
+
+  onDrawerClick(event: MouseEvent): void {
+    if ((event.target as Element).closest('a, .logout-btn')) this.closeDrawer();
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    const mobile = window.matchMedia('(max-width: 960px)').matches;
+    if (mobile === this.mobile()) return;
+    this.closeDrawer();
+    if (mobile && this.sidebar.nativeElement.contains(document.activeElement)) {
+      this.menuToggle.nativeElement.focus();
+    }
+    this.mobile.set(mobile);
+    this.sidebar.nativeElement.inert = mobile;
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent): void {
+    if (!this.drawerOpen()) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.closeDrawer();
+    } else if (event.key === 'Tab') {
+      const controls = Array.from(this.sidebar.nativeElement.querySelectorAll<HTMLElement>(
+        'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]'
+      )).filter((element) => element.tabIndex >= 0 && element.getClientRects().length > 0);
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      const inside = controls.includes(document.activeElement as HTMLElement);
+      if (!inside || (event.shiftKey ? document.activeElement === first : document.activeElement === last)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first)?.focus();
+      }
     }
   }
 }

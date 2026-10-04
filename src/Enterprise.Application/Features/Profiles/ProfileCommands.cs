@@ -35,8 +35,8 @@ public sealed class UpdateProfileCommandValidator : AbstractValidator<UpdateProf
 {
     public UpdateProfileCommandValidator(IAppLocalizer localizer)
     {
-        RuleFor(x => x.FirstName).Required(localizer).MaxLen(localizer, 100);
-        RuleFor(x => x.LastName).Required(localizer).MaxLen(localizer, 100);
+        RuleFor(x => x.FirstName).PersonName(localizer, ValidationPolicy.NameMax);
+        RuleFor(x => x.LastName).PersonName(localizer, ValidationPolicy.NameMax);
     }
 }
 
@@ -62,7 +62,7 @@ public sealed class RequestChangeEmailCommandValidator : AbstractValidator<Reque
 {
     public RequestChangeEmailCommandValidator(IAppLocalizer localizer)
     {
-        RuleFor(x => x.NewEmail).RequiredEmail(localizer).MaxLen(localizer, 256);
+        RuleFor(x => x.NewEmail).RequiredEmail(localizer);
     }
 }
 

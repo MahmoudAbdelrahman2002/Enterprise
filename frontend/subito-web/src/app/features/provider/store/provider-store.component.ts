@@ -1,3 +1,6 @@
+import { FieldValidationDirective } from '../../../shared/directives/field-validation.directive';
+import { fieldRules } from '../../../shared/forms/field-validators';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { finalize } from 'rxjs';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 import { I18nService } from '../../../core/services/i18n.service';
@@ -5,26 +8,29 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProviderStoreDto } from '../../../core/models/domain.models';
 import { StoreService } from '../../../core/services/store.service';
+import { TokenStoreService } from '../../../core/services/token-store.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { firstErrorKey } from '../../../shared/forms/form-errors';
+import { applyServerError, firstErrorKey } from '../../../shared/forms/form-errors';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-provider-store',
   standalone: true,
-  imports: [ImageUploadComponent, ReactiveFormsModule, TranslatePipe],
+  imports: [FieldValidationDirective, IconComponent, ImageUploadComponent, ReactiveFormsModule, TranslatePipe],
   template: `
     <h1 class="page-title">{{ 'nav.store' | t }}</h1>
     @if (loading()) { <p class="muted">{{ 'loading' | t }}</p> }
     @else if (store()) {
       <form class="card stack" [formGroup]="form" (ngSubmit)="save()">
+        @if (form.errors?.['server']) { <p class="field-error" role="alert">{{ form.errors?.['server'] }}</p> }
         @if (store()!.imageUrl) { <img class="thumb-lg" [src]="store()!.imageUrl!" [alt]="store()!.companyName" /> }
-        <div class="field"><label for="provider-store-companyName">{{ 'ui.company' | t }}</label><input id="provider-store-companyName" formControlName="companyName" />
-          @if (nameError(); as key) { <small class="field-error">{{ key | t }}</small> }</div>
-        <div class="field"><label for="provider-store-phoneNumber">{{ 'ui.phone' | t }}</label><input id="provider-store-phoneNumber" formControlName="phoneNumber" /></div>
+        <div class="field"><label for="provider-store-companyName">{{ 'ui.company' | t }}</label><input id="provider-store-companyName" appFieldValidation formControlName="companyName" /></div>
+        <div class="field"><label for="provider-store-phoneNumber">{{ 'ui.phone' | t }}</label><input id="provider-store-phoneNumber" appFieldValidation formControlName="phoneNumber" /></div>
         <p class="muted">{{ 'ui.service' | t }}: {{ store()!.serviceName }}</p>
-        <app-image-upload [disabled]="busy()" (selected)="onFile($event)" />
-        <button class="btn btn-primary" type="submit" [disabled]="busy()">{{ 'actions.save' | t }}</button>
+        @if (canUpdate) {
+          <app-image-upload [disabled]="busy()" (selected)="onFile($event)" />
+          <button class="btn btn-primary icon-action" type="submit" [disabled]="busy()" [attr.aria-label]="'actions.save' | t" [title]="'actions.save' | t"><app-icon name="check" />{{ 'actions.save' | t }}</button>
+        }
       </form>
     }
   `,
@@ -33,15 +39,18 @@ export class ProviderStoreComponent implements OnInit {
   private readonly i18n = inject(I18nService);
   private readonly storeApi = inject(StoreService);
   private readonly toast = inject(ToastService);
+  private readonly tokens = inject(TokenStoreService);
+  readonly canUpdate = this.tokens.hasPermission('provider', 'ProviderStore.Update');
   readonly store = signal<ProviderStoreDto | null>(null);
   readonly loading = signal(true);
   readonly busy = signal(false);
   readonly form = inject(FormBuilder).nonNullable.group({
-    companyName: ['', Validators.required],
-    phoneNumber: [''],
+    companyName: ['', fieldRules.company],
+    phoneNumber: ['', fieldRules.phone],
   });
 
   ngOnInit(): void {
+    if (!this.canUpdate) this.form.disable();
     this.loading.set(true);
     this.storeApi.get().subscribe({
       next: (s) => {
@@ -56,19 +65,19 @@ export class ProviderStoreComponent implements OnInit {
   nameError(): string | null { return firstErrorKey(this.form.controls.companyName); }
 
   save(): void {
+    if (!this.canUpdate || this.busy()) return;
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
     this.busy.set(true);
     const value = this.form.getRawValue();
     this.storeApi.update(value.companyName, value.phoneNumber).subscribe({
       next: (s) => { this.store.set(s); this.toast.success(this.i18n.t('ui.saved')); this.busy.set(false); },
-      error: () => this.busy.set(false),
+      error: (err) => { applyServerError(this.form, err); this.busy.set(false); },
     });
   }
 
-  onFile(ev: Event): void {
-    const file = (ev.target as HTMLInputElement).files?.[0];
-    if (!file || this.busy()) return;
+  onFile(file: File): void {
+    if (!this.canUpdate || !file || this.busy()) return;
     this.busy.set(true);
     this.storeApi.uploadImage(file).pipe(finalize(() => this.busy.set(false))).subscribe({ next: () => { this.toast.success(this.i18n.t('ui.uploaded')); this.ngOnInit(); } });
   }

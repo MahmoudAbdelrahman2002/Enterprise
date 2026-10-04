@@ -22,7 +22,8 @@ public sealed class GetProviderRolesListQueryHandler(
             providerId,
             request,
             request.SearchTerm,
-            cancellationToken);
+            cancellationToken,
+            request.Descending, request.IsSystem);
 
         logger.LogInformation(
             "Listed {Count} roles (total {TotalCount}) for provider {ProviderId}",

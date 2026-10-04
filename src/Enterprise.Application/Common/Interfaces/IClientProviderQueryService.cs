@@ -15,6 +15,8 @@ public sealed record ClientProviderListItemDto(
 /// </summary>
 public interface IClientProviderQueryService
 {
+    Task<IReadOnlyList<Guid>> GetActiveServiceIdsAsync(CancellationToken cancellationToken = default);
+
     Task<PagedResult<ClientProviderListItemDto>> GetPagedByServiceIdAsync(
         Guid serviceId,
         string? searchTerm,

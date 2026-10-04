@@ -15,17 +15,17 @@ public sealed class UpdateMarketplaceServiceCommandValidator : AbstractValidator
 
         RuleFor(x => x.Code)
             .Required(localizer)
-            .MaxLen(localizer, 100)
-            .Matches("^[A-Za-z0-9-_]+$")
-            .WithMessage(_ => localizer[MessageKeys.Validation.SkuFormat]);
+            .MaxLen(localizer, ValidationPolicy.CodeMax)
+            .Matches("^[A-Za-z0-9][A-Za-z0-9_-]*$")
+            .WithMessage(_ => localizer[MessageKeys.Validation.CodeFormat]);
 
         RuleFor(x => x.Name)
             .NotNull()
             .WithMessage(_ => localizer[MessageKeys.Validation.Required])
-            .SetValidator(new LocalizedTextValidator(localizer, 200, englishRequired: true));
+            .SetValidator(new LocalizedTextValidator(localizer, ValidationPolicy.TitleMax, englishRequired: true));
 
         RuleFor(x => x.Description!)
-            .SetValidator(new LocalizedTextValidator(localizer, 2000, englishRequired: false))
+            .SetValidator(new LocalizedTextValidator(localizer, ValidationPolicy.DescriptionMax, englishRequired: false))
             .When(x => x.Description is not null);
 
         RuleFor(x => x.DisplayOrder)

@@ -21,7 +21,8 @@ public sealed class GetAdminUsersListQueryHandler(
             request.SearchTerm,
             request.RoleId,
             request.IsActive,
-            cancellationToken);
+            cancellationToken,
+            request.Descending);
 
         logger.LogInformation("Listed {Count} admin users", result.TotalCount);
         return result;

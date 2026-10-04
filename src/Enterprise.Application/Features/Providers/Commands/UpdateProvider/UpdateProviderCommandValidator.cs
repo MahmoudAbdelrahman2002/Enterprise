@@ -10,13 +10,10 @@ public sealed class UpdateProviderCommandValidator : AbstractValidator<UpdatePro
     public UpdateProviderCommandValidator(IAppLocalizer localizer)
     {
         RuleFor(x => x.Id).NotEmpty().WithMessage(_ => localizer[MessageKeys.Validation.Required]);
-        RuleFor(x => x.FirstName).Required(localizer).MaxLen(localizer, 100);
-        RuleFor(x => x.LastName).Required(localizer).MaxLen(localizer, 100);
-        RuleFor(x => x.CompanyName).Required(localizer).MaxLen(localizer, 200);
-        RuleFor(x => x.PhoneNumber!)
-            .MaximumLength(40)
-            .WithMessage(_ => localizer[MessageKeys.Validation.MaxLength, 40])
-            .When(x => !string.IsNullOrWhiteSpace(x.PhoneNumber));
+        RuleFor(x => x.FirstName).PersonName(localizer, ValidationPolicy.NameMax);
+        RuleFor(x => x.LastName).PersonName(localizer, ValidationPolicy.NameMax);
+        RuleFor(x => x.CompanyName).Required(localizer).MaxLen(localizer, ValidationPolicy.CompanyMax);
+        RuleFor(x => x.PhoneNumber).Phone(localizer);
         RuleFor(x => x.ServiceId!)
             .NotEmpty()
             .WithMessage(_ => localizer[MessageKeys.Validation.Required])

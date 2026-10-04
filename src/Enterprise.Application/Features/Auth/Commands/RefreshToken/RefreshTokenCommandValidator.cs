@@ -8,6 +8,6 @@ public sealed class RefreshTokenCommandValidator : AbstractValidator<RefreshToke
 {
     public RefreshTokenCommandValidator(IAppLocalizer localizer)
     {
-        RuleFor(x => x.RefreshToken).Required(localizer);
+        RuleFor(x => x.RefreshToken).Required(localizer).MaxLen(localizer, ValidationPolicy.TokenMax);
     }
 }

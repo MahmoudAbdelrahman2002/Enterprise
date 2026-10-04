@@ -12,11 +12,12 @@ import { NotificationsService } from '../../core/services/notifications.service'
 import { TokenStoreService } from '../../core/services/token-store.service';
 import { LogoComponent } from '../../shared/components/logo/logo.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { CartCountPipe } from '../../shared/pipes/cart-count.pipe';
 
 @Component({
   selector: 'app-storefront-layout',
   standalone: true,
-  imports: [TooltipDirective, IconComponent, 
+  imports: [CartCountPipe, TooltipDirective, IconComponent,
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
@@ -50,10 +51,10 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
             <a class="icon-link hide-sm" routerLink="/orders" routerLinkActive="active" appTooltip [attr.aria-label]="'nav.orders' | t"><app-icon name="receipt" />
               <span>{{ 'nav.orders' | t }}</span>
             </a>
-            <a class="icon-link cart-link" routerLink="/cart" routerLinkActive="active" appTooltip [attr.aria-label]="'nav.cart' | t"><app-icon name="basket" />
+            <a class="icon-link cart-link" routerLink="/cart" routerLinkActive="active" appTooltip [attr.aria-label]="('nav.cart' | t) + ': ' + (cart.itemCount() | cartCount)"><app-icon name="basket" />
               <span class="hide-sm">{{ 'nav.cart' | t }}</span>
               @if (cart.itemCount() > 0) {
-                <span class="badge badge-count">{{ cart.itemCount() }}</span>
+                <span class="badge badge-count" [attr.title]="cart.itemCount() | cartCount">{{ cart.itemCount() }}</span>
               }
             </a>
             <a class="icon-link hide-sm" routerLink="/notifications" routerLinkActive="active" appTooltip [attr.aria-label]="'nav.notifications' | t"><app-icon name="bell" />

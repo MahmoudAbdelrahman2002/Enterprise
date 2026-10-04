@@ -110,4 +110,4 @@ public sealed record UpdateProviderStaffRequest(
     string? PhoneNumber,
     Guid RoleId);
 
-public sealed record SetProviderStaffActiveRequest(bool IsActive);
+public sealed record SetProviderStaffActiveRequest([property: System.Text.Json.Serialization.JsonRequired] bool IsActive);

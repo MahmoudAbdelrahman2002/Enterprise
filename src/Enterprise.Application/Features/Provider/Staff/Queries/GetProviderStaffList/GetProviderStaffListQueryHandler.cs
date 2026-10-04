@@ -25,7 +25,8 @@ public sealed class GetProviderStaffListQueryHandler(
             request.SearchTerm,
             request.RoleId,
             request.IsActive,
-            cancellationToken);
+            cancellationToken,
+            request.Descending);
 
         logger.LogInformation(
             "Listed {Count} staff (total {TotalCount}) for provider {ProviderId}",

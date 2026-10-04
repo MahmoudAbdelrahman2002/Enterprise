@@ -1,3 +1,5 @@
+using Enterprise.Application.Common.Models;
+using Enterprise.Application.Features.Notifications.Queries.GetNotificationsPage;
 using Asp.Versioning;
 using Enterprise.Api.Authorization;
 using Enterprise.Api.Models;
@@ -18,6 +20,11 @@ namespace Enterprise.Api.Controllers.V1.Provider;
 [RequireProvider]
 public sealed class ProviderNotificationsController : ApiControllerBase
 {
+    [HttpGet("notifications/paged")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<NotificationDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<PagedResult<NotificationDto>>>> GetPage([FromQuery] GetNotificationsPageQuery query, CancellationToken cancellationToken = default) =>
+        OkResponse(await Mediator.Send(query, cancellationToken), MessageKeys.Notification.ListRetrieved);
+
     [HttpGet("notifications")]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<NotificationDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<NotificationDto>>>> GetAll(

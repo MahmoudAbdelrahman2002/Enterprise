@@ -1,5 +1,7 @@
+import { PageRequest } from '../../../core/utils/page-request';
+import { fieldRules } from '../../../shared/forms/field-validators';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -7,7 +9,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { ClientProviderListItemDto } from '../../../core/models/domain.models';
 import { CatalogService } from '../../../core/services/catalog.service';
 import { I18nService } from '../../../core/services/i18n.service';
-import { readPage } from '../../../core/utils/read-list';
+import { readPage, resolvePage } from '../../../core/utils/read-list';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { SearchFieldComponent } from '../../../shared/components/search-field/search-field.component';
@@ -55,8 +57,8 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
           </a>
         }
       </div>
-      <app-pagination [page]="page" [totalPages]="totalPages" [totalCount]="totalCount" (change)="load($event)" />
     }
+    <app-pagination [page]="page" [totalPages]="totalPages" [totalCount]="totalCount" [disabled]="loading()" (change)="load($event)" />
   `,
   styles: [
     `
@@ -106,13 +108,14 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
   ],
 })
 export class ProvidersListComponent {
+  private readonly pageRequest = new PageRequest(inject(DestroyRef));
   private readonly catalog = inject(CatalogService);
   private readonly route = inject(ActivatedRoute);
   private readonly i18n = inject(I18nService);
   readonly items = signal<ClientProviderListItemDto[]>([]);
   readonly loading = signal(true);
   readonly failed = signal(false);
-  readonly search = new FormControl('', { nonNullable: true });
+  readonly search = new FormControl('', { nonNullable: true, validators: fieldRules.search });
   page = 1;
   totalPages = 1;
   totalCount = 0;
@@ -120,7 +123,7 @@ export class ProvidersListComponent {
 
   constructor() {
     this.serviceId = this.route.snapshot.paramMap.get('serviceId') || '';
-    this.search.valueChanges.pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed()).subscribe(() => this.load(1));
+    this.search.valueChanges.pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed()).subscribe(() => { if (this.search.valid) this.load(1); });
     effect(() => {
       this.i18n.lang();
       this.load(1);
@@ -131,15 +134,16 @@ export class ProvidersListComponent {
     if (!this.serviceId) return;
     this.page = page;
     this.loading.set(true); this.failed.set(false);
-    this.catalog
+    this.pageRequest.run(this.catalog
       .listProvidersByService(this.serviceId, {
         pageNumber: page,
         pageSize: 12,
         searchTerm: this.search.value || null,
-      })
-      .subscribe({
+      }), {
         next: (res) => {
           const pageData = readPage<ClientProviderListItemDto>(res);
+        const targetPage = resolvePage(page, pageData);
+        if (page !== targetPage) { this.load(targetPage); return; }
           this.items.set(pageData.items);
           this.totalPages = pageData.totalPages;
           this.totalCount = pageData.totalCount;

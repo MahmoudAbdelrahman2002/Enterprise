@@ -25,7 +25,7 @@ public sealed class HandleStripeWebhookCommandHandler(
         var webhookSecret = stripeOptions.Value.WebhookSecret;
         if (string.IsNullOrWhiteSpace(webhookSecret))
         {
-            throw new InvalidOperationException("Stripe:WebhookSecret is not configured.");
+            throw new Enterprise.Application.Common.Exceptions.PaymentUnavailableException();
         }
 
         Event stripeEvent;
@@ -41,7 +41,8 @@ public sealed class HandleStripeWebhookCommandHandler(
         catch (StripeException ex)
         {
             logger.LogWarning(ex, "Stripe webhook signature verification failed");
-            throw;
+            throw new Enterprise.Application.Common.Exceptions.ValidationException(
+                [new FluentValidation.Results.ValidationFailure("Signature", Enterprise.Application.Common.Localization.MessageKeys.Validation.CheckRequest)]);
         }
 
         logger.LogInformation("Stripe webhook received: {EventType} ({EventId})", stripeEvent.Type, stripeEvent.Id);
@@ -49,6 +50,7 @@ public sealed class HandleStripeWebhookCommandHandler(
         switch (stripeEvent.Type)
         {
             case EventTypes.CheckoutSessionCompleted:
+            case EventTypes.CheckoutSessionAsyncPaymentSucceeded:
             {
                 var session = stripeEvent.Data.Object as Session
                     ?? throw new InvalidOperationException("checkout.session.completed payload missing Session.");

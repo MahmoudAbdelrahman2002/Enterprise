@@ -35,7 +35,8 @@ public interface IRoleManagerService
         Guid? providerId,
         PaginationParams pagination,
         string? searchTerm = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        bool descending = false, bool? isSystem = null);
 
     Task<RoleDetailDto?> GetRoleByIdAsync(
         Guid roleId,

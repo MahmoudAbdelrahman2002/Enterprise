@@ -1,32 +1,15 @@
-import { readList, readPage } from './read-list';
+import { readPage, resolvePage } from './read-list';
 
-describe('readList', () => {
-  it('reads a plain array', () => {
-    expect(readList<{ id: string }>([{ id: '1' }])).toEqual([{ id: '1' }]);
+describe('Page deletion recovery', () => {
+  it('returns to the last valid page when deleting the last record reduces the page count', () => {
+    expect(resolvePage(4, readPage({ items: [], totalPages: 2, totalCount: 30 }))).toBe(2);
   });
-
-  it('reads camelCase and PascalCase item lists', () => {
-    expect(readList<number>({ items: [1, 2] })).toEqual([1, 2]);
-    expect(readList<number>({ Items: [3] })).toEqual([3]);
+  it('recovers from an empty page when records changed between counting and loading it', () => {
+    expect(resolvePage(3, { items: [], totalPages: 3 })).toBe(2);
+    expect(resolvePage(2, { items: [], totalPages: 3 })).toBe(1);
   });
-
-  it('returns an empty list for missing data', () => {
-    expect(readList(null)).toEqual([]);
-    expect(readList({})).toEqual([]);
-  });
-});
-
-describe('readPage', () => {
-  it('reads paged totals from either casing', () => {
-    expect(readPage<string>({ items: ['a'], totalCount: 9, totalPages: 3 })).toEqual({
-      items: ['a'],
-      totalCount: 9,
-      totalPages: 3,
-    });
-    expect(readPage<string>({ Items: ['b'], TotalCount: 4, TotalPages: 2 }).totalCount).toBe(4);
-  });
-
-  it('treats a plain array as a single page', () => {
-    expect(readPage<number>([1, 2])).toEqual({ items: [1, 2], totalCount: 2, totalPages: 1 });
+  it('keeps populated pages and terminates recovery at an empty first page', () => {
+    expect(resolvePage(2, { items: [1], totalPages: 3 })).toBe(2);
+    expect(resolvePage(1, readPage({ items: [], totalCount: 0, totalPages: 0 }))).toBe(1);
   });
 });

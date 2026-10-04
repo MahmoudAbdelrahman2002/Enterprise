@@ -1,3 +1,4 @@
+using Enterprise.Application.Common.Localization;
 using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Validation;
 using FluentValidation;
@@ -8,7 +9,8 @@ public sealed class AdminChangePasswordCommandValidator : AbstractValidator<Admi
 {
     public AdminChangePasswordCommandValidator(IAppLocalizer localizer)
     {
-        RuleFor(x => x.CurrentPassword).Required(localizer);
-        RuleFor(x => x.NewPassword).StrongPassword(localizer);
+        RuleFor(x => x.CurrentPassword).ExistingPassword(localizer);
+        RuleFor(x => x.NewPassword).StrongPassword(localizer)
+            .NotEqual(x => x.CurrentPassword).WithMessage(_ => localizer[MessageKeys.Validation.PasswordDifferent]);
     }
 }

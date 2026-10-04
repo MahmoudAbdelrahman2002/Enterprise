@@ -50,6 +50,7 @@ export const routes: Routes = [
       },
       {
         path: 'store',
+        canActivate: [permissionGuard('provider', ['ProviderStore.Read'])],
         loadComponent: () =>
           import('./features/provider/store/provider-store.component').then((m) => m.ProviderStoreComponent),
       },

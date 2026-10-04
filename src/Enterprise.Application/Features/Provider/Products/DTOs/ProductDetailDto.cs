@@ -39,9 +39,11 @@ public sealed class CreateProductDto
 
 public sealed class UpdateProductDto
 {
+    public Guid? CategoryId { get; init; }
     public LocalizedText Name { get; init; } = null!;
     public LocalizedText? Description { get; init; }
     public string Sku { get; init; } = string.Empty;
     public decimal Price { get; init; }
+    [System.Text.Json.Serialization.JsonRequired]
     public ProductStatus Status { get; init; }
 }

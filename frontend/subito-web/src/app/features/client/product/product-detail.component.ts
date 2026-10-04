@@ -10,11 +10,12 @@ import { I18nService } from '../../../core/services/i18n.service';
 import { TokenStoreService } from '../../../core/services/token-store.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { BasketQuantityComponent } from '../../../shared/components/basket-quantity/basket-quantity.component';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [TooltipDirective, IconComponent, MoneyPipe, RouterLink, TranslatePipe],
+  imports: [BasketQuantityComponent, TooltipDirective, IconComponent, MoneyPipe, RouterLink, TranslatePipe],
   template: `
     @if (loading()) {
       <div class="pdp card">
@@ -40,6 +41,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
             <p class="desc">{{ product()!.description }}</p>
           }
           <p class="price big">{{ product()!.price | money }}</p>
+          <app-basket-quantity [providerId]="product()!.providerId" [productId]="product()!.id" />
 
           <div class="qty row">
             <span class="muted">{{ 'cart.items' | t }}</span>

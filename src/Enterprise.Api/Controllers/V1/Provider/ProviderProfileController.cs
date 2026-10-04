@@ -3,6 +3,7 @@ using Enterprise.Api.Authorization;
 using Enterprise.Api.Controllers;
 using Enterprise.Api.Extensions;
 using Enterprise.Api.Models;
+using Enterprise.Application.Common.Authorization;
 using Enterprise.Application.Common.Localization;
 using Enterprise.Application.Features.Auth;
 using Enterprise.Application.Features.Profiles;
@@ -34,6 +35,7 @@ public sealed class ProviderProfileController : ApiControllerBase
             MessageKeys.Profile.Updated);
 
     [HttpPost("image")]
+    [RequirePermission(Permissions.ProviderStore.Update)]
     [RequestSizeLimit(3 * 1024 * 1024)]
     [ProducesResponseType(typeof(ApiResponse<ProviderDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
@@ -49,6 +51,7 @@ public sealed class ProviderProfileController : ApiControllerBase
     }
 
     [HttpDelete("image")]
+    [RequirePermission(Permissions.ProviderStore.Update)]
     [ProducesResponseType(typeof(ApiResponse<ProviderDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<ProviderDto>>> DeleteImage(CancellationToken cancellationToken)

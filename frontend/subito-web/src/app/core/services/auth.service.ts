@@ -89,11 +89,11 @@ export class AuthService {
   }
 
   getProfile(portal: Portal): Observable<ProfileDto> {
-    return this.api.get<ProfileDto>(`/${portal}/profile`);
+    return this.api.get<ProfileDto>(`/${portal}/profile`).pipe(tap(profile => this.tokens.updateIdentity(portal, profile)));
   }
 
   updateProfile(portal: Portal, body: { firstName: string; lastName: string }): Observable<ProfileDto> {
-    return this.api.put<ProfileDto>(`/${portal}/profile`, body);
+    return this.api.put<ProfileDto>(`/${portal}/profile`, body).pipe(tap(profile => this.tokens.updateIdentity(portal, profile)));
   }
 
   requestEmailChange(portal: Portal, body: { newEmail: string }): Observable<OtpSentDto> {
@@ -101,7 +101,7 @@ export class AuthService {
   }
 
   confirmEmailChange(portal: Portal, body: { newEmail: string; otp: string }): Observable<ProfileDto> {
-    return this.api.post<ProfileDto>(`/${portal}/profile/change-email/confirm`, body);
+    return this.api.post<ProfileDto>(`/${portal}/profile/change-email/confirm`, body).pipe(tap(profile => this.tokens.updateIdentity(portal, profile)));
   }
 
   private loginPath(portal: Portal): string {

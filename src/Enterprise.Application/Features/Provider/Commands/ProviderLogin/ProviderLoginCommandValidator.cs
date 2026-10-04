@@ -9,6 +9,6 @@ public sealed class ProviderLoginCommandValidator : AbstractValidator<ProviderLo
     public ProviderLoginCommandValidator(IAppLocalizer localizer)
     {
         RuleFor(x => x.Email).RequiredEmail(localizer);
-        RuleFor(x => x.Password).Required(localizer);
+        RuleFor(x => x.Password).ExistingPassword(localizer);
     }
 }

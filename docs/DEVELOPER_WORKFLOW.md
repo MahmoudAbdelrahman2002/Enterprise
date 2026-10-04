@@ -293,7 +293,7 @@ Without a connection string, image upload handlers fail when resolved — other 
 | Admin | `POST` / `DELETE` | `/api/v1/admin/services/{id}/image` |
 | Admin | `POST` / `DELETE` | `/api/v1/admin/providers/{id}/image` |
 
-Permissions: `ProviderCategory.Update` / `ProviderProduct.Update` for catalog; profile image only needs `[RequireProvider]`; admin uses `Services.Update` / `Providers.Update`.
+Permissions: `ProviderCategory.Update` / `ProviderProduct.Update` for catalog; store logo uses `ProviderStore.Update`; admin uses `Services.Update` / `Providers.Update`.
 
 Blob paths follow `providers/{providerId}/...` or `services/{serviceId}/...`. Replacing an image uploads the new blob, then best-effort deletes the previous one.
 

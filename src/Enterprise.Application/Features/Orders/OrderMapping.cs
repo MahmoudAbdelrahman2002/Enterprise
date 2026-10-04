@@ -12,7 +12,8 @@ public static class OrderMapping
         UserId = order.UserId,
         OrderDateUtc = order.OrderDateUtc,
         TotalAmount = order.TotalAmount,
-        Status = order.Status
+        Status = order.Status,
+        IsHistorical = order.IsHistorical
     };
 
     public static OrderDetailDto ToDetailDto(this Order order) => new()
@@ -23,6 +24,7 @@ public static class OrderMapping
         OrderDateUtc = order.OrderDateUtc,
         TotalAmount = order.TotalAmount,
         Status = order.Status,
+        IsHistorical = order.IsHistorical,
         Notes = order.Notes,
         StripeCheckoutSessionId = order.StripeCheckoutSessionId,
         Items = order.OrderItems

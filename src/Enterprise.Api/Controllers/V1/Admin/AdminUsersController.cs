@@ -109,4 +109,4 @@ public sealed record UpdateAdminUserRequest(
     string? PhoneNumber,
     Guid RoleId);
 
-public sealed record SetStaffActiveRequest(bool IsActive);
+public sealed record SetStaffActiveRequest([property: System.Text.Json.Serialization.JsonRequired] bool IsActive);

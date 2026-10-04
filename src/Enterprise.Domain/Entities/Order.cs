@@ -12,13 +12,15 @@ public class Order : BaseEntity
     public string? StripeCheckoutSessionId { get; set; }
     public decimal TotalAmount { get; set; }
     public OrderStatus Status { get; set; }
+    public string? PreviousStatus { get; set; }
+    public bool IsHistorical => PreviousStatus == "Cancelled";
     public string? Notes { get; set; }
 
     public List<OrderItem> OrderItems { get; set; } = [];
 
     public void ChangeStatus(OrderStatus newStatus)
     {
-        if (!OrderStatusTransitions.CanTransition(Status, newStatus))
+        if (IsHistorical || !OrderStatusTransitions.CanTransition(Status, newStatus))
         {
             throw new InvalidOperationException(
                 $"Cannot change order status from {Status} to {newStatus}.");
@@ -41,24 +43,18 @@ public class OrderItem : BaseEntity
 
 public enum OrderStatus
 {
-    Pending = 0,
-    Accepted = 1,
+    New = 0,
     Preparing = 2,
     Ready = 3,
-    Completed = 4,
-    Cancelled = 5,
 }
 
 public static class OrderStatusTransitions
 {
     private static readonly Dictionary<OrderStatus, HashSet<OrderStatus>> Allowed = new()
     {
-        [OrderStatus.Pending] = [OrderStatus.Accepted, OrderStatus.Cancelled],
-        [OrderStatus.Accepted] = [OrderStatus.Preparing, OrderStatus.Cancelled],
-        [OrderStatus.Preparing] = [OrderStatus.Ready, OrderStatus.Cancelled],
-        [OrderStatus.Ready] = [OrderStatus.Completed, OrderStatus.Cancelled],
-        [OrderStatus.Completed] = [],
-        [OrderStatus.Cancelled] = [],
+        [OrderStatus.New] = [OrderStatus.Preparing],
+        [OrderStatus.Preparing] = [OrderStatus.Ready],
+        [OrderStatus.Ready] = [],
     };
 
     public static bool CanTransition(OrderStatus from, OrderStatus to) =>

@@ -59,6 +59,7 @@ public static class DependencyInjection
         services.AddScoped<IEmailSender, EmailSender>();
         services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<Enterprise.Application.Features.Client.Payments.ICheckoutGateway, Enterprise.Infrastructure.Payments.StripeCheckoutGateway>();
         services.AddScoped<FcmPushSender>();
 
         services.AddHttpClient(nameof(FacebookExternalAuthProvider), client =>
@@ -72,7 +73,11 @@ public static class DependencyInjection
 
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
         services.Configure<AccountLockoutSettings>(configuration.GetSection(AccountLockoutSettings.SectionName));
-        services.Configure<OtpSettings>(configuration.GetSection(OtpSettings.SectionName));
+        services.AddOptions<OtpSettings>()
+            .Bind(configuration.GetSection(OtpSettings.SectionName))
+            .Validate(settings => settings.Length == Enterprise.Application.Common.Validation.ValidationPolicy.OtpLength, "Otp:Length must match the shared validation policy.")
+            .Validate(settings => settings.ExpirationMinutes > 0 && settings.MaxAttempts > 0, "OTP expiration and attempt limits must be positive.")
+            .ValidateOnStart();
         services.Configure<SmtpSettings>(configuration.GetSection(SmtpSettings.SectionName));
         services.Configure<DashboardUrlSettings>(configuration.GetSection(DashboardUrlSettings.SectionName));
         services.Configure<ExternalAuthSettings>(configuration.GetSection(ExternalAuthSettings.SectionName));
@@ -102,7 +107,7 @@ public static class DependencyInjection
         services.AddIdentityCore<ApplicationUser>(options =>
             {
                 options.User.RequireUniqueEmail = true;
-                options.Password.RequiredLength = 8;
+                options.Password.RequiredLength = Enterprise.Application.Common.Validation.ValidationPolicy.PasswordMin;
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireUppercase = true;

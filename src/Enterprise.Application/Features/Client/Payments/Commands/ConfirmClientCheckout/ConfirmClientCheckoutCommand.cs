@@ -18,6 +18,7 @@ public sealed class ConfirmClientCheckoutCommandHandler(
     IUnitOfWork unitOfWork,
     ICurrentUserService currentUserService,
     ICheckoutOrderService checkoutOrderService,
+    ICheckoutGateway checkoutGateway,
     ILogger<ConfirmClientCheckoutCommandHandler> logger)
     : IRequestHandler<ConfirmClientCheckoutCommand, OrderDetailDto>
 {
@@ -45,8 +46,7 @@ public sealed class ConfirmClientCheckoutCommandHandler(
         Session session;
         try
         {
-            var sessionService = new SessionService();
-            session = await sessionService.GetAsync(request.SessionId, cancellationToken: cancellationToken);
+            session = await checkoutGateway.GetAsync(request.SessionId, cancellationToken);
         }
         catch (StripeException ex)
         {

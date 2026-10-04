@@ -31,7 +31,7 @@ public sealed class UpdateProviderOrderStatusCommandHandler(
                 cancellationToken)
             ?? throw NotFoundException.For(nameof(Order), request.OrderId);
 
-        if (!OrderStatusTransitions.CanTransition(order.Status, request.Status))
+        if (order.IsHistorical || !OrderStatusTransitions.CanTransition(order.Status, request.Status))
         {
             throw new ConflictException(MessageKeys.Order.InvalidStatusTransition);
         }

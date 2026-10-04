@@ -3,6 +3,7 @@ export interface ApiResponse<T = unknown> {
   statusCode: number;
   message: string;
   errors: string[];
+  fieldErrors?: Record<string, string[]>;
   data: T | null;
   traceId: string;
 }
@@ -58,19 +59,13 @@ export interface OtpSentDto {
 export type Portal = 'client' | 'provider' | 'admin';
 
 export enum OrderStatus {
-  Pending = 0,
-  Accepted = 1,
+  New = 0,
   Preparing = 2,
   Ready = 3,
-  Completed = 4,
-  Cancelled = 5,
 }
 
 export const ORDER_STATUS_LABELS: Record<number, string> = {
-  [OrderStatus.Pending]: 'order.status.pending',
-  [OrderStatus.Accepted]: 'order.status.accepted',
+  [OrderStatus.New]: 'order.status.new',
   [OrderStatus.Preparing]: 'order.status.preparing',
   [OrderStatus.Ready]: 'order.status.ready',
-  [OrderStatus.Completed]: 'order.status.completed',
-  [OrderStatus.Cancelled]: 'order.status.cancelled',
 };

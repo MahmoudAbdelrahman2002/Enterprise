@@ -17,9 +17,9 @@ public sealed class ProviderLoginCommandHandler(
     public async Task<AuthResponseDto> Handle(ProviderLoginCommand request, CancellationToken cancellationToken)
     {
         var user = await userAccountService.FindByEmailAsync(request.Email, cancellationToken);
-        if (user is null || user.UserType != UserType.Provider || !user.IsActive)
+        if (user is null || user.UserType != UserType.Provider)
         {
-            logger.LogWarning("Provider login failed for {Email}: invalid credentials or inactive", request.Email);
+            logger.LogWarning("Provider login failed for {Email}: invalid credentials", request.Email);
             throw new AuthenticationFailedException();
         }
 
@@ -34,6 +34,12 @@ public sealed class ProviderLoginCommandHandler(
             await userAccountService.AccessFailedAsync(user.Id, cancellationToken);
             logger.LogWarning("Provider login failed for {Email}: bad password", request.Email);
             throw new AuthenticationFailedException();
+        }
+
+        if (!user.IsActive)
+        {
+            logger.LogWarning("Provider login rejected for {Email}: account deactivated", request.Email);
+            throw new AuthenticationFailedException(MessageKeys.Auth.ProviderDeactivated);
         }
 
         await userAccountService.ResetAccessFailedAsync(user.Id, cancellationToken);

@@ -4,6 +4,7 @@ namespace Enterprise.Domain.Interfaces;
 
 public interface IOrderRepository : IRepository<Order>
 {
+    Task<(IReadOnlyList<Order> Items, int TotalCount)> SearchForUserAsync(Guid userId, Guid? providerId, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
     Task<Order?> GetByCheckoutSessionIdAsync(string checkoutSessionId, CancellationToken cancellationToken = default);
 
     Task<Order?> GetByCheckoutSessionIdForUserAsync(

@@ -155,7 +155,7 @@ Managed exclusively from within the **Merchant Dashboard** for their respective 
 #### 1. Provider Permissions Checklist:
 * **`GET /api/v1/provider/permissions`**  
   * **Authorization:** `[RequireProvider]` + `[RequirePermission("ProviderRoles.Read")]`  
-  * **Function:** Returns all permissions available for the store portal (`ProviderRoles`, `ProviderStaff`).
+  * **Function:** Returns all permissions available for the store portal (`ProviderRoles`, `ProviderStaff`, `ProviderStore`, `ProviderCategory`, `ProviderProduct`, `ProviderOrder`).
 
 #### 2. Provider Roles CRUD:
 | Method | Route | Required Permission | Responsibility |

@@ -136,7 +136,7 @@
   <data name="Category.Deactivated" xml:space="preserve"><value>Categoria disattivata con successo.</value></data>
   <data name="Category.NotFound" xml:space="preserve"><value>Categoria non trovata.</value></data>
   <data name="Category.UnableToDelete" xml:space="preserve"><value>Impossibile eliminare la categoria.</value></data>
-  <data name="Category.HasLinkedProducts" xml:space="preserve"><value>Questa categoria ha {0} prodotto/i. Conferma l'eliminazione richiamando con deleteRelatedProducts=true per eliminare anche i prodotti correlati.</value></data>
+  <data name="Category.HasLinkedProducts" xml:space="preserve"><value>Questa categoria non può essere eliminata perché contiene prodotti ({0}). Apri Prodotti ed elimina prima i prodotti di questa categoria, poi riprova.</value></data>
   <data name="Category.Inactive" xml:space="preserve"><value>Impossibile creare o aggiornare prodotti in una categoria non attiva.</value></data>
   <data name="Product.ListRetrieved" xml:space="preserve"><value>Prodotti recuperati con successo.</value></data>
   <data name="Product.Retrieved" xml:space="preserve"><value>Prodotto recuperato con successo.</value></data>
@@ -172,7 +172,6 @@
   <data name="Order.NotFound" xml:space="preserve"><value>Ordine non trovato.</value></data>
   <data name="Order.UnableToCreate" xml:space="preserve"><value>Impossibile creare l'ordine.</value></data>
   <data name="Order.InvalidStatusTransition" xml:space="preserve"><value>Questa modifica dello stato dell'ordine non è consentita.</value></data>
-  <data name="Order.Cancelled" xml:space="preserve"><value>Ordine annullato con successo.</value></data>
   <data name="ClientUser.ListRetrieved" xml:space="preserve"><value>Clienti recuperati con successo.</value></data>
   <data name="ClientUser.Retrieved" xml:space="preserve"><value>Cliente recuperato con successo.</value></data>
   <data name="ClientUser.Activated" xml:space="preserve"><value>Cliente attivato con successo.</value></data>
@@ -232,4 +231,24 @@
   <data name="Permission.ProviderProduct.Delete" xml:space="preserve"><value>Eliminare i prodotti del negozio</value></data>
   <data name="Permission.ProviderOrder.Read" xml:space="preserve"><value>Visualizzare gli ordini del negozio</value></data>
   <data name="Permission.ProviderOrder.Update" xml:space="preserve"><value>Aggiornare lo stato degli ordini del negozio</value></data>
+  <data name="Auth.ProviderDeactivated" xml:space="preserve"><value>Il tuo account è stato disattivato. Contatta l’amministratore.</value></data>
+  <data name="Validation.TextFormat" xml:space="preserve"><value>Inserisci testo leggibile senza caratteri di controllo.</value></data>
+  <data name="Validation.NameFormat" xml:space="preserve"><value>Inserisci un nome con lettere, spazi, apostrofi, trattini o punti.</value></data>
+  <data name="Validation.PhoneFormat" xml:space="preserve"><value>Inserisci un numero di telefono di 7–15 cifre; sono ammessi +, spazi, trattini e parentesi bilanciate.</value></data>
+  <data name="Validation.OtpFormat" xml:space="preserve"><value>Inserisci il codice di verifica di {0} cifre.</value></data>
+  <data name="Validation.PasswordDifferent" xml:space="preserve"><value>La nuova password deve essere diversa da quella attuale.</value></data>
+  <data name="Validation.CodeFormat" xml:space="preserve"><value>Usa lettere, numeri, trattini o underscore, iniziando con una lettera o un numero.</value></data>
+  <data name="Validation.PriceRange" xml:space="preserve"><value>Inserisci un prezzo tra 0,01 e {0}.</value></data>
+  <data name="Validation.MoneyPrecision" xml:space="preserve"><value>I prezzi possono avere al massimo due cifre decimali.</value></data>
+  <data name="Validation.AllowedValue" xml:space="preserve"><value>Seleziona uno dei valori disponibili.</value></data>
+  <data name="Validation.QuantityRange" xml:space="preserve"><value>La quantità deve essere compresa tra 1 e {0}.</value></data>
+  <data name="Validation.PageRange" xml:space="preserve"><value>Usa un numero di pagina positivo e una dimensione tra 1 e {0}.</value></data>
+  <data name="Validation.DateRange" xml:space="preserve"><value>La data iniziale deve precedere o coincidere con quella finale.</value></data>
+  <data name="Validation.DuplicatePermissions" xml:space="preserve"><value>Seleziona ogni permesso una sola volta.</value></data>
+  <data name="Validation.SessionFormat" xml:space="preserve"><value>Inserisci un identificativo valido della sessione di pagamento.</value></data>
+  <data name="Validation.ImageContent" xml:space="preserve"><value>Il contenuto del file deve corrispondere al tipo JPEG, PNG o WebP selezionato.</value></data>
+  <data name="Permission.Module.ProviderStore" xml:space="preserve"><value>Identità del negozio</value></data>
+  <data name="Permission.ProviderStore.Read" xml:space="preserve"><value>Visualizzare l'identità del negozio</value></data>
+  <data name="Permission.ProviderStore.Update" xml:space="preserve"><value>Modificare azienda, telefono e immagine del negozio</value></data>
+  <data name="Payment.Unavailable" xml:space="preserve"><value>I pagamenti non sono temporaneamente disponibili. Il carrello è stato conservato; riprova più tardi.</value></data>
 </root>

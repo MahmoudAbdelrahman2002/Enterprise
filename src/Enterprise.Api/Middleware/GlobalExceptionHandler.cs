@@ -41,7 +41,10 @@ public sealed class GlobalExceptionHandler(
             statusCode,
             message,
             errors,
-            httpContext.TraceIdentifier);
+            httpContext.TraceIdentifier,
+            exception is ValidationException validation
+                ? validation.Errors.ToDictionary(pair => pair.Key, pair => pair.Value.Select(ResolveValidationMessage).Distinct().ToArray())
+                : null);
 
         await httpContext.Response.WriteAsJsonAsync(body, cancellationToken);
         return true;
@@ -66,6 +69,7 @@ public sealed class GlobalExceptionHandler(
                 ResolveMessage(ex.ErrorCode, ex.Args, MessageKeys.Error.BusinessRule),
                 [ResolveMessage(ex.ErrorCode, ex.Args, MessageKeys.Error.BusinessRule)]),
             EmailDeliveryException ex => Fail(StatusCodes.Status503ServiceUnavailable, ex, MessageKeys.Error.EmailDelivery),
+            PaymentUnavailableException ex => Fail(StatusCodes.Status503ServiceUnavailable, ex, MessageKeys.Payment.Unavailable),
             AppException ex => Fail(StatusCodes.Status400BadRequest, ex, MessageKeys.Error.Unexpected),
             _ => (
                 StatusCodes.Status500InternalServerError,

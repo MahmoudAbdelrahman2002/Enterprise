@@ -1,3 +1,5 @@
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { fieldRules } from '../../../shared/forms/field-validators';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { Component, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -7,14 +9,14 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { ClientMarketServiceDto } from '../../../core/models/domain.models';
 import { CatalogService } from '../../../core/services/catalog.service';
 import { I18nService } from '../../../core/services/i18n.service';
-import { readList } from '../../../core/utils/read-list';
+import { readPage, resolvePage } from '../../../core/utils/read-list';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [IconComponent, RouterLink, ReactiveFormsModule, TranslatePipe, EmptyStateComponent],
+  imports: [PaginationComponent, IconComponent, RouterLink, ReactiveFormsModule, TranslatePipe, EmptyStateComponent],
   template: `
     <section class="hero">
       <div class="hero-copy">
@@ -48,7 +50,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
       } @else if (failed()) {
       <div class="card stack error-state" role="alert"><p>{{ 'errors.generic' | t }}</p><button class="btn btn-ghost" type="button" (click)="reload()">{{ 'actions.retry' | t }}</button></div>
     } @else if (!services().length) {
-        <app-empty-state />
+        <app-empty-state messageKey="home.noServices" />
       } @else {
         <div class="grid-cards">
           @for (s of services(); track s.id) {
@@ -68,6 +70,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
         </div>
       }
     </section>
+    <app-pagination [page]="page()" [totalPages]="totalPages()" [totalCount]="totalCount()" [disabled]="loading()" labelKey="pagination.services" (change)="load($event)" />
   `,
   styles: [
     `
@@ -183,8 +186,13 @@ export class HomeComponent {
   readonly services = signal<ClientMarketServiceDto[]>([]);
   readonly loading = signal(true);
   readonly failed = signal(false);
-  readonly search = new FormControl('', { nonNullable: true });
+  readonly search = new FormControl('', { nonNullable: true, validators: fieldRules.search });
   readonly skeletons = [1, 2, 3, 4, 5, 6];
+  readonly page = signal(1);
+  readonly totalPages = signal(1);
+  readonly totalCount = signal(0);
+  private readonly query = signal('');
+  private readonly retryCount = signal(0);
 
   constructor() {
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
@@ -192,23 +200,31 @@ export class HomeComponent {
       if (this.search.value !== q) {
         this.search.setValue(q, { emitEvent: false });
       }
-      this.reload();
+      this.query.set(q); this.page.set(1);
     });
-    this.search.valueChanges.pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed()).subscribe(() => this.reload());
-    effect(() => {
+    this.search.valueChanges.pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed()).subscribe(() => { if (this.search.valid) { this.query.set(this.search.value); this.page.set(1); } });
+    effect((onCleanup) => {
       this.i18n.lang();
-      this.reload();
+      const query = this.query();
+      const page = this.page();
+      this.retryCount();
+      this.loading.set(true); this.failed.set(false);
+      const request = this.catalog.listClientServices(12, query || null, page).subscribe({
+        next: (data) => {
+          const result = readPage<ClientMarketServiceDto>(data);
+          const targetPage = resolvePage(page, result);
+          if (page !== targetPage) { this.page.set(targetPage); return; }
+          this.services.set(result.items); this.totalPages.set(result.totalPages); this.totalCount.set(result.totalCount); this.loading.set(false);
+        },
+        error: () => { this.failed.set(true); this.loading.set(false); },
+      });
+      onCleanup(() => request.unsubscribe());
     });
   }
 
+  load(page: number): void { this.page.set(page); }
+
   reload(): void {
-    this.loading.set(true); this.failed.set(false);
-    this.catalog.listClientServices(50, this.search.value || null).subscribe({
-      next: (data) => {
-        this.services.set(readList<ClientMarketServiceDto>(data));
-        this.loading.set(false);
-      },
-      error: () => { this.failed.set(true); this.loading.set(false); },
-    });
+    this.retryCount.update(value => value + 1);
   }
 }

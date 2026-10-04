@@ -38,15 +38,12 @@ export const ADMIN_PERMISSION_GROUPS: PermissionGroupDto[] = [
     ['Read', 'Clients.Read', 'View marketplace clients'],
     ['Update', 'Clients.Update', 'Activate or deactivate marketplace clients'],
   ]),
-  group('Orders', 'Platform orders', [
-    ['Read', 'Orders.Read', 'View marketplace orders'],
-  ]),
   group('ApiKeys', 'API keys', [
     ['Create', 'ApiKeys.Create', 'Generate service API keys'],
   ]),
 ];
 
-/** Provider portal permissions. Store staff, catalog, and orders only. */
+/** Provider portal permissions. */
 export const PROVIDER_PERMISSION_GROUPS: PermissionGroupDto[] = [
   group('ProviderRoles', 'Store roles', [
     ['Read', 'ProviderRoles.Read', 'View store staff roles'],
@@ -59,6 +56,10 @@ export const PROVIDER_PERMISSION_GROUPS: PermissionGroupDto[] = [
     ['Create', 'ProviderStaff.Create', 'Create store staff members'],
     ['Update', 'ProviderStaff.Update', 'Update store staff and status'],
     ['Delete', 'ProviderStaff.Delete', 'Delete store staff members'],
+  ]),
+  group('ProviderStore', 'Store identity', [
+    ['Read', 'ProviderStore.Read', 'View store identity'],
+    ['Update', 'ProviderStore.Update', 'Update store company, phone and image'],
   ]),
   group('ProviderCategory', 'Categories', [
     ['Read', 'ProviderCategory.Read', 'View store categories'],

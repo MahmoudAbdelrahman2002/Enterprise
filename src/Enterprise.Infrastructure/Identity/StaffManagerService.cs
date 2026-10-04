@@ -30,7 +30,8 @@ public sealed class StaffManagerService(
         string? searchTerm = null,
         Guid? roleId = null,
         bool? isActive = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        bool descending = false)
     {
         var query = context.Users.AsNoTracking().Where(u => u.UserType == portal);
 
@@ -65,10 +66,10 @@ public sealed class StaffManagerService(
 
         var totalItems = await query.CountAsync(cancellationToken);
 
-        var users = await query
-            .OrderByDescending(u => u.IsSystem)
-            .ThenBy(u => u.LastName)
-            .ThenBy(u => u.FirstName)
+        var ordered = descending
+            ? query.OrderByDescending(u => u.LastName).ThenByDescending(u => u.FirstName).ThenBy(u => u.Id)
+            : query.OrderBy(u => u.LastName).ThenBy(u => u.FirstName).ThenBy(u => u.Id);
+        var users = await ordered
             .Skip((pagination.PageNumber - 1) * pagination.PageSize)
             .Take(pagination.PageSize)
             .ToListAsync(cancellationToken);

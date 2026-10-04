@@ -1,5 +1,7 @@
 # Subito API Endpoints Guide
 
+For pagination coverage, response metadata and the additive notifications, baskets and Client Orders endpoints, see [System pagination](PAGINATION.md).
+
 This document provides a comprehensive reference for all available API endpoints in the **Subito** platform, detailing each endpoint's HTTP method, route, authentication requirements, required permissions, and functional responsibilities across **Client**, **Provider**, and **Admin** portals.
 
 ---
@@ -660,10 +662,11 @@ Checkout stays on Stripe: `POST /api/v1/client/{providerId}/payments` creates th
 
 ### Client orders (`RequireClient`)
 
+The active workflow is `New (0) -> Preparing (2) -> Ready (3)`. Ready is terminal; order cancellation and the other statuses are removed. Previously cancelled records remain read-only Client history (`isHistorical: true`) and are excluded from active Provider lists. Pending/Accepted records migrate to New; Completed records migrate to Ready. See [order workflow](ORDER_BUSINESS_FLOW.md).
+
 | Method | Route | Description |
 |---|---|---|
 | `GET` | `/api/v1/client/orders/by-session/{sessionId}` | Order created for this Stripe Checkout session. 404 when it is missing or belongs to another client. |
-| `POST` | `/api/v1/client/orders/{orderId}/cancel` | Owner only, and only while status is `Pending`. Later statuses return 409. |
 
 ### Notifications (client, provider, admin)
 
@@ -677,8 +680,8 @@ Checkout stays on Stripe: `POST /api/v1/client/{providerId}/payments` creates th
 
 | Method | Route | Description |
 |---|---|---|
-| `GET` | `/api/v1/provider/store` | Company name, phone, image, and assigned service. |
-| `PUT` | `/api/v1/provider/store` | Body: `{ "companyName", "phoneNumber" }`. Does not change `serviceId`. |
+| `GET` | `/api/v1/provider/store` | Company name, phone, image, and assigned service. Requires `ProviderStore.Read`. |
+| `PUT` | `/api/v1/provider/store` | Body: `{ "companyName", "phoneNumber" }`. Does not change `serviceId`. Requires `ProviderStore.Update`. |
 | `GET` | `/api/v1/provider/products` | Paged products for the caller's store. Query: `categoryId`, `status`, `searchTerm`, `pageNumber`, `pageSize`. Requires `ProviderProduct.Read`. |
 | `GET` | `/api/v1/provider/orders` | Paged store orders. Query: `status`, `from`, `to`, `pageNumber`, `pageSize`. `from` and `to` are inclusive UTC instants on `orderDateUtc`. Requires `ProviderOrder.Read`. |
 
@@ -694,4 +697,10 @@ Checkout stays on Stripe: `POST /api/v1/client/{providerId}/payments` creates th
 | `GET` | `/api/v1/admin/providers/{id}/categories` | `Providers.Read` | Store categories, including inactive. |
 | `GET` | `/api/v1/admin/providers/{id}/products` | `Providers.Read` | Store products, any status. |
 
-The system admin role receives `Clients.Read`, `Clients.Update`, and `Orders.Read` on the next seed. Custom admin roles need those permissions assigned explicitly.
+The system Admin role receives every current Admin catalogue permission on seeding, including `Clients.Read`, `Clients.Update` and service editing permissions. `Orders.Read` is retired from the Admin permission catalogue and is removed from existing Admin role claims on reseeding. The legacy Admin order endpoints above retain their permission requirement, but this permission is no longer offered or seeded. Provider order permissions remain available. Sign in again after permission synchronization to receive updated token claims.
+
+## Verification guidance policy
+
+`GET /api/v1/auth/verification-policy` is anonymous and returns the configured `codeLength`, `expirationMinutes`, `maxAttempts`, and the user-selected `resendWaitSeconds: 30` in the normal response envelope. Code-entry screens use these settings for destination, expiry and attempt guidance. Existing authentication request limits remain enforced. Pending Client registration resends use `/client/auth/login`, which issues the registration challenge for an unconfirmed account; they do not create the account again.
+
+Team list endpoints now accept `descending` name sorting; role lists also accept `isSystem`. Existing search/status/role and paging parameters are exposed by the corresponding portal tables.

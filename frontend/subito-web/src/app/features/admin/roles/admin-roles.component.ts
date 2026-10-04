@@ -1,6 +1,12 @@
+import { PageRequest } from '../../../core/utils/page-request';
+import { TeamFiltersComponent } from '../../../shared/components/team-filters/team-filters.component';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { Query } from '../../../core/services/api.service';
+import { FieldValidationDirective } from '../../../shared/directives/field-validation.directive';
+import { fieldRules } from '../../../shared/forms/field-validators';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { finalize } from 'rxjs';
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal, DestroyRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PermissionGroupDto, PermissionItemDto, RoleDetailDto, RoleListItemDto } from '../../../core/models/domain.models';
 import { ConfirmService } from '../../../core/services/confirm.service';
@@ -9,7 +15,7 @@ import { RolesService } from '../../../core/services/roles.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { TokenStoreService } from '../../../core/services/token-store.service';
 import { ADMIN_PERMISSION_GROUPS, normalizePermissionGroups } from '../../../core/utils/permission-catalog';
-import { readList } from '../../../core/utils/read-list';
+import { readList, readPage, resolvePage } from '../../../core/utils/read-list';
 import { applyServerError, firstErrorKey } from '../../../shared/forms/form-errors';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
@@ -17,25 +23,25 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 @Component({
   selector: 'app-admin-roles',
   standalone: true,
-  imports: [IconComponent, ReactiveFormsModule, EmptyStateComponent, TranslatePipe],
+  imports: [TeamFiltersComponent, PaginationComponent, FieldValidationDirective, IconComponent, ReactiveFormsModule, EmptyStateComponent, TranslatePipe],
   template: `
     <div class="toolbar">
       <h1 class="page-title">{{ 'nav.roles' | t }}</h1>
       @if (canCreate) {
-        <button class="btn btn-primary" type="button" (click)="startCreate()">{{ 'actions.create' | t }}</button>
+        <button class="btn btn-primary icon-action" type="button" (click)="startCreate()" [attr.aria-label]="'actions.create' | t" [title]="'actions.create' | t"><app-icon name="plus" />{{ 'actions.create' | t }}</button>
       }
     </div>
+    @if (!editing()) { <app-team-filters kind="roles" (changed)="applyFilters($event)" /> }
     @if (editing()) {
       <form class="card stack" [formGroup]="form" (ngSubmit)="save()">
         <div class="field">
-          <label for="admin-roles-nameEn">{{ 'roles.nameEn' | t }}</label><input id="admin-roles-nameEn" formControlName="nameEn" />
-          @if (nameError('nameEn'); as key) { <small class="field-error">{{ key | t }}</small> }
+          <label for="admin-roles-nameEn">{{ 'roles.nameEn' | t }}</label><input id="admin-roles-nameEn" appFieldValidation formControlName="nameEn" />
         </div>
         <div class="field">
-          <label for="admin-roles-nameIt">{{ 'roles.nameIt' | t }}</label><input id="admin-roles-nameIt" formControlName="nameIt" />
+          <label for="admin-roles-nameIt">{{ 'roles.nameIt' | t }}</label><input id="admin-roles-nameIt" appFieldValidation formControlName="nameIt" />
         </div>
         <div class="field">
-          <label for="admin-roles-nameAr">{{ 'roles.nameAr' | t }}</label><input id="admin-roles-nameAr" formControlName="nameAr" dir="rtl" />
+          <label for="admin-roles-nameAr">{{ 'roles.nameAr' | t }}</label><input id="admin-roles-nameAr" appFieldValidation formControlName="nameAr" dir="rtl" />
         </div>
         @if (permError()) { <p class="field-error">{{ 'roles.noPermissions' | t }}</p> }
         @if (form.errors?.['server']) { <p class="field-error">{{ form.errors?.['server'] }}</p> }
@@ -54,7 +60,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
                   type="checkbox"
                   [checked]="selected.has(p.name)"
                   (change)="toggle(p.name, $event)"
-                  [disabled]="editing()!.isSystem"
+                  [disabled]="editing()!.isSystem || (editing()!.id ? !canUpdate : !canCreate)"
                 />
                 <span>
                   <strong>{{ permissionLabel(p) }}</strong>
@@ -65,16 +71,16 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
           </fieldset>
         }
         <div class="row">
-          @if (!editing()!.isSystem) {
-            <button class="btn btn-primary" type="submit" [disabled]="busy()">{{ 'actions.save' | t }}</button>
+          @if (!editing()!.isSystem && (editing()!.id ? canUpdate : canCreate)) {
+            <button class="btn btn-primary icon-action" type="submit" [disabled]="busy()" [attr.aria-label]="'actions.save' | t" [title]="'actions.save' | t"><app-icon name="check" />{{ 'actions.save' | t }}</button>
           }
-          <button class="btn btn-ghost" type="button" (click)="editing.set(null)">{{ 'actions.cancel' | t }}</button>
+          <button class="btn btn-ghost icon-action" type="button" (click)="editing.set(null)" [attr.aria-label]="'actions.cancel' | t" [title]="'actions.cancel' | t"><app-icon name="close" />{{ 'actions.cancel' | t }}</button>
         </div>
       </form>
     } @else if (loading()) {
       <p class="muted">{{ 'loading' | t }}</p>
-    } @else if (failed()) { <div class="card stack error-state" role="alert"><p>{{ 'errors.generic' | t }}</p><button class="btn btn-ghost" type="button" (click)="reload()">{{ 'actions.retry' | t }}</button></div> } @else if (!items().length) {
-      <app-empty-state />
+    } @else if (failed()) { <div class="card stack error-state" role="alert"><p>{{ 'errors.generic' | t }}</p><button class="btn btn-ghost icon-action" type="button" (click)="reload()" [attr.aria-label]="'actions.retry' | t" [title]="'actions.retry' | t"><app-icon name="retry" /></button></div> } @else if (!items().length) {
+      <app-empty-state [messageKey]="hasFilters ? 'empty.teamSearch' : 'empty.roles'" />
     } @else {
       <div class="table-wrap card">
         <table class="data">
@@ -91,11 +97,11 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
               <tr>
                 <td>{{ r.name }}</td>
                 <td>{{ r.usersCount }}</td>
-                <td>{{ r.isSystem }}</td>
+                <td>{{ (r.isSystem ? 'roles.systemRole' : 'roles.customRole') | t }}</td>
                 <td class="row">
-                  <button class="btn btn-ghost" type="button" (click)="edit(r)">{{ 'actions.edit' | t }}</button>
+                  <button class="btn btn-ghost icon-action" type="button" (click)="edit(r)" [attr.aria-label]="'actions.edit' | t" [title]="'actions.edit' | t"><app-icon name="edit" /></button>
                   @if (canDelete && !r.isSystem) {
-                    <button class="btn btn-danger" type="button" [disabled]="busy()" (click)="remove(r.id)"><app-icon name="trash" />{{ 'actions.delete' | t }}</button>
+                    <button class="btn btn-danger icon-action" type="button" [disabled]="busy()" (click)="remove(r.id)" [attr.aria-label]="'actions.delete' | t" [title]="'actions.delete' | t"><app-icon name="trash" /></button>
                   }
                 </td>
               </tr>
@@ -104,6 +110,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
         </table>
       </div>
     }
+    @if (!editing()) { <app-pagination [page]="page" [totalPages]="totalPages" [totalCount]="totalCount" [disabled]="loading() || busy()" (change)="reload($event)" /> }
   `,
   styles: [
     `
@@ -127,6 +134,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
   ],
 })
 export class AdminRolesComponent {
+  private readonly pageRequest = new PageRequest(inject(DestroyRef));
   private readonly roles = inject(RolesService);
   private readonly toast = inject(ToastService);
   private readonly tokens = inject(TokenStoreService);
@@ -136,16 +144,21 @@ export class AdminRolesComponent {
   readonly groups = signal<PermissionGroupDto[]>(ADMIN_PERMISSION_GROUPS);
   readonly editing = signal<RoleDetailDto | null>(null);
   readonly loadingPerms = signal(false);
+  page = 1; totalPages = 1; totalCount = 0;
+  filters: Query = {};
+  get hasFilters(): boolean { return Boolean(this.filters["searchTerm"] || this.filters["roleId"] || this.filters["isActive"] != null || this.filters["isSystem"] != null); }
+  applyFilters(filters: Query): void { this.filters = filters; this.reload(1); }
   readonly loading = signal(true);
   readonly failed = signal(false);
   readonly busy = signal(false);
   readonly permError = signal(false);
   readonly form = inject(FormBuilder).nonNullable.group({
-    nameEn: ['', Validators.required],
-    nameIt: [''],
-    nameAr: [''],
+    nameEn: ['', fieldRules.roleName],
+    nameIt: ['', fieldRules.optionalRoleName],
+    nameAr: ['', fieldRules.optionalRoleName],
   });
   selected = new Set<string>();
+  readonly canUpdate = this.tokens.hasPermission('admin', 'Roles.Update');
   canCreate = this.tokens.hasPermission('admin', 'Roles.Create');
   canDelete = this.tokens.hasPermission('admin', 'Roles.Delete');
 
@@ -174,15 +187,19 @@ export class AdminRolesComponent {
     return p.description?.trim() || `${p.action} ${p.name}`;
   }
 
-  reload(): void {
+  reload(page = this.page): void {
+    this.page = page;
     this.loading.set(true); this.failed.set(false);
-    this.roles.list('admin', { pageSize: 50 }).subscribe({
-      next: (r) => { this.items.set(readList<RoleListItemDto>(r)); this.loading.set(false); },
+    this.pageRequest.run(this.roles.list('admin', { ...this.filters, pageNumber: page, pageSize: 20 }), {
+      next: (r) => { const data = readPage<RoleListItemDto>(r);
+        const targetPage = resolvePage(page, data);
+        if (page !== targetPage) { this.reload(targetPage); return; } this.items.set(data.items); this.totalPages = data.totalPages; this.totalCount = data.totalCount; this.loading.set(false); },
       error: () => { this.failed.set(true); this.loading.set(false); },
     });
   }
 
   startCreate(): void {
+    if (!this.canCreate || this.busy()) return;
     this.editing.set({
       id: '',
       name: '',
@@ -220,7 +237,7 @@ export class AdminRolesComponent {
 
   save(): void {
     const current = this.editing();
-    if (!current || current.isSystem) return;
+    if (!current || current.isSystem || this.busy() || (current.id ? !this.canUpdate : !this.canCreate)) return;
     this.form.markAllAsTouched();
     this.permError.set(this.selected.size === 0);
     if (this.form.invalid || this.selected.size === 0) return;

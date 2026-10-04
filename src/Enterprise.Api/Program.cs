@@ -74,8 +74,12 @@ try
     {
         StripeConfiguration.ApiKey = stripeSecretKey;
     }
+    else
+    {
+        Log.Warning("Stripe payments are unavailable: configure Stripe:SecretKey using user secrets or the Stripe__SecretKey environment variable, then restart the backend");
+    }
 
-    builder.Services.AddControllers();
+    builder.Services.AddControllers().AddValidationResponses();
     builder.Services.AddApiVersioningSetup();
     builder.Services.AddSwaggerSetup();
     builder.Services.AddApiLocalization();

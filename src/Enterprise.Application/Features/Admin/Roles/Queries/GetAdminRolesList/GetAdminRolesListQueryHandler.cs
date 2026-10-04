@@ -19,7 +19,8 @@ public sealed class GetAdminRolesListQueryHandler(
             providerId: null,
             request,
             request.SearchTerm,
-            cancellationToken);
+            cancellationToken,
+            request.Descending, request.IsSystem);
 
         logger.LogInformation("Listed {Count} admin roles", result.TotalCount);
         return result;

@@ -348,6 +348,10 @@ namespace Enterprise.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("OrderDateUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("PreviousStatus")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
                     b.Property<Guid>("ProviderId")
                         .HasColumnType("uniqueidentifier");
 

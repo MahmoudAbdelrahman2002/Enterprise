@@ -28,4 +28,7 @@
     <ProjectReference Include="..\..\src\Enterprise.Infrastructure\Enterprise.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="../validation-cases.json" Link="validation-cases.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

@@ -37,7 +37,7 @@ public static class DbSeeder
         }
 
         await EnsureRoleAsync(roleManager, UserAccountService.ClientRoleName, UserType.Client, system: true, permissions: []);
-        await EnsureRoleAsync(roleManager, UserAccountService.AdminRoleName, UserType.Admin, system: true, permissions: PermissionCatalog.GetNamesForPortal(UserType.Admin));
+        await SynchronizeAdminPermissionsAsync(context, roleManager, cancellationToken);
         await EnsureRoleAsync(roleManager, UserAccountService.ProviderRoleName, UserType.Provider, system: true, permissions: PermissionCatalog.GetNamesForPortal(UserType.Provider));
         context.ChangeTracker.Clear();
         await EnsureSystemRoleTranslationsAsync(context, roleManager);
@@ -80,6 +80,32 @@ public static class DbSeeder
             "provider@enterprise.local, pharmacy@enterprise.local, manager@demo-restaurant.local, " +
             "cashier@demo-restaurant.local, clerk@green-pharmacy.local, client@enterprise.local " +
             "(and client2/client3). Default passwords use the *Pattern@12345! style from SeedData.");
+    }
+
+    public static async Task SynchronizeAdminPermissionsAsync(
+        ApplicationDbContext context,
+        RoleManager<ApplicationRole> roleManager,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureRoleAsync(
+            roleManager,
+            UserAccountService.AdminRoleName,
+            UserType.Admin,
+            system: true,
+            permissions: PermissionCatalog.GetNamesForPortal(UserType.Admin));
+
+        // Removing a permission from the catalogue does not remove its persisted claims.
+        // Reconcile this retired Admin grant for existing system and custom roles too.
+        var adminRoleIds = context.Roles.Where(role => role.RoleType == UserType.Admin).Select(role => role.Id);
+        var retiredOrderPermission = Permissions.Orders.Read.ToUpperInvariant();
+        var retiredClaims = await context.RoleClaims
+            .Where(claim => adminRoleIds.Contains(claim.RoleId)
+                && claim.ClaimType == "permission"
+                && claim.ClaimValue != null
+                && claim.ClaimValue.ToUpper() == retiredOrderPermission)
+            .ToListAsync(cancellationToken);
+        context.RoleClaims.RemoveRange(retiredClaims);
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     private static async Task EnsureRoleAsync(
@@ -325,7 +351,6 @@ public static class DbSeeder
             [
                 Permissions.Clients.Read,
                 Permissions.Clients.Update,
-                Permissions.Orders.Read,
                 Permissions.Providers.Read,
                 Permissions.Services.Read
             ],
@@ -345,7 +370,6 @@ public static class DbSeeder
                 Permissions.Services.Read,
                 Permissions.Services.Create,
                 Permissions.Services.Update,
-                Permissions.Orders.Read,
                 Permissions.Clients.Read,
                 Permissions.Admins.Read
             ],

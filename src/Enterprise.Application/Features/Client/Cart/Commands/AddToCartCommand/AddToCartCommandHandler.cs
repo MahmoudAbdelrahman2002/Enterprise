@@ -1,3 +1,4 @@
+using Enterprise.Application.Common.Validation;
 using Enterprise.Application.Common.Exceptions;
 using Enterprise.Application.Common.Interfaces;
 using Enterprise.Application.Common.Localization;
@@ -12,6 +13,7 @@ namespace Enterprise.Application.Features.Client.Cart.Commands.AddToCartCommand;
 
 public sealed class AddToCartCommandHandler(
     IUnitOfWork unitOfWork,
+    IClientProviderQueryService providers,
     ICurrentUserService currentUserService, ICurrentCulture currentCulture) : IRequestHandler<AddToCartCommand, ShoppingCartItemDto>
 {
     public async Task<ShoppingCartItemDto> Handle(AddToCartCommand request, CancellationToken cancellationToken)
@@ -19,6 +21,9 @@ public sealed class AddToCartCommandHandler(
         var languageCode = currentCulture.LanguageCode;
         var userId = currentUserService.UserId
             ?? throw new AuthenticationFailedException(MessageKeys.Error.Unauthorized);
+
+        if (await providers.GetByIdAsync(request.ProviderId, cancellationToken) is null)
+            throw NotFoundException.For("Provider", request.ProviderId);
 
         var product = await unitOfWork.Products.FirstOrDefaultAsync(
                 new ProductByIdSpecification(request.ProductId),
@@ -49,6 +54,8 @@ public sealed class AddToCartCommandHandler(
         var existingItem = cart.Items.FirstOrDefault(i => i.ProductId == request.ProductId);
         if (existingItem is not null)
         {
+            if ((long)existingItem.Quantity + request.Quantity > ValidationPolicy.QuantityMax)
+                throw new ConflictException(MessageKeys.Validation.QuantityRange, ValidationPolicy.QuantityMax);
             existingItem.Quantity += request.Quantity;
         }
         else

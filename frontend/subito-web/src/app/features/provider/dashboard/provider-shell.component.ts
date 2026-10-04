@@ -16,7 +16,7 @@ import { DashboardLayoutComponent, NavItem } from '../../../layouts/dashboard-la
 export class ProviderShellComponent {
   items: NavItem[] = [
     { labelKey: 'nav.dashboard', link: '/provider' },
-    { labelKey: 'nav.store', link: '/provider/store' },
+    { labelKey: 'nav.store', link: '/provider/store', permissions: ['ProviderStore.Read'] },
     { labelKey: 'nav.categories', link: '/provider/categories', permissions: ['ProviderCategory.Read'] },
     { labelKey: 'nav.products', link: '/provider/products', permissions: ['ProviderProduct.Read'] },
     { labelKey: 'nav.orders', link: '/provider/orders', permissions: ['ProviderOrder.Read'] },

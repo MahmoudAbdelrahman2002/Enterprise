@@ -8,6 +8,6 @@ public sealed class RevokeTokenCommandValidator : AbstractValidator<RevokeTokenC
 {
     public RevokeTokenCommandValidator(IAppLocalizer localizer)
     {
-        RuleFor(x => x.RefreshToken).Required(localizer);
+        RuleFor(x => x.RefreshToken).Required(localizer).MaxLen(localizer, ValidationPolicy.TokenMax);
     }
 }

@@ -132,4 +132,4 @@ public sealed record UpdateMarketplaceServiceRequest(
     LocalizedText? Description,
     int DisplayOrder = 0);
 
-public sealed record SetServiceActiveRequest(bool IsActive);
+public sealed record SetServiceActiveRequest([property: System.Text.Json.Serialization.JsonRequired] bool IsActive);

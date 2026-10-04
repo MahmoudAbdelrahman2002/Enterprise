@@ -9,10 +9,10 @@ import { IconComponent } from '../icon/icon.component';
       <div class="confirm-backdrop" (click)="confirm.answer(false)">
         <div class="card confirm-card stack" role="dialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message" (click)="$event.stopPropagation()">
           <h2 id="confirm-title" class="section-title">{{ 'confirm.title' | t }}</h2>
-          <p id="confirm-message">{{ req.messageKey | t }}</p>
+          <p id="confirm-message">@if (req.target) { <strong>{{ req.target }}</strong><br /> }{{ req.messageKey | t }}</p>
           <div class="row">
             <button class="btn btn-ghost" data-cancel type="button" (click)="confirm.answer(false)">{{ 'actions.cancel' | t }}</button>
-            <button class="btn btn-danger" type="button" (click)="confirm.answer(true)"><app-icon name="trash" />{{ 'actions.delete' | t }}</button>
+            <button class="btn btn-danger" type="button" (click)="confirm.answer(true)"><app-icon [name]="req.actionKey === 'actions.delete' ? 'trash' : 'check'" />{{ req.actionKey | t }}</button>
           </div>
         </div>
       </div>

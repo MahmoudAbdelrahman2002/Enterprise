@@ -10,8 +10,9 @@ public sealed class UpdateAdminUserCommandValidator : AbstractValidator<UpdateAd
     public UpdateAdminUserCommandValidator(IAppLocalizer localizer)
     {
         RuleFor(x => x.Id).NotEmpty().WithMessage(_ => localizer[MessageKeys.Validation.Required]);
-        RuleFor(x => x.FirstName).Required(localizer).MaxLen(localizer, 50);
-        RuleFor(x => x.LastName).Required(localizer).MaxLen(localizer, 50);
+        RuleFor(x => x.FirstName).PersonName(localizer, ValidationPolicy.NameMax);
+        RuleFor(x => x.LastName).PersonName(localizer, ValidationPolicy.NameMax);
+        RuleFor(x => x.PhoneNumber).Phone(localizer);
         RuleFor(x => x.RoleId).NotEmpty().WithMessage(_ => localizer[MessageKeys.Validation.Required]);
     }
 }

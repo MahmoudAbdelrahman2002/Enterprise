@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { PagedResult, PermissionGroupDto, RoleDetailDto, RoleListItemDto } from '../models/domain.models';
 import { ApiService, Query } from './api.service';
+import { readAllPages } from '../utils/read-all-pages';
 
 export type RolePortal = 'admin' | 'provider';
 
@@ -15,6 +16,10 @@ export class RolesService {
 
   list(portal: RolePortal, query: Query): Observable<PagedResult<RoleListItemDto>> {
     return this.api.get(`/${portal}/roles`, query);
+  }
+
+  lookup(portal: RolePortal): Observable<RoleListItemDto[]> {
+    return readAllPages<RoleListItemDto>(page => this.list(portal, { pageNumber: page, pageSize: 100 }));
   }
 
   get(portal: RolePortal, id: string): Observable<RoleDetailDto> {

@@ -7,4 +7,7 @@ namespace Enterprise.Application.Features.Provider.Roles.Queries.GetProviderRole
 public sealed record GetProviderRolesListQuery : PaginationParams, IRequest<PagedResult<RoleListItemDto>>
 {
     public string? SearchTerm { get; init; }
+    public bool Descending { get; init; }
+    public bool? IsSystem { get; init; }
+
 }

@@ -64,6 +64,16 @@ public sealed class Product : BaseAuditableEntity, ISoftDelete
 
     public void SetStatus(ProductStatus status) => Status = status;
 
+    public void MoveToCategory(Guid categoryId)
+    {
+        if (categoryId == Guid.Empty)
+        {
+            throw new ArgumentException("Category is required.", nameof(categoryId));
+        }
+
+        CategoryId = categoryId;
+    }
+
     public ProductTranslation? Resolve(string language)
     {
         var code = SupportedLanguages.Normalize(language);

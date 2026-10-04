@@ -29,6 +29,30 @@ Development auto-migrates and seeds. If you had the old schema, **drop/recreate*
 
 OTP emails: configure `Smtp` in appsettings, or leave empty and read codes from logs.
 
+Backend file logs are written to `src/Enterprise.Api/log/log-YYYYMMDD.txt` locally
+(`{ContentRoot}/log` when deployed). The file threshold is `Warning`: warnings,
+errors, and fatal events are recorded, including slow-request warnings above 500 ms.
+The folder is created during build and at runtime. Files roll daily, with the latest 14
+retained. Console logging keeps its configured level.
+
+## Local Stripe checkout
+
+Configure a Stripe sandbox secret key locally before testing checkout. From the
+repository root, replace the placeholder below with your own key:
+
+```powershell
+dotnet user-secrets set "Stripe:SecretKey" "YOUR_STRIPE_TEST_SECRET_KEY" --project src/Enterprise.Api
+dotnet user-secrets set "Stripe:SuccessUrl" "http://127.0.0.1:4200/payment/success?session_id={CHECKOUT_SESSION_ID}" --project src/Enterprise.Api
+dotnet user-secrets set "Stripe:CancelUrl" "http://127.0.0.1:4200/payment/cancel" --project src/Enterprise.Api
+```
+
+Restart the API with `dotnet run --project src/Enterprise.Api --launch-profile http`.
+Keep the secret key out of frontend code and committed settings. API keys are available
+in the [Stripe Dashboard](https://dashboard.stripe.com/test/apikeys).
+Webhook processing also requires a separate `Stripe:WebhookSecret`.
+Open the frontend at `http://127.0.0.1:4200` when using these return URLs so
+checkout returns to the same browser origin and preserves your login.
+
 ## Solution
 
 ```text

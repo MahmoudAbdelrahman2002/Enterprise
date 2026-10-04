@@ -5,6 +5,9 @@ namespace Enterprise.Domain.Interfaces;
 
 public interface INotificationRepository : IRepository<Notification>
 {
+    Task<int> CountByRecipientAsync(Guid recipientUserId, UserType recipientUserType, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Notification>> ListPageByRecipientAsync(Guid recipientUserId, UserType recipientUserType, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+    Task MarkPageReadAsync(Guid recipientUserId, UserType recipientUserType, IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Notification>> ListByRecipientAsync(
         Guid recipientUserId,
         UserType recipientUserType,

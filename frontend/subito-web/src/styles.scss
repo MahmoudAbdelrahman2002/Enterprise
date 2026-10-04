@@ -170,6 +170,8 @@ img {
   color: var(--subito-navy);
 }
 
+.field-requirement { font-size: 0.8rem; font-weight: 500; color: var(--subito-muted); }
+
 .field input,
 .field select,
 .field textarea {
@@ -232,12 +234,12 @@ img {
 
 .badge-success {
   background: #d1fae5;
-  color: var(--subito-success);
+  color: #047857;
 }
 
 .badge-danger {
   background: #fee2e2;
-  color: var(--subito-danger);
+  color: #b91c1c;
 }
 
 .badge-count {
@@ -477,3 +479,12 @@ select { min-height: 44px; border: 1px solid var(--subito-border); border-radius
 .btn app-icon { width: 18px; height: 18px; }
 [dir='rtl'] app-icon.directional { transform: scaleX(-1); }
 .thumb { object-fit: contain; }
+
+.icon-action{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:.65rem;text-decoration:none}
+.password-field{position:relative;display:flex;align-items:center;width:100%}
+.password-field input{width:100%;padding-inline-end:3.25rem}
+.password-toggle{position:absolute;inset-inline-end:3px;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:0;border-radius:8px;background:transparent;color:var(--subito-navy);cursor:pointer}
+.password-toggle svg{width:22px;height:22px}
+.password-toggle:focus-visible{outline:2px solid var(--subito-teal-dark)}
+.provider-identity{display:flex;align-items:center;gap:.75rem}
+.provider-identity .thumb{width:44px;height:44px;object-fit:cover;border-radius:10px;flex-shrink:0}

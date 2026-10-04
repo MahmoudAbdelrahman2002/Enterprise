@@ -2133,7 +2133,7 @@
     },
     {
       "name": "Client orders",
-      "description": "Authenticated client order history. Cancel is allowed only while status is Pending.",
+      "description": "Authenticated client order history. Active workflow: New -> Preparing -> Ready. Order cancellation is unavailable.",
       "item": [
         {
           "name": "List all orders",
@@ -2317,56 +2317,6 @@
               ]
             },
             "description": "Load the order created by the Stripe webhook for this checkout session. 404 if the session belongs to another client or the webhook has not created the order yet."
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "const res = pm.response.json();",
-                  "pm.test('Envelope success', function () { pm.expect(res.success).to.eql(true); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Cancel order",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept-Language",
-                "value": "{{lang}}",
-                "description": "REQUIRED culture: `en` (default), `ar`, `it`. Localizes `message` and validation errors."
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "description": "JSON bodies only. Omit for multipart image uploads (Postman sets `multipart/form-data`)."
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{clientAccessToken}}",
-                "description": "JWT access token for this portal. Run the matching Login request first so `clientAccessToken` is populated."
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/client/orders/{{orderId}}/cancel",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "client",
-                "orders",
-                "{{orderId}}",
-                "cancel"
-              ]
-            },
-            "description": "Owner only. Succeeds when status is Pending. Later statuses return 409."
           },
           "event": [
             {
@@ -3180,7 +3130,7 @@
                 "image"
               ]
             },
-            "description": "Uploads/replaces the store logo. Previous blob is deleted best-effort.\n\n**Image upload (multipart/form-data)**\n| Field | Required | Validation |\n|---|---|---|\n| `file` | **Yes** on upload endpoints | Form field name **must** be `file`. JPEG / JPG / PNG / WebP (`image/jpeg`, `image/jpg`, `image/png`, `image/webp`). Max **2 MB**. Request size limit **3 MB**. Empty file is rejected. |\n\nReturned `imageUrl` is a **public Azure Blob** URL:\n`{{blobPublicBaseUrl}}/{{mediaContainer}}/{folder}/{guid}{ext}`\n\nFolders:\n- Provider logo: `providers/{providerId}/logo/`\n- Category: `providers/{providerId}/categories/{categoryId}/`\n- Product: `providers/{providerId}/products/{productId}/`\n- Marketplace service: `services/{serviceId}/`\n\nImages are **optional** on create/update JSON (there is no image field in those bodies). Upload after the entity exists.\n\n**Example returned imageUrl:**\n`{{blobPublicBaseUrl}}/{{mediaContainer}}/providers/{{providerId}}/logo/7f3c2a1b9e8d4c6a5b0f1e2d3c4b5a69.jpg`",
+            "description": "Uploads/replaces the store logo. Requires `ProviderStore.Update`. Previous blob is deleted best-effort.\n\n**Image upload (multipart/form-data)**\n| Field | Required | Validation |\n|---|---|---|\n| `file` | **Yes** on upload endpoints | Form field name **must** be `file`. JPEG / JPG / PNG / WebP (`image/jpeg`, `image/jpg`, `image/png`, `image/webp`). Max **2 MB**. Request size limit **3 MB**. Empty file is rejected. |\n\nReturned `imageUrl` is a **public Azure Blob** URL:\n`{{blobPublicBaseUrl}}/{{mediaContainer}}/{folder}/{guid}{ext}`\n\nFolders:\n- Provider logo: `providers/{providerId}/logo/`\n- Category: `providers/{providerId}/categories/{categoryId}/`\n- Product: `providers/{providerId}/products/{productId}/`\n- Marketplace service: `services/{serviceId}/`\n\nImages are **optional** on create/update JSON (there is no image field in those bodies). Upload after the entity exists.\n\n**Example returned imageUrl:**\n`{{blobPublicBaseUrl}}/{{mediaContainer}}/providers/{{providerId}}/logo/7f3c2a1b9e8d4c6a5b0f1e2d3c4b5a69.jpg`",
             "body": {
               "mode": "formdata",
               "formdata": [
@@ -3235,7 +3185,7 @@
                     "image"
                   ]
                 },
-                "description": "Uploads/replaces the store logo. Previous blob is deleted best-effort.\n\n**Image upload (multipart/form-data)**\n| Field | Required | Validation |\n|---|---|---|\n| `file` | **Yes** on upload endpoints | Form field name **must** be `file`. JPEG / JPG / PNG / WebP (`image/jpeg`, `image/jpg`, `image/png`, `image/webp`). Max **2 MB**. Request size limit **3 MB**. Empty file is rejected. |\n\nReturned `imageUrl` is a **public Azure Blob** URL:\n`{{blobPublicBaseUrl}}/{{mediaContainer}}/{folder}/{guid}{ext}`\n\nFolders:\n- Provider logo: `providers/{providerId}/logo/`\n- Category: `providers/{providerId}/categories/{categoryId}/`\n- Product: `providers/{providerId}/products/{productId}/`\n- Marketplace service: `services/{serviceId}/`\n\nImages are **optional** on create/update JSON (there is no image field in those bodies). Upload after the entity exists.\n\n**Example returned imageUrl:**\n`{{blobPublicBaseUrl}}/{{mediaContainer}}/providers/{{providerId}}/logo/7f3c2a1b9e8d4c6a5b0f1e2d3c4b5a69.jpg`",
+                "description": "Uploads/replaces the store logo. Requires `ProviderStore.Update`. Previous blob is deleted best-effort.\n\n**Image upload (multipart/form-data)**\n| Field | Required | Validation |\n|---|---|---|\n| `file` | **Yes** on upload endpoints | Form field name **must** be `file`. JPEG / JPG / PNG / WebP (`image/jpeg`, `image/jpg`, `image/png`, `image/webp`). Max **2 MB**. Request size limit **3 MB**. Empty file is rejected. |\n\nReturned `imageUrl` is a **public Azure Blob** URL:\n`{{blobPublicBaseUrl}}/{{mediaContainer}}/{folder}/{guid}{ext}`\n\nFolders:\n- Provider logo: `providers/{providerId}/logo/`\n- Category: `providers/{providerId}/categories/{categoryId}/`\n- Product: `providers/{providerId}/products/{productId}/`\n- Marketplace service: `services/{serviceId}/`\n\nImages are **optional** on create/update JSON (there is no image field in those bodies). Upload after the entity exists.\n\n**Example returned imageUrl:**\n`{{blobPublicBaseUrl}}/{{mediaContainer}}/providers/{{providerId}}/logo/7f3c2a1b9e8d4c6a5b0f1e2d3c4b5a69.jpg`",
                 "body": {
                   "mode": "formdata",
                   "formdata": [
@@ -3295,7 +3245,7 @@
                 "image"
               ]
             },
-            "description": "Removes the logo from Azure Blob and clears `imageUrl`."
+            "description": "Removes the logo from Azure Blob and clears `imageUrl`. Requires `ProviderStore.Update`."
           },
           "event": [
             {
@@ -3467,7 +3417,7 @@
                 "store"
               ]
             },
-            "description": "Company name, phone, logo, and the assigned marketplace service (read-only)."
+            "description": "Company name, phone, logo, and the assigned marketplace service. Requires `ProviderStore.Read`."
           },
           "event": [
             {
@@ -3515,7 +3465,7 @@
                 "store"
               ]
             },
-            "description": "Updates company name and phone. Does not change `serviceId`.",
+            "description": "Updates company name and phone. Does not change `serviceId`. Requires `ProviderStore.Update`. Category and product read permissions do not grant this.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"companyName\": \"Demo Restaurant\",\n  \"phoneNumber\": \"+201000000000\"\n}",
@@ -3674,8 +3624,8 @@
                 },
                 {
                   "key": "status",
-                  "value": "Pending",
-                  "description": "OPTIONAL. Pending | Accepted | Preparing | Ready | Completed | Cancelled.",
+                  "value": "New",
+                  "description": "OPTIONAL. New (0) | Preparing (2) | Ready (3).",
                   "disabled": true
                 },
                 {
@@ -3791,10 +3741,10 @@
                 "status"
               ]
             },
-            "description": "Allowed transitions: Pending→Accepted|Cancelled, Accepted→Preparing|Cancelled, Preparing→Ready|Cancelled, Ready→Completed|Cancelled.",
+            "description": "Allowed transitions: New -> Preparing -> Ready. Ready is terminal. Pending, Accepted, Completed and Cancelled are rejected.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"Accepted\"\n}",
+              "raw": "{\n  \"status\": \"Preparing\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4239,7 +4189,7 @@
                 "roles"
               ]
             },
-            "description": "Requires `ProviderRoles.Create`. Bound to caller store.\n\n| Field | Required | Type | Validation / notes |\n|---|---|---|---|\n| `name` | Required | string | Max 100. Unique within this store. 409 if duplicate. |\n| `permissions` | Required | string[] | Non-empty. Must be valid **Provider** permissions from GET /provider/permissions. |\n\nValid provider permissions: `ProviderRoles.Read, ProviderRoles.Create, ProviderRoles.Update, ProviderRoles.Delete, ProviderStaff.Read, ProviderStaff.Create, ProviderStaff.Update, ProviderStaff.Delete, ProviderCategory.Read, ProviderCategory.Create, ProviderCategory.Update, ProviderCategory.Delete, ProviderProduct.Read, ProviderProduct.Create, ProviderProduct.Update, ProviderProduct.Delete`.",
+            "description": "Requires `ProviderRoles.Create`. Bound to caller store.\n\n| Field | Required | Type | Validation / notes |\n|---|---|---|---|\n| `name` | Required | string | Max 100. Unique within this store. 409 if duplicate. |\n| `permissions` | Required | string[] | Non-empty. Must be valid **Provider** permissions from GET /provider/permissions. |\n\nValid provider permissions: `ProviderRoles.Read, ProviderRoles.Create, ProviderRoles.Update, ProviderRoles.Delete, ProviderStaff.Read, ProviderStaff.Create, ProviderStaff.Update, ProviderStaff.Delete, ProviderStore.Read, ProviderStore.Update, ProviderCategory.Read, ProviderCategory.Create, ProviderCategory.Update, ProviderCategory.Delete, ProviderProduct.Read, ProviderProduct.Create, ProviderProduct.Update, ProviderProduct.Delete`.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Head Cashier\",\n  \"permissions\": [\n    \"ProviderRoles.Read\",\n    \"ProviderStaff.Read\",\n    \"ProviderCategory.Read\",\n    \"ProviderProduct.Read\",\n    \"ProviderProduct.Update\"\n  ]\n}",
@@ -4410,7 +4360,7 @@
                 "permissions"
               ]
             },
-            "description": "Requires `ProviderRoles.Read`. Modules: ProviderRoles, ProviderStaff, ProviderCategory, ProviderProduct."
+            "description": "Requires `ProviderRoles.Read`. Modules: ProviderRoles, ProviderStaff, ProviderStore, ProviderCategory, ProviderProduct."
           },
           "event": [
             {

@@ -1,5 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { AuthResponseDto, Portal, UserDto } from '../models/api.models';
+import { AuthResponseDto, Portal, ProfileDto, UserDto } from '../models/api.models';
 
 function readPermissionClaims(json: string): string[] {
   const values: string[] = [];
@@ -84,6 +84,17 @@ export class TokenStoreService {
   clear(portal: Portal): void {
     localStorage.removeItem(this.keys[portal]);
     this.sessions.update((s) => ({ ...s, [portal]: null }));
+  }
+
+  updateIdentity(portal: Portal, profile: Pick<ProfileDto, 'id' | 'firstName' | 'lastName' | 'email'>): void {
+    const current = this.sessions()[portal];
+    if (!current || current.user.id !== profile.id) return;
+    const session = {
+      ...current,
+      user: { ...current.user, firstName: profile.firstName, lastName: profile.lastName, email: profile.email },
+    };
+    localStorage.setItem(this.keys[portal], JSON.stringify(session));
+    this.sessions.update((sessions) => ({ ...sessions, [portal]: session }));
   }
 
   getPermissions(portal: Portal): string[] {

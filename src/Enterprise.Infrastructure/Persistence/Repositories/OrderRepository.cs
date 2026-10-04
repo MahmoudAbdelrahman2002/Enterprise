@@ -43,7 +43,7 @@ public sealed class OrderRepository(ApplicationDbContext context) : GenericRepos
         int pageSize,
         CancellationToken cancellationToken = default)
     {
-        var query = DbSet.AsNoTracking().AsQueryable();
+        var query = DbSet.AsNoTracking().Where(o => o.PreviousStatus != "Cancelled");
 
         if (providerId.HasValue)
         {
@@ -69,11 +69,22 @@ public sealed class OrderRepository(ApplicationDbContext context) : GenericRepos
         var totalCount = await query.CountAsync(cancellationToken);
         var items = await query
             .OrderByDescending(o => o.OrderDateUtc)
+            .ThenByDescending(o => o.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
 
         return (items, totalCount);
+    }
+
+    public async Task<(IReadOnlyList<Order> Items, int TotalCount)> SearchForUserAsync(Guid userId, Guid? providerId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    {
+        var query = DbSet.AsNoTracking().Where(order => order.UserId == userId);
+        if (providerId.HasValue) query = query.Where(order => order.ProviderId == providerId.Value);
+        var count = await query.CountAsync(cancellationToken);
+        var items = await query.OrderByDescending(order => order.OrderDateUtc).ThenByDescending(order => order.Id)
+            .Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
+        return (items, count);
     }
 
     public async Task<IReadOnlyList<Order>> ListByUserIdAsync(
@@ -105,7 +116,7 @@ public sealed class OrderRepository(ApplicationDbContext context) : GenericRepos
         Guid providerId,
         CancellationToken cancellationToken = default) =>
         await DbSet.AsNoTracking()
-            .Where(o => o.ProviderId == providerId)
+            .Where(o => o.ProviderId == providerId && o.PreviousStatus != "Cancelled")
             .OrderByDescending(o => o.OrderDateUtc)
             .ToListAsync(cancellationToken);
 

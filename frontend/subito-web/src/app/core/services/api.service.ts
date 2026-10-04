@@ -32,8 +32,8 @@ export class ApiService {
     return this.request<T>('GET', path, undefined, query, options);
   }
 
-  post<T>(path: string, body?: unknown, query?: Query): Observable<T> {
-    return this.request<T>('POST', path, body, query);
+  post<T>(path: string, body?: unknown, query?: Query, options?: RequestOptions): Observable<T> {
+    return this.request<T>('POST', path, body, query, options);
   }
 
   put<T>(path: string, body?: unknown): Observable<T> {
@@ -44,8 +44,8 @@ export class ApiService {
     return this.request<T>('PATCH', path, body);
   }
 
-  delete<T>(path: string): Observable<T> {
-    return this.request<T>('DELETE', path);
+  delete<T>(path: string, options?: RequestOptions): Observable<T> {
+    return this.request<T>('DELETE', path, undefined, undefined, options);
   }
 
   upload<T>(path: string, file: File, fieldName = 'file'): Observable<T> {

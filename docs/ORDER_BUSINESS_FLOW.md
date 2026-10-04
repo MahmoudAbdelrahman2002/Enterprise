@@ -258,6 +258,6 @@ ApplicationUser (Client)
 
 ## مستندات مرتبطة
 
-- سطح API السلة: `ClientCartController` (`/api/v1/client/{providerId}/cart`)
+- سطح API السلة: `ClientCartsController` (`/api/v1/client/{providerId}/cart`)
 - المعمارية / البوابات: [`DEVELOPER_WORKFLOW.md`](DEVELOPER_WORKFLOW.md)
 - نظرة على الـ persistence: [`ERD.md`](ERD.md) (حدّثه لما جداول الأوردر تتضاف)

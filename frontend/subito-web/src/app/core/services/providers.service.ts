@@ -37,7 +37,7 @@ export class ProvidersService {
     return this.api.delete(`/admin/providers/${id}`);
   }
 
-  uploadImage(id: string, file: File): Observable<unknown> {
+  uploadImage(id: string, file: File): Observable<ProviderAdminDto> {
     return this.api.upload(`/admin/providers/${id}/image`, file);
   }
 

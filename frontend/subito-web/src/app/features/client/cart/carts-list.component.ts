@@ -1,16 +1,20 @@
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { PageRequest } from '../../../core/utils/page-request';
+import { readPage, resolvePage } from '../../../core/utils/read-list';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ShoppingCartDto } from '../../../core/models/domain.models';
 import { CartService } from '../../../core/services/cart.service';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { CartCountPipe } from '../../../shared/pipes/cart-count.pipe';
 
 @Component({
   selector: 'app-carts-list',
   standalone: true,
-  imports: [IconComponent, MoneyPipe, RouterLink, EmptyStateComponent, TranslatePipe],
+  imports: [PaginationComponent, CartCountPipe, IconComponent, MoneyPipe, RouterLink, EmptyStateComponent, TranslatePipe],
   template: `
     <section class="carts-hero card">
       <p class="carts-hero__eyebrow">Subito</p>
@@ -43,7 +47,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
                 <span class="cart-card__dot" aria-hidden="true"></span>
                 <strong>{{ cart.providerName || ('cart.store' | t) }}</strong>
               </div>
-              <span class="badge">{{ cart.items.length }} {{ 'cart.items' | t }}</span>
+              <span class="badge">{{ cart.items.length | cartCount:'product' }} · {{ unitCount(cart) | cartCount }}</span>
             </div>
 
             <ul class="cart-card__preview" role="list">
@@ -76,6 +80,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
         }
       </div>
     }
+    <app-pagination [page]="page" [totalPages]="totalPages" [totalCount]="totalCount" [disabled]="loading()" labelKey="pagination.baskets" (change)="reload($event)" />
   `,
   styles: [
     `
@@ -315,12 +320,18 @@ export class CartsListComponent implements OnInit {
   readonly loading = signal(true);
   readonly failed = signal(false);
 
+  page = 1; totalPages = 1; totalCount = 0;
+  private readonly pageRequest = new PageRequest(inject(DestroyRef));
   ngOnInit(): void { this.reload(); }
-  reload(): void {
+  reload(page = this.page): void {
+    this.page = page;
     this.loading.set(true); this.failed.set(false);
-    this.cartApi.list().subscribe({
+    this.pageRequest.run(this.cartApi.listPage({ pageNumber: page, pageSize: 12 }), {
       next: (items) => {
-        this.carts.set(Array.isArray(items) ? items : []);
+        const result = readPage<ShoppingCartDto>(items);
+        const targetPage = resolvePage(page, result);
+        if (page !== targetPage) { this.reload(targetPage); return; }
+        this.carts.set(result.items); this.totalPages = result.totalPages; this.totalCount = result.totalCount;
         this.loading.set(false);
       },
       error: () => {
@@ -332,5 +343,9 @@ export class CartsListComponent implements OnInit {
 
   previewItems(cart: ShoppingCartDto) {
     return cart.items.slice(0, 3);
+  }
+
+  unitCount(cart: ShoppingCartDto): number {
+    return cart.items.reduce((total, item) => total + item.quantity, 0);
   }
 }

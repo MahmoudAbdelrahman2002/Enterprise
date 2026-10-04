@@ -26,7 +26,7 @@ public sealed class ClientExternalLoginCommandValidator : AbstractValidator<Clie
             .WithMessage(_ => localizer[MessageKeys.Validation.ProviderUnsupported]);
         RuleFor(x => x.IdToken)
             .Required(localizer)
-            .MaxLen(localizer, 8192);
+            .MaxLen(localizer, ValidationPolicy.ExternalTokenMax);
     }
 }
 

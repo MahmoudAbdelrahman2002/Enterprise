@@ -33,4 +33,22 @@ describe('TokenStoreService permissions', () => {
     const store = new TokenStoreService();
     expect(store.getPermissions('provider')).toEqual(['ProviderStaff.Create', 'ProviderProduct.Read']);
   });
+
+  it('refreshes persisted identity without changing tokens or permissions', () => {
+    localStorage.setItem('subito.provider', JSON.stringify({
+      accessToken: token('{"permission":["ProviderProduct.Read"]}'),
+      refreshToken: 'refresh', accessTokenExpiresAtUtc: '2099-01-01T00:00:00Z',
+      user: { id: 'user', email: 'old@example.com', firstName: 'Old', lastName: 'Name', userType: 3, roles: ['Owner'] },
+    }));
+    const store = new TokenStoreService();
+    const accessToken = store.getAccessToken('provider');
+    store.updateIdentity('provider', { id: 'user', email: 'new@example.com', firstName: 'New', lastName: 'Name' });
+    expect(store.providerUser()?.firstName).toBe('New');
+    expect(store.getAccessToken('provider')).toBe(accessToken);
+    expect(store.getRefreshToken('provider')).toBe('refresh');
+    expect(store.getPermissions('provider')).toEqual(['ProviderProduct.Read']);
+    expect(new TokenStoreService().providerUser()?.email).toBe('new@example.com');
+    store.updateIdentity('provider', { id: 'other', email: 'other@example.com', firstName: 'Other', lastName: 'Name' });
+    expect(store.providerUser()?.firstName).toBe('New');
+  });
 });

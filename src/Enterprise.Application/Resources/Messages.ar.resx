@@ -136,7 +136,7 @@
   <data name="Category.Deactivated" xml:space="preserve"><value>تم تعطيل التصنيف بنجاح.</value></data>
   <data name="Category.NotFound" xml:space="preserve"><value>التصنيف غير موجود.</value></data>
   <data name="Category.UnableToDelete" xml:space="preserve"><value>تعذر حذف التصنيف.</value></data>
-  <data name="Category.HasLinkedProducts" xml:space="preserve"><value>هذا التصنيف يحتوي على {0} منتج/منتجات. لتأكيد الحذف أعد الطلب مع deleteRelatedProducts=true لحذف المنتجات المرتبطة أيضاً.</value></data>
+  <data name="Category.HasLinkedProducts" xml:space="preserve"><value>لا يمكن حذف هذا التصنيف لأنه يحتوي على منتجات ({0}). افتح صفحة المنتجات واحذف منتجات هذا التصنيف أولاً، ثم حاول مجدداً.</value></data>
   <data name="Category.Inactive" xml:space="preserve"><value>لا يمكن إنشاء أو تحديث منتجات ضمن تصنيف غير نشط.</value></data>
   <data name="Product.ListRetrieved" xml:space="preserve"><value>تم استرجاع المنتجات بنجاح.</value></data>
   <data name="Product.Retrieved" xml:space="preserve"><value>تم استرجاع المنتج بنجاح.</value></data>
@@ -172,7 +172,6 @@
   <data name="Order.NotFound" xml:space="preserve"><value>الطلب غير موجود.</value></data>
   <data name="Order.UnableToCreate" xml:space="preserve"><value>تعذر إنشاء الطلب.</value></data>
   <data name="Order.InvalidStatusTransition" xml:space="preserve"><value>تغيير حالة الطلب غير مسموح.</value></data>
-  <data name="Order.Cancelled" xml:space="preserve"><value>تم إلغاء الطلب بنجاح.</value></data>
   <data name="ClientUser.ListRetrieved" xml:space="preserve"><value>تم استرجاع العملاء بنجاح.</value></data>
   <data name="ClientUser.Retrieved" xml:space="preserve"><value>تم استرجاع العميل بنجاح.</value></data>
   <data name="ClientUser.Activated" xml:space="preserve"><value>تم تفعيل العميل بنجاح.</value></data>
@@ -232,4 +231,24 @@
   <data name="Permission.ProviderProduct.Delete" xml:space="preserve"><value>حذف منتجات المتجر</value></data>
   <data name="Permission.ProviderOrder.Read" xml:space="preserve"><value>عرض طلبات المتجر</value></data>
   <data name="Permission.ProviderOrder.Update" xml:space="preserve"><value>تحديث حالة طلبات المتجر</value></data>
+  <data name="Auth.ProviderDeactivated" xml:space="preserve"><value>تم إلغاء تفعيل حسابك. يرجى التواصل مع المسؤول.</value></data>
+  <data name="Validation.TextFormat" xml:space="preserve"><value>أدخل نصًا مقروءًا دون أحرف تحكم.</value></data>
+  <data name="Validation.NameFormat" xml:space="preserve"><value>أدخل اسمًا باستخدام الحروف والمسافات والفواصل العليا والشرطات أو النقاط.</value></data>
+  <data name="Validation.PhoneFormat" xml:space="preserve"><value>أدخل رقم هاتف من 7 إلى 15 رقمًا؛ يُسمح بعلامة + والمسافات والشرطات والأقواس المتوازنة.</value></data>
+  <data name="Validation.OtpFormat" xml:space="preserve"><value>أدخل رمز التحقق المكون من {0} أرقام.</value></data>
+  <data name="Validation.PasswordDifferent" xml:space="preserve"><value>يجب أن تختلف كلمة المرور الجديدة عن الحالية.</value></data>
+  <data name="Validation.CodeFormat" xml:space="preserve"><value>استخدم الحروف والأرقام والشرطات والشرطات السفلية، وابدأ بحرف أو رقم.</value></data>
+  <data name="Validation.PriceRange" xml:space="preserve"><value>أدخل سعرًا بين 0.01 و{0}.</value></data>
+  <data name="Validation.MoneyPrecision" xml:space="preserve"><value>يمكن أن تحتوي الأسعار على منزلتين عشريتين كحد أقصى.</value></data>
+  <data name="Validation.AllowedValue" xml:space="preserve"><value>اختر إحدى القيم المتاحة.</value></data>
+  <data name="Validation.QuantityRange" xml:space="preserve"><value>يجب أن تكون الكمية بين 1 و{0}.</value></data>
+  <data name="Validation.PageRange" xml:space="preserve"><value>استخدم رقم صفحة موجبًا وحجم صفحة بين 1 و{0}.</value></data>
+  <data name="Validation.DateRange" xml:space="preserve"><value>يجب أن يكون تاريخ البدء قبل تاريخ الانتهاء أو مساويًا له.</value></data>
+  <data name="Validation.DuplicatePermissions" xml:space="preserve"><value>اختر كل صلاحية مرة واحدة فقط.</value></data>
+  <data name="Validation.SessionFormat" xml:space="preserve"><value>أدخل معرّف جلسة دفع صالحًا.</value></data>
+  <data name="Validation.ImageContent" xml:space="preserve"><value>يجب أن يتطابق محتوى الملف مع نوع الصورة المحدد JPEG أو PNG أو WebP.</value></data>
+  <data name="Permission.Module.ProviderStore" xml:space="preserve"><value>هوية المتجر</value></data>
+  <data name="Permission.ProviderStore.Read" xml:space="preserve"><value>عرض هوية المتجر</value></data>
+  <data name="Permission.ProviderStore.Update" xml:space="preserve"><value>تعديل اسم الشركة وهاتف المتجر وصورته</value></data>
+  <data name="Payment.Unavailable" xml:space="preserve"><value>المدفوعات غير متاحة مؤقتاً. تم الاحتفاظ بسلتك؛ يرجى المحاولة لاحقاً.</value></data>
 </root>

@@ -7,6 +7,8 @@ namespace Enterprise.Application.Features.Admin.Users.Queries.GetAdminUsersList;
 public sealed record GetAdminUsersListQuery : PaginationParams, IRequest<PagedResult<StaffListItemDto>>
 {
     public string? SearchTerm { get; init; }
+    public bool Descending { get; init; }
+
     public Guid? RoleId { get; init; }
     public bool? IsActive { get; init; }
 }

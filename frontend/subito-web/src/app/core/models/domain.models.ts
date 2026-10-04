@@ -71,6 +71,7 @@ export interface OrderListItemDto {
   orderDateUtc: string;
   totalAmount: number;
   status: OrderStatus | number;
+  isHistorical?: boolean;
 }
 
 export interface OrderItemDto {
@@ -89,6 +90,7 @@ export interface OrderDetailDto {
   orderDateUtc: string;
   totalAmount: number;
   status: OrderStatus | number;
+  isHistorical?: boolean;
   notes?: string | null;
   stripeCheckoutSessionId?: string | null;
   items: OrderItemDto[];

@@ -1,3 +1,5 @@
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { VALIDATION_POLICY as P } from '../../../shared/forms/validation-policy';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
@@ -9,11 +11,12 @@ import { CartService } from '../../../core/services/cart.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { CartCountPipe } from '../../../shared/pipes/cart-count.pipe';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [TooltipDirective, IconComponent, MoneyPipe, RouterLink, EmptyStateComponent, TranslatePipe],
+  imports: [PaginationComponent, CartCountPipe, TooltipDirective, IconComponent, MoneyPipe, RouterLink, EmptyStateComponent, TranslatePipe],
   template: `
     <section class="cart-hero card">
       <div class="cart-hero__top">
@@ -53,8 +56,8 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
       </div>
     } @else {
       <div class="cart-layout">
-        <ul class="cart-list card" role="list">
-          @for (item of cart()!.items; track item.id; let last = $last) {
+        <div class="cart-items"><ul class="cart-list card" role="list">
+          @for (item of visibleItems(); track item.id; let last = $last) {
             <li class="cart-row" [class.is-busy]="updatingId() === item.id" [class.is-last]="last">
               <div class="cart-row__media">
                 @if (item.productImage) {
@@ -84,7 +87,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
                     <button
                       type="button"
                       class="qty__btn"
-                      [disabled]="updatingId() !== null || busy()"
+                      [disabled]="updatingId() !== null || busy() || item.quantity >= maxQuantity"
                       (click)="changeQty(item.id, item.quantity, item.quantity + 1)"
                       appTooltip [attr.aria-label]="'cart.increase' | t"
                     ><app-icon name="plus" />
@@ -110,14 +113,16 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
             </li>
           }
         </ul>
+        <app-pagination [page]="page" [totalPages]="totalPages" [totalCount]="cart()!.items.length" [disabled]="busy() || updatingId() !== null" labelKey="pagination.basketItems" (change)="page = $event" />
+        </div>
 
         <aside class="cart-summary card">
           <div class="cart-summary__accent" aria-hidden="true"></div>
           <p class="notice" style="margin:1rem">{{ 'cart.separateCheckout' | t }}</p><h2 class="cart-summary__title">{{ 'cart.summary' | t }}</h2>
           <div class="cart-summary__rows">
             <div class="cart-summary__row">
-              <span class="muted">{{ 'cart.items' | t }}</span>
-              <span class="badge">{{ itemQuantity() }}</span>
+              <span class="muted">{{ cart()!.items.length | cartCount:'product' }}</span>
+              <span class="badge">{{ itemQuantity() | cartCount }}</span>
             </div>
             <div class="cart-summary__row cart-summary__total">
               <span>{{ 'cart.subtotal' | t }}</span>
@@ -132,6 +137,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
           >
             <app-icon name="basket" />{{ (busy() ? 'cart.checkingOut' : 'actions.checkout') | t }}
           </button>
+          @if (checkoutFailed()) { <p class="field-error" role="alert" style="margin:1rem">{{ 'cart.checkoutFailed' | t }}</p> }
           <a class="cart-summary__continue" [routerLink]="['/stores', providerId]">
             {{ 'cart.continueShopping' | t }}
           </a>
@@ -291,6 +297,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
         align-items: start;
       }
 
+      .cart-items { min-width: 0; }
       .cart-list {
         list-style: none;
         margin: 0;
@@ -593,11 +600,16 @@ export class CartComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
   providerId = '';
+  page = 1;
+  readonly pageSize = 10;
+  get totalPages(): number { return Math.max(1, Math.ceil((this.cart()?.items.length ?? 0) / this.pageSize)); }
+  visibleItems() { return (this.cart()?.items ?? []).slice((this.page - 1) * this.pageSize, this.page * this.pageSize); }
   readonly cart = signal<ShoppingCartDto | null>(null);
   readonly busy = signal(false);
   readonly loading = signal(true);
   readonly failed = signal(false);
   readonly updatingId = signal<string | null>(null);
+  readonly checkoutFailed = signal(false);
 
   ngOnInit(): void {
     this.providerId = this.route.snapshot.paramMap.get('providerId') || '';
@@ -609,6 +621,7 @@ export class CartComponent implements OnInit {
     this.cartApi.get(this.providerId).subscribe({
       next: (c) => {
         this.cart.set(c);
+        this.page = Math.min(this.page, this.totalPages);
         this.loading.set(false);
         this.updatingId.set(null);
       },
@@ -620,14 +633,15 @@ export class CartComponent implements OnInit {
     });
   }
 
+  readonly maxQuantity = P.QuantityMax;
   changeQty(id: string, current: number, quantity: number): void {
-    if (quantity < 1 || quantity === current) return;
+    if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > P.QuantityMax || quantity === current) return;
     this.update(id, quantity);
   }
 
   update(id: string, quantity: number): void {
     const qty = Number(quantity);
-    if (qty < 1 || this.busy() || this.updatingId()) return;
+    if (!Number.isSafeInteger(qty) || qty < 1 || qty > P.QuantityMax || this.busy() || this.updatingId()) return;
     this.updatingId.set(id);
     this.cartApi.updateItem(this.providerId, id, qty).subscribe({
       next: () => this.reload(),
@@ -654,11 +668,12 @@ export class CartComponent implements OnInit {
   checkout(): void {
     if (this.busy() || this.updatingId()) return;
     this.busy.set(true);
+    this.checkoutFailed.set(false);
     this.cartApi.checkout(this.providerId).subscribe({
       next: (session) => {
         window.location.href = session.url;
       },
-      error: () => this.busy.set(false),
+      error: () => { this.checkoutFailed.set(true); this.busy.set(false); },
     });
   }
 }

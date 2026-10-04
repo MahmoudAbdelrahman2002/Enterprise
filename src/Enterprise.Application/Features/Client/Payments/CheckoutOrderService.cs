@@ -6,14 +6,16 @@ using Enterprise.Domain.Enums;
 using Enterprise.Domain.Interfaces;
 using Microsoft.Extensions.Logging;
 using Stripe.Checkout;
+using Enterprise.Application.Common.Exceptions;
+using Enterprise.Application.Common.Localization;
 
 namespace Enterprise.Application.Features.Client.Payments;
 
 public interface ICheckoutOrderService
 {
     /// <summary>
-    /// Creates an order from a paid Stripe Checkout session and clears the cart.
-    /// Returns null when the session cannot be fulfilled (missing cart, empty cart, etc.).
+    /// Creates an order from the paid session's immutable line items and consumes paid basket quantities.
+    /// Returns null for unpaid sessions or sessions without valid cart metadata.
     /// Idempotent when an order already exists for the session.
     /// </summary>
     Task<Order?> CompletePaidCheckoutAsync(Session session, CancellationToken cancellationToken = default);
@@ -23,6 +25,7 @@ public sealed class CheckoutOrderService(
     IUnitOfWork unitOfWork,
     INotificationService notificationService,
     IUserAccountService userAccountService,
+    ICheckoutGateway checkoutGateway,
     ILogger<CheckoutOrderService> logger) : ICheckoutOrderService
 {
     public async Task<Order?> CompletePaidCheckoutAsync(
@@ -53,42 +56,46 @@ public sealed class CheckoutOrderService(
             return existing;
         }
 
+        if (!session.Metadata.TryGetValue("userId", out var userIdRaw) || !Guid.TryParse(userIdRaw, out var userId)
+            || !session.Metadata.TryGetValue("providerId", out var providerIdRaw) || !Guid.TryParse(providerIdRaw, out var providerId))
+        {
+            throw new ConflictException(MessageKeys.Payment.UnableToCreate);
+        }
+
         var shoppingCart = await unitOfWork.Carts.GetByIdWithItemsAsync(cartId, cancellationToken);
-        if (shoppingCart is null)
-        {
-            logger.LogWarning("Shopping cart not found for cart ID {CartId}", cartId);
-            return null;
-        }
+        if (shoppingCart is not null && (shoppingCart.UserId != userId || shoppingCart.ProviderId != providerId))
+            throw new ForbiddenAccessException();
 
-        if (shoppingCart.Items.Count == 0)
+        // Use Stripe's paid line items, not a basket or catalogue that may have changed during payment.
+        var paidItems = await checkoutGateway.GetLineItemsAsync(session.Id, cancellationToken);
+        var orderItems = new List<OrderItem>();
+        foreach (var line in paidItems)
         {
-            logger.LogWarning("Shopping cart {CartId} has no items; skipping order creation", cartId);
-            return null;
+            if (line.Price?.Product?.Metadata is null || !line.Price.Product.Metadata.TryGetValue("productId", out var productIdRaw)
+                || !Guid.TryParse(productIdRaw, out var productId) || line.Quantity is null or <= 0
+                || line.Quantity > int.MaxValue || line.Price.UnitAmount is null or <= 0)
+                throw new ConflictException(MessageKeys.Payment.UnableToCreate);
+            orderItems.Add(new OrderItem
+            {
+                ProductId = productId,
+                ProductName = line.Description ?? line.Price.Product.Name,
+                UnitPrice = line.Price.UnitAmount.Value / 100m,
+                Quantity = (int)line.Quantity.Value
+            });
         }
-
-        var language = session.Metadata.TryGetValue("locale", out var locale)
-            ? locale
-            : SupportedLanguages.English;
+        if (orderItems.Count == 0 || !session.AmountTotal.HasValue
+            || orderItems.Sum(item => item.UnitPrice * item.Quantity) != session.AmountTotal.Value / 100m)
+            throw new ConflictException(MessageKeys.Payment.UnableToCreate);
 
         var order = new Order
         {
             StripeCheckoutSessionId = session.Id,
-            UserId = shoppingCart.UserId,
-            ProviderId = shoppingCart.ProviderId,
+            UserId = userId,
+            ProviderId = providerId,
             OrderDateUtc = DateTime.UtcNow,
             TotalAmount = (session.AmountTotal ?? 0m) / 100m,
-            Status = OrderStatus.Pending,
-            OrderItems = shoppingCart.Items.Select(i =>
-            {
-                var (name, _) = i.Product.ResolveContent(language);
-                return new OrderItem
-                {
-                    ProductId = i.ProductId,
-                    ProductName = string.IsNullOrWhiteSpace(name) ? i.Product.Sku : name,
-                    UnitPrice = i.Product.Price,
-                    Quantity = i.Quantity
-                };
-            }).ToList()
+            Status = OrderStatus.New,
+            OrderItems = orderItems
         };
 
         try
@@ -97,7 +104,8 @@ public sealed class CheckoutOrderService(
             {
                 unitOfWork.Orders.Add(order);
                 await unitOfWork.SaveChangesAsync(ct);
-                await unitOfWork.Carts.DeleteByIdAsync(shoppingCart.Id, ct);
+                await unitOfWork.Carts.ConsumePaidItemsAsync(cartId,
+                    orderItems.GroupBy(item => item.ProductId).ToDictionary(group => group.Key, group => group.Sum(item => item.Quantity)), ct);
             }, cancellationToken);
         }
         catch (Exception ex) when (IsDuplicateCheckoutSession(ex))

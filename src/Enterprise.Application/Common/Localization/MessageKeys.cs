@@ -23,6 +23,21 @@ public static class MessageKeys
 
     public static class Validation
     {
+        public const string TextFormat = "Validation.TextFormat";
+        public const string NameFormat = "Validation.NameFormat";
+        public const string PhoneFormat = "Validation.PhoneFormat";
+        public const string OtpFormat = "Validation.OtpFormat";
+        public const string PasswordDifferent = "Validation.PasswordDifferent";
+        public const string CodeFormat = "Validation.CodeFormat";
+        public const string PriceRange = "Validation.PriceRange";
+        public const string MoneyPrecision = "Validation.MoneyPrecision";
+        public const string AllowedValue = "Validation.AllowedValue";
+        public const string QuantityRange = "Validation.QuantityRange";
+        public const string PageRange = "Validation.PageRange";
+        public const string DateRange = "Validation.DateRange";
+        public const string DuplicatePermissions = "Validation.DuplicatePermissions";
+        public const string SessionFormat = "Validation.SessionFormat";
+        public const string ImageContent = "Validation.ImageContent";
         public const string Failed = "Validation.Failed";
         public const string CheckRequest = "Validation.CheckRequest";
         public const string Required = "Validation.Required";
@@ -66,6 +81,7 @@ public static class MessageKeys
         public const string PasswordChanged = "Auth.PasswordChanged";
         public const string ForgotPasswordSent = "Auth.ForgotPasswordSent";
         public const string InvalidCredentials = "Auth.InvalidCredentials";
+        public const string ProviderDeactivated = "Auth.ProviderDeactivated";
         public const string AccountLocked = "Auth.AccountLocked";
         public const string InvalidOrExpiredCode = "Auth.InvalidOrExpiredCode";
         public const string InvalidOrExpiredLoginCode = "Auth.InvalidOrExpiredLoginCode";
@@ -250,7 +266,6 @@ public static class MessageKeys
         public const string NotFound = "Order.NotFound";
         public const string UnableToCreate = "Order.UnableToCreate";
         public const string InvalidStatusTransition = "Order.InvalidStatusTransition";
-        public const string Cancelled = "Order.Cancelled";
     }
 
     public static class ClientUser
@@ -263,6 +278,7 @@ public static class MessageKeys
 
     public static class Payment
     {
+        public const string Unavailable = "Payment.Unavailable";
         public const string Created = "Payment.Created";
         public const string NotFound = "Payment.NotFound";
         public const string UnableToCreate = "Payment.UnableToCreate";

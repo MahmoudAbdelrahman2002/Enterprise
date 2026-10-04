@@ -26,9 +26,9 @@ public sealed class ClientRegisterCommandValidator : AbstractValidator<ClientReg
 {
     public ClientRegisterCommandValidator(IAppLocalizer localizer)
     {
-        RuleFor(x => x.Email).RequiredEmail(localizer).MaxLen(localizer, 256);
-        RuleFor(x => x.FirstName).Required(localizer).MaxLen(localizer, 100);
-        RuleFor(x => x.LastName).Required(localizer).MaxLen(localizer, 100);
+        RuleFor(x => x.Email).RequiredEmail(localizer);
+        RuleFor(x => x.FirstName).PersonName(localizer, ValidationPolicy.NameMax);
+        RuleFor(x => x.LastName).PersonName(localizer, ValidationPolicy.NameMax);
     }
 }
 
