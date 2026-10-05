@@ -52,3 +52,6 @@ TestResults/
 publish.zip
 publish-temp/
 publish-output/
+
+# Generated QA browser profile
+/.qa-review/chrome-profile/

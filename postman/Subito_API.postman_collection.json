@@ -8774,8 +8774,8 @@
                 },
                 {
                   "key": "status",
-                  "value": "Pending",
-                  "description": "OPTIONAL.",
+                  "value": "New",
+                  "description": "OPTIONAL. New (0) | Preparing (2) | Ready (3).",
                   "disabled": true
                 },
                 {

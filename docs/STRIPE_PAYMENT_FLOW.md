@@ -370,7 +370,7 @@ GET /api/v1/client/orders/by-session/{sessionId}
    - Order (`New`, `Paid`, Total 28.00)
    - OrderItem (Pepperoni, 14.00, qty 2)
 7. السلة تتمسح  
-8. Provider يشوف الطلب ويغيّر الحالة: Accepted → Preparing → Ready → Completed  
+8. Provider يشوف الطلب ويغيّر الحالة: New → Preparing → Ready
 
 ---
 

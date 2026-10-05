@@ -1,0 +1,27 @@
+[10:51:16 INF] Starting Enterprise.Api
+[10:51:17 INF] File logs directory: C:\Backend project\src\Enterprise.Api\log
+[10:51:20 WRN] Entity 'Provider' has a global query filter defined and is the required end of a relationship with the entity 'Order'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+[10:51:20 WRN] Entity 'Provider' has a global query filter defined and is the required end of a relationship with the entity 'ShoppingCart'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+[10:51:20 WRN] Entity 'Product' has a global query filter defined and is the required end of a relationship with the entity 'ShoppingCartItem'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+[10:51:22 INF] Staff user already present for support@enterprise.local.
+[10:51:22 INF] Staff user already present for ops@enterprise.local.
+[10:51:22 INF] Sample provider already present for provider@enterprise.local (ProviderId=36a96fff-f247-4b5e-b6d3-6fc2436092db).
+[10:51:22 INF] Restaurant catalog ready for 36a96fff-f247-4b5e-b6d3-6fc2436092db: categories=4, newlyAddedProducts=0.
+[10:51:23 INF] Pharmacy catalog ready for 71230570-c7ca-4461-b9ea-9e9321653193: categories=3, newlyAddedProducts=0.
+[10:51:23 INF] Staff user already present for manager@demo-restaurant.local.
+[10:51:23 INF] Staff user already present for cashier@demo-restaurant.local.
+[10:51:23 INF] Seeded restaurant staff roles and users for provider 36a96fff-f247-4b5e-b6d3-6fc2436092db.
+[10:51:23 INF] Staff user already present for clerk@green-pharmacy.local.
+[10:51:23 INF] Seeded pharmacy staff for provider 71230570-c7ca-4461-b9ea-9e9321653193.
+[10:51:23 INF] Sample client already present for client@enterprise.local.
+[10:51:23 INF] Sample client already present for client2@enterprise.local.
+[10:51:23 INF] Sample client already present for client3@enterprise.local.
+[10:51:23 INF] Sample client already present for client4@enterprise.local.
+[10:51:23 INF] Demo seed complete. Logins: admin@enterprise.local, support@enterprise.local, ops@enterprise.local, provider@enterprise.local, pharmacy@enterprise.local, manager@demo-restaurant.local, cashier@demo-restaurant.local, clerk@green-pharmacy.local, client@enterprise.local (and client2/client3). Default passwords use the *Pattern@12345! style from SeedData.
+[10:51:23 INF] File logs directory: C:\Backend project\src\Enterprise.Api\log
+[10:51:23 INF] Now listening on: http://localhost:5207
+[10:51:23 INF] Application started. Press Ctrl+C to shut down.
+[10:51:23 INF] Hosting environment: Development
+[10:51:23 INF] Content root path: C:\Backend project\src\Enterprise.Api
+[10:52:06 INF] HTTP GET /swagger/v1/swagger.json responded 200 in 756.8031 ms
+[10:52:07 INF] HTTP GET /health/live responded 200 in 53.8990 ms

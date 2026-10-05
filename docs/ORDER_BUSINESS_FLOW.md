@@ -1,263 +1,48 @@
-# بيزنس الأوردر (من السلة → الدفع/التأكيد → الطلب)
+# Order business flow
 
-المستند ده بيشرح **السيناريو التجاري** بعد ما العميل يجهّز سلة التسوق: إيه هو الأوردر، إزاي بيتخلق، وليه بيعيش مستقل عن السلة.
+Updated 5 October 2026. The active workflow is **New -> Preparing -> Ready**.
 
-النموذج في الباكند: **عميل (Client)** بيشتري من **مزود خدمة / مطعم (Provider)** حسب `providerId`.
+## Checkout and order creation
 
----
+Each Client basket belongs to one Provider. Hosted Stripe Checkout collects payment for that basket. A verified paid Checkout session creates one order, whether confirmed through a signed webhook or the authenticated Client confirmation endpoint. Session idempotency prevents duplicate orders.
 
-## 1. الصورة الكبيرة
+Order items are immutable snapshots of product name, price and paid quantity. Paid quantities are consumed from the basket while later additions remain. Orders retain their own totals and history independently of catalogue edits.
 
-```text
-تصفح الكتالوج  →  إضافة للسلة  →  مراجعة السلة  →  Checkout  →  أوردر  →  المزود ينفّذ
-   (منتجات)         (مؤقتة)          (مؤقتة)         (نسخ)      (دائم)      (تحديث الحالة)
-```
+Every newly created order starts as **New**. Cancelling an unpaid Stripe Checkout session leaves the basket available; this is separate from order cancellation, which is no longer supported.
 
-| المفهوم | الدور | العمر |
-|---------|------|------|
-| **ShoppingCart** | سلة مؤقتة لعميل واحد + مزود واحد | لحد الـ checkout أو المسح |
-| **ShoppingCartItem** | أسطر السلة (منتج + كمية) | نفس عمر السلة |
-| **Order** | سجل شراء مؤكَّد | تاريخ دائم |
-| **OrderItem** | نسخة مما تم شراؤه (اسم، سعر، كمية) | دائمة مع الأوردر |
+## Status workflow
 
-**القاعدة:** مفيش **مفتاح أجنبي (FK)** في الداتابيز بين `Order` و `ShoppingCart`.  
-السلة مجرد **مدخل** يُستخدم مرة واحدة في الـ checkout عشان **يبني** الأوردر، وبعدين السلة تتفضى أو تتمسح.
+| Status | API value | Meaning | Next stage |
+|---|---|---|---|
+| New | 0 | Paid order awaiting preparation | Preparing |
+| Preparing | 2 | Provider is preparing the order | Ready |
+| Ready | 3 | Preparation is complete | None |
 
----
+Only an authorized Provider with `ProviderOrder.Update` may advance its own orders. Transitions must proceed one stage at a time. Skipped stages, backward transitions and repeated statuses return HTTP 409. Removed status values and names are invalid and return HTTP 400. Ready is terminal.
 
-## 2. الأطراف
+Provider order detail shows only the next permitted stage. Client order pages display the current stage and offer no cancellation action. Admin order navigation and permissions remain disabled as requested.
 
-| الطرف | دوره مع الأوردرات |
-|-------|-------------------|
-| **Client** | يبني السلة، يعمل طلب (checkout)، يشوف أوردراته، ممكن يلغي لو الحالة تسمح |
-| **Provider** | يشوف طلبات مطعمه، يحدّث الحالة (قبول → تحضير → جاهز → مكتمل) |
-| **Admin** | اختياري لاحقًا: متابعة على مستوى المنصة (مش مطلوب في الـ MVP) |
+## Endpoints
 
-السلة والأوردر دايمًا مربوطين بـ **مزود واحد**. العميل ممكن يكون عنده:
+| Method | Route | Purpose |
+|---|---|---|
+| GET | `/api/v1/client/orders/paged` | Client order history with paging and optional Provider filter |
+| GET | `/api/v1/client/orders/{orderId}` | Owned order detail |
+| GET | `/api/v1/client/orders/by-session/{sessionId}` | Owned order for a Checkout session |
+| POST | `/api/v1/client/orders/confirm-session/{sessionId}` | Confirm a paid owned session idempotently |
+| GET | `/api/v1/provider/orders` | Paged active store orders |
+| GET | `/api/v1/provider/orders/{orderId}` | Authorized store order detail |
+| PATCH | `/api/v1/provider/orders/{orderId}/status` | Advance to Preparing or Ready |
 
-- سلة واحدة لكل مزود
-- أوردرات كتير لنفس المزود مع الوقت
+The former `POST /api/v1/client/orders/{orderId}/cancel` endpoint is removed. Order status notifications link to the exact order and are emitted only after successful transitions.
 
----
+## Existing records
 
-## 3. السيناريو خطوة بخطوة
+Migration `SimplifyOrderWorkflow` preserves existing orders and their item snapshots:
 
-### الخطوة أ — العميل يبني سلة (موجود حاليًا)
+- Pending (0) and Accepted (1) become New (0).
+- Preparing (2) and Ready (3) retain their existing values.
+- Completed (4) becomes Ready (3).
+- Previously cancelled records remain read-only Client history, shown as **Historical order** with `isHistorical: true`; they do not appear in the active Provider queue and cannot reenter the workflow.
 
-1. العميل يسجّل دخول (`UserType = Client`).
-2. يتصفح منتجات مزود معيّن:  
-   `GET .../client/{providerId}/products` (والتصنيفات).
-3. يضيف / يعدّل / يحذف أسطر:  
-   `POST/PUT/DELETE .../client/{providerId}/cart/...`
-4. السلة بتخزّن فقط: `UserId`، `ProviderId`، والأسطر (`ProductId` + `Quantity`).
-5. الأسعار اللي بتظهر في رد السلة **بتتقرأ من المنتج وقت القراءة** (ممكن تتغير لحد ما يعمل checkout).
-
-في المرحلة دي **مفيش تأكيد شراء**. العميل يقدر يسيب السلة، يغيّر الكميات، أو يمسحها.
-
-### الخطوة ب — العميل يعمل Checkout (إنشاء Order)
-
-الـ checkout **مش** معناه «اربط السلة بأوردر».  
-معناه: **أنشئ Order جديد من محتويات السلة الحالية**.
-
-طلب نموذجي:
-
-```http
-POST /api/v1/client/{providerId}/orders
-Authorization: Bearer <client-token>
-Content-Type: application/json
-
-{
-  "notes": "من غير بصل",
-  "phoneNumber": "+2010...",
-  "deliveryAddress": "اختياري في الـ MVP"
-}
-```
-
-منطق المعالج (البيزنس):
-
-1. تحميل سلة العميل لهذا الـ `providerId` (لازم يكون فيها عنصر واحد على الأقل).
-2. التحقق إن كل منتج لسه موجود، **Active**، ويتبع كتالوج نفس المزود.
-3. إنشاء `Order`:
-   - `UserId` = العميل الحالي
-   - `ProviderId` = المزود من الـ route
-   - `Status` = `Pending`
-   - `OrderDateUtc` = الوقت الحالي
-   - `Notes` = من الطلب
-   - `TotalAmount` = مجموع الأسطر
-4. لكل سطر في السلة، إنشاء `OrderItem` كـ **لقطة (snapshot)**:
-   - `ProductId` (مرجع)
-   - `ProductName` (منسوخ وقت الشراء)
-   - `UnitPrice` (منسوخ وقت الشراء)
-   - `Quantity`
-5. حفظ الأوردر (+ الأسطر) في **عملية واحدة** (transaction).
-6. مسح أو تفريغ سلة التسوق (يفضّل في نفس الـ transaction).
-7. إرجاع DTO الأوردر المنشأ.
-
-بعد كده سلة العميل لهذا المزود تكون فاضية. الأوردر قائم لوحده.
-
-### الخطوة ج — العميل يتابع الأوردر
-
-```http
-GET  /api/v1/client/orders
-GET  /api/v1/client/orders/{orderId}
-POST /api/v1/client/orders/{orderId}/cancel   # فقط لو الحالة تسمح (مثل Pending)
-```
-
-العميل يشوف الإجمالي التاريخي من **لقطات OrderItem**، مش من سعر المنتج الحالي.
-
-### الخطوة د — المزود ينفّذ الطلب
-
-```http
-GET   /api/v1/provider/orders
-GET   /api/v1/provider/orders/{orderId}
-PATCH /api/v1/provider/orders/{orderId}/status
-```
-
-مثال body:
-
-```json
-{ "status": "Accepted" }
-```
-
-المزود يشوف فقط الأوردرات اللي `Order.ProviderId` بيطابق مطعمه.
-
----
-
-## 4. حالات الأوردر المقترحة (ماركت بليس / مطعم)
-
-حالات الشحن (`Shipped` / `Delivered`) أنسب لمتاجر الطرود مش لاستلام من مطعم/خدمة.
-
-الأنسب:
-
-| الحالة | المعنى |
-|--------|--------|
-| `Pending` | العميل لسه عامل الطلب؛ مستني المزود |
-| `Accepted` | المزود أكّد الطلب |
-| `Preparing` | جاري التحضير |
-| `Ready` | جاهز للاستلام / للتوصيل (حسب تعريف المنتج) |
-| `Completed` | خلص / اتسلّم |
-| `Cancelled` | اتلغى من العميل أو المزود (بقواعد) |
-
-انتقالات مسموحة (مثال):
-
-```text
-Pending ──► Accepted ──► Preparing ──► Ready ──► Completed
-   │            │            │           │
-   └────────────┴────────────┴───────────┴──► Cancelled
-```
-
-لازم تتحقّق الانتقالات في الـ domain/handler (مثلاً ممنوع `Completed → Pending`).
-
----
-
-## 5. ليه السلة والأوردر منفصلين (مفيش علاقة)
-
-```text
-غلط (متعملش كده):
-  Order ──FK──► ShoppingCart
-  الأوردر «بيملك» السلة للأبد
-
-صح:
-  الـ Checkout بيقرأ السلة ──ينسخ──► Order + OrderItems
-  بعدين السلة تتمسح / تتفضى
-```
-
-الأسباب:
-
-1. **السلة مؤقتة** — بعد الـ checkout لازم تقدر تمسحها بحرية.
-2. **ثبات السعر** — سعر المنتج ممكن يتغير بكرة؛ الأوردر لازم يحفظ السعر وقت الشراء.
-3. **التاريخ** — لو المنتج اتمسح ناعمًا لاحقًا، الأوردر لسه يوري إيه اتشترى.
-4. **الاستقلال** — تحديث حالة المزود ما يعتمدش على سلة مش موجودة.
-
-يعني:
-
-- Domain: `Order` فيه `UserId` و `ProviderId` و `Items` — **مش** `ShoppingCartId`.
-- Application: أمر الـ checkout يحمّل السلة، يعمل mapping للأوردر، يحفظ الأوردر، يفضي السلة.
-
----
-
-## 6. شكل الدومين المستهدف (مرجع)
-
-```text
-ApplicationUser (Client)
-        │
-        │ 1
-        ▼ *
-     Order ──────────────► Provider
-        │ 1
-        ▼ *
-     OrderItem ──(FK اختياري)──► Product
-        (ProductName, UnitPrice, Quantity كلقطات)
-```
-
-السلة تفضل زي ما هي:
-
-```text
-ApplicationUser (Client)
-        │
-        ▼
-  ShoppingCart ──► Provider
-        │
-        ▼
-  ShoppingCartItem ──► Product
-        (ProductId + Quantity فقط)
-```
-
-**مفيش خط بين Order و ShoppingCart في الـ ERD.**
-
----
-
-## 7. الفلوس والإجمالي
-
-- `TotalPrice` في السلة (API): يتحسب عند القراءة = `Σ سعر المنتج × الكمية`.
-- `TotalAmount` في الأوردر: يتحسب **مرة واحدة عند الـ checkout** من `UnitPrice × Quantity` المحفوظة، ثم يتخزّن.
-- أي تغيير لاحق في سعر المنتج **ما يعيدش حساب** أوردرات قديمة.
-
----
-
-## 8. حالات فشل / حدود
-
-| الحالة | السلوك المتوقع |
-|--------|----------------|
-| سلة فاضية عند الـ checkout | خطأ تحقق / `400` |
-| منتج غير نشط أو محذوف | رفض الـ checkout |
-| منتج مش تابع لنفس المزود | رفض السطر ده |
-| Checkout مرتين ورا بعض | التاني يلاقي سلة فاضية/مش موجودة → فشل نظيف |
-| إلغاء بعد `Preparing` | رفض إلا لو سمحت بقاعدة صريحة |
-| مزود يعدّل أوردر مطعم تاني | ممنوع (scope بـ `ProviderId`) |
-
----
-
-## 9. مثال من أول لآخر
-
-1. العميل يدخل بـ `client@enterprise.local`.
-2. يضيف 2× Pepperoni لسلة مزود `Demo Restaurant`.
-3. `GET cart` → الإجمالي = `2 * 14.00 = 28.00`.
-4. `POST orders` بملاحظة `"Extra cheese"`.
-5. النظام ينشئ:
-   - `Order` (`Pending`، إجمالي `28.00`)
-   - `OrderItem` (Pepperoni، سعر الوحدة `14.00`، كمية `2`)
-6. سلة هذا المزود تتمسح.
-7. المزود يفتح قائمة الأوردرات → يشوف `Pending` جديد.
-8. المزود يغيّر الحالة: `Accepted` → `Preparing` → `Ready` → `Completed`.
-9. العميل يفتح تفاصيل الأوردر → لسه شايف Pepperoni بـ `14.00` حتى لو سعر المينيو اتغيّر بعدين.
-
----
-
-## 10. قائمة تنفيذ (لما تبني الميزة)
-
-- [ ] كيانات `Order` + `OrderItem` (من غير `ShoppingCartId`)
-- [ ] enum `OrderStatus` مناسب للماركت بليس
-- [ ] إعدادات EF + migration
-- [x] Client: `GET` للأوردرات، `GET .../orders/by-session/{sessionId}`، و`POST .../orders/{orderId}/cancel` (فقط و`Pending`). إنشاء الأوردر يتم من Stripe webhook وليس `POST .../orders`.
-- [x] Provider: `GET` للأوردرات (مع فلتر الحالة والتاريخ والصفحات) + `PATCH` للحالة
-- [ ] Handler الـ checkout: تحقق من السلة → لقطة للأسطر → حفظ الأوردر → تفريغ السلة (Unit of Work واحد)
-- [ ] طلبات Postman للمسار السعيد فوق
-
----
-
-## مستندات مرتبطة
-
-- سطح API السلة: `ClientCartsController` (`/api/v1/client/{providerId}/cart`)
-- المعمارية / البوابات: [`DEVELOPER_WORKFLOW.md`](DEVELOPER_WORKFLOW.md)
-- نظرة على الـ persistence: [`ERD.md`](ERD.md) (حدّثه لما جداول الأوردر تتضاف)
+`PreviousStatus` retains legacy Accepted, Completed and Cancelled values for history and migration rollback. Historical records use terminal storage value 3, but their historical flag takes precedence over the displayed phase. No records, totals, item snapshots, notes or Checkout references are deleted. Existing Preparing/Ready numeric values are retained to avoid reinterpreting stored records.

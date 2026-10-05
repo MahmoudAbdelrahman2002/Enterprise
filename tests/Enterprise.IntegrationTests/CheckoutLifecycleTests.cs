@@ -133,13 +133,15 @@ public sealed class CheckoutLifecycleTests : TestFixtureBase
     {
         var basket = await BasketAsync();
         using var client = basket.Client;
-        var orderId = Guid.NewGuid();
+        var orderId = Guid.Empty;
         using (var scope = Factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var userId = await db.ShoppingCarts.Where(c => c.Id == basket.CartId).Select(c => c.UserId).SingleAsync();
-            db.Orders.Add(new Order { Id = orderId, UserId = userId, ProviderId = basket.ProviderId, OrderDateUtc = DateTime.UtcNow, Status = OrderStatus.Ready, PreviousStatus = "Cancelled", TotalAmount = 1m });
+            var historicalOrder = new Order { UserId = userId, ProviderId = basket.ProviderId, OrderDateUtc = DateTime.UtcNow, Status = OrderStatus.Ready, PreviousStatus = "Cancelled", TotalAmount = 1m };
+            db.Orders.Add(historicalOrder);
             await db.SaveChangesAsync();
+            orderId = historicalOrder.Id;
         }
         var detail = await client.GetAsync($"/api/v1/client/orders/{orderId}");
         detail.EnsureSuccessStatusCode();
